@@ -609,9 +609,40 @@ function initChart() {
   chartEl.appendChild(pmCanvas);
   window._pmCanvas = pmCanvas;
 
-  function drawOffHoursShading() {}
+  function drawOffHoursShading() {
+    const cv = window._pmCanvas; if (!cv) return;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (candleTF > 3600) return;
+    const data = window._chartData;
+    if (!data || !data.length) return;
+    const ts = chart.timeScale();
+    ctx.fillStyle = 'rgba(100, 140, 200, 0.07)';
+    let runX0 = null, runX1 = null;
+    for (let i = 0; i < data.length; i++) {
+      const d = new Date(data[i].time * 1000);
+      const mins = d.getUTCHours() * 60 + d.getUTCMinutes();
+      const isRTH = mins >= 570 && mins < 960;
+      const x = ts.timeToCoordinate(data[i].time);
+      if (!isRTH) {
+        if (x != null) {
+          if (runX0 === null) runX0 = x;
+          runX1 = x;
+        }
+      } else {
+        if (runX0 !== null && runX1 !== null) {
+          ctx.fillRect(Math.min(runX0, runX1), 0, Math.abs(runX1 - runX0) || 1, cv.height);
+        }
+        runX0 = null; runX1 = null;
+      }
+    }
+    if (runX0 !== null && runX1 !== null) {
+      ctx.fillRect(Math.min(runX0, runX1), 0, Math.abs(runX1 - runX0) || 1, cv.height);
+    }
+  }
   chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
   chart.timeScale().subscribeVisibleLogicalRangeChange(drawOffHoursShading);
+  window.drawOffHoursShading = drawOffHoursShading;
   new ResizeObserver(() => { pmCanvas.width = chartEl.clientWidth; pmCanvas.height = chartEl.clientHeight; drawOffHoursShading(); }).observe(chartEl);
 }
 
@@ -686,7 +717,7 @@ async function loadSession() {
 
   const histBucketed = rebucketHistory(window._historyBars, candleTF);
   if (histBucketed.length) {
-    window._chartData = histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData);
+    window._chartData = histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData); setTimeout(function(){if(window.drawOffHoursShading)window.drawOffHoursShading()}, 100);
     volSeries.setData(histBucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
     currentPrice = histBucketed[histBucketed.length - 1].close;
   }
@@ -882,7 +913,7 @@ document.getElementById('chart-tf').addEventListener('change', () => {
   const allSoFar = [...histBars, ...playedCandles];
   if (allSoFar.length) {
     const bucketed = rebucketHistory(allSoFar, candleTF);
-    window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData);
+    window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData); setTimeout(function(){if(window.drawOffHoursShading)window.drawOffHoursShading()}, 100);
     volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
     if (activeIndicators.length) rebuildIndicators();
     chart.timeScale().fitContent();
@@ -1275,7 +1306,7 @@ async function loadSavedSession(idx) {
   // Load history onto chart
   const histBucketed = rebucketHistory(window._historyBars, candleTF);
   if (histBucketed.length) {
-    window._chartData = histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData);
+    window._chartData = histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData); setTimeout(function(){if(window.drawOffHoursShading)window.drawOffHoursShading()}, 100);
     volSeries.setData(histBucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
     currentPrice = histBucketed[histBucketed.length - 1].close;
   }
