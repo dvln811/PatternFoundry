@@ -795,7 +795,7 @@ function stepTick() {
   document.getElementById('pb-info').textContent = `Bar ${played}/${total} (${pct}%) - $${currentPrice.toFixed(2)}`;
   const d = new Date(allTicks[tickIdx - 1].time * 1000);
   document.getElementById('chart-overlay-tr').textContent =
-    `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
+    `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`;
   // Candle time remaining
   const tickTime = allTicks[tickIdx - 1].time;
   const candleEnd = getCandleTime(tickTime) + candleTF;
@@ -814,7 +814,14 @@ function stepTick() {
 
 function resetChartView() {
   if (!chart) return;
-  chart.timeScale().scrollToRealTime();
+  const data = window._chartData;
+  if (data && data.length) {
+    const n = data.length;
+    chart.timeScale().setVisibleLogicalRange({ from: n - 30, to: n + 30 });
+  } else {
+    chart.timeScale().scrollToRealTime();
+  }
+  chart.priceScale('right').applyOptions({ autoScale: true });
 }
 
 function togglePlay() { isPlaying ? stopPlay() : startPlay(); }

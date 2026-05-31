@@ -210,8 +210,11 @@
           <div>Imbalance: <b id="td-imbalance" style="color:#38bdf8">-</b></div>
           <div>Hawkes: <b id="td-hawkes" style="color:#888">-</b></div>
           <div>Inst: <b id="td-inst" style="color:#555">-</b></div>
+          <div>Inst Remaining: <b id="td-inst-rem" style="color:#a78bfa">-</b></div>
+          <div>Inst Dir: <b id="td-inst-dir" style="color:#888">-</b></div>
           <div>Tick: <span id="td-tick-num" style="color:#888">-</span></div>
           <div>Vol: <b id="td-vol" style="color:#888">-</b></div>
+          <div>Candle: <b id="td-candle-num" style="color:#888">-</b></div>
         </div>
         <div id="td-bar" style="margin-top:6px;height:4px;background:#1a1a1a;border-radius:2px;overflow:hidden">
           <div id="td-bar-fill" style="height:100%;width:0%;background:#38bdf8;transition:width 0.1s"></div>
@@ -740,9 +743,9 @@ function startTickPlayback() {
       const t = _tickPreviewData[_tickPreviewIdx++];
       _playedTicks.push(t);
       const tf = parseInt(document.getElementById('tf').value);
-      const ticksPerBar = tf; // 1 tick = 1 second, tf seconds per bar
+      const ticksPerBar = tf;
       const barIdx = Math.floor((_tickPreviewIdx - 1) / ticksPerBar);
-      const lastChartTime = allCandles.length ? allCandles[allCandles.length-1].time : 0;
+      const lastChartTime = window._chartData && window._chartData.length ? window._chartData[window._chartData.length-1].time : 0;
       const ct = lastChartTime + (barIdx + 1) * tf;
       if (!_tickPreviewCandle || _tickPreviewCandle.time !== ct) {
         if (_tickPreviewCandle) {} // completed candle stays in chart via update()
@@ -766,14 +769,17 @@ function startTickPlayback() {
     document.getElementById('td-imbalance').textContent = t.imbalance.toFixed(2);
     document.getElementById('td-imbalance').style.color = t.imbalance > 0.5 ? '#4caf82' : t.imbalance < -0.5 ? '#e05c5c' : '#888';
     document.getElementById('td-vol').textContent = t.volume;
-    document.getElementById('td-tick-num').textContent = `${Math.ceil(_tickPreviewIdx/60)}/${Math.ceil(_tickPreviewData.length/60)} candles`;
+    document.getElementById('td-tick-num').textContent = `${_tickPreviewIdx}/${_tickPreviewData.length}`;
     document.getElementById('td-bar-fill').style.width = (_tickPreviewIdx / _tickPreviewData.length * 100) + '%';
-    const hawkesEst = Math.min(1, Math.abs(t.imbalance) * 0.25 + 0.15);
-    document.getElementById('td-hawkes').textContent = hawkesEst.toFixed(2);
-    document.getElementById('td-hawkes').style.color = hawkesEst > 0.4 ? '#f97316' : '#888';
-    const instActive = Math.abs(t.imbalance) > 1.5;
-    document.getElementById('td-inst').textContent = instActive ? 'SWEEP' : 'quiet';
-    document.getElementById('td-inst').style.color = instActive ? '#a78bfa' : '#555';
+    document.getElementById('td-hawkes').textContent = (t.hawkes || 0).toFixed(3);
+    document.getElementById('td-hawkes').style.color = (t.hawkes || 0) > 0.3 ? '#f97316' : '#888';
+    const instRem = t.inst_remaining || 0;
+    document.getElementById('td-inst').textContent = instRem > 0 ? 'ACTIVE' : 'quiet';
+    document.getElementById('td-inst').style.color = instRem > 0 ? '#a78bfa' : '#555';
+    document.getElementById('td-inst-rem').textContent = instRem;
+    document.getElementById('td-inst-dir').textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '—';
+    document.getElementById('td-inst-dir').style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
+    document.getElementById('td-candle-num').textContent = Math.ceil(_tickPreviewIdx / 60);
   }, interval);
 }
 

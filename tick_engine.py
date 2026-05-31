@@ -277,6 +277,9 @@ def generate_microstructure_ticks(candles: list, config: MicroConfig = None) -> 
                 'bid': float(bid),
                 'ask': float(ask),
                 'imbalance': round(float(order_imbalance), 2),
+                'hawkes': round(float(hawkes_intensity), 3),
+                'inst_remaining': int(inst_remaining),
+                'inst_dir': int(inst_direction),
             })
 
         # Force last tick to close price
