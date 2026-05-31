@@ -209,10 +209,14 @@ def sim_session():
     total = len(historical_df)
     new_ts = []
     ts = premarket_open - pd.Timedelta(minutes=5)
-    for _ in range(total - 1, -1, -1):
+    bars_today = 0
+    for _ in range(total):
         new_ts.append(ts)
+        bars_today += 1
         ts -= pd.Timedelta(minutes=5)
-        if ts.hour < 6:
+        # After 78 bars (one RTH session), jump to previous trading day's close
+        if bars_today >= 78:
+            bars_today = 0
             prev = ts.normalize() - pd.Timedelta(days=1)
             while prev.weekday() >= 5:
                 prev -= pd.Timedelta(days=1)

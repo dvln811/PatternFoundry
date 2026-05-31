@@ -108,6 +108,7 @@
       flex: 1; padding: 6px; border: 1.5px solid; border-radius: 5px;
       font-size: 0.78rem; font-weight: 700; cursor: pointer;
       font-family: inherit; background: #1a1a1a;
+      text-transform: uppercase; letter-spacing: 0.03em;
     }
     .btn-buy  { border-color: #4caf82; color: #4caf82; }
     .btn-sell { border-color: #e05c5c; color: #e05c5c; }
@@ -117,8 +118,9 @@
 
     .btn-close {
       width: 100%; padding: 7px; background: #2a2a2a; color: #bbb;
-      border: 1px solid #3a3a3a; border-radius: 5px; font-size: 0.75rem;
+      border: 1px solid #2a2a2a; border-radius: 5px; font-size: 0.75rem;
       font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 5px;
+      text-transform: uppercase; letter-spacing: 0.03em;
     }
     .btn-close:hover { background: #333; color: #fff; }
 
@@ -126,6 +128,7 @@
       width: 100%; padding: 8px; background: transparent; color: #6aafdd;
       border: 1px solid #6aafdd; border-radius: 6px; font-size: 0.82rem;
       font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 6px;
+      text-transform: uppercase; letter-spacing: 0.03em;
     }
 
     /* Position box */
@@ -163,6 +166,7 @@
       background: #1a1a1a; border: 1px solid #2a2a2a; color: #bbb;
       width: 34px; height: 34px; border-radius: 5px; font-size: 0.95rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
+      text-transform: uppercase; letter-spacing: 0.03em;
     }
     .pb-btn:hover { border-color: #4caf82; color: #ddd; }
     .pb-btn.active { background: #4caf82; color: #0d0d0d; border-color: #4caf82; }
@@ -198,7 +202,7 @@
     }
     .order-setup .os-price { font-weight: 600; min-width: 70px; text-align: right; }
     .order-setup .os-label { color: #bbb; font-size: 0.7rem; }
-    .os-btn { padding: 5px 14px; border: none; border-radius: 5px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .os-btn { padding: 5px 14px; border: none; border-radius: 5px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: 0.03em; }
     .os-confirm { background: #4caf82; color: #0d0d0d; }
     .os-cancel  { background: #2a2a2a; color: #bbb; }
 
@@ -215,11 +219,11 @@
     }
     .ind-toolbar input[type="number"] { width: 52px; }
     .ind-add-btn {
-      padding: 3px 10px; border: 1px solid #6aafdd; border-radius: 4px;
-      background: transparent; color: #6aafdd; font-size: 0.7rem; font-weight: 600;
-      cursor: pointer; font-family: inherit;
+      padding: 3px 10px; border: 1px solid #2a2a2a; border-radius: 4px;
+      background: transparent; color: #bbb; font-size: 0.7rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: 0.03em;
     }
-    .ind-add-btn:hover { background: #6aafdd18; }
+    .ind-add-btn:hover { background: #1a1a1a; border-color: #555; color: #ddd; }
     .ind-chip {
       display: inline-flex; align-items: center; gap: 4px;
       background: #1a2a3a; border: 1px solid #2a3a4a; color: #6aafdd;
@@ -272,6 +276,9 @@
                 <option value="5" selected>1 week</option>
                 <option value="21">1 month</option>
                 <option value="63">3 months</option>
+                <option value="126">6 months</option>
+                <option value="252">1 year</option>
+                <option value="504">2 years</option>
               </select>
             </div>
             <div class="field" style="flex:1">
@@ -414,6 +421,7 @@
           <option value="60">60x</option>
         </select>
         <button onclick="toggleDOM()" title="Depth of Market" style="background:#1a1a1a;border:1px solid #f0c040;color:#f0c040;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">DOM</button>
+        <button onclick="resetChartView()" title="Reset view to current candle" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">⊙ Reset</button>
         <span class="pb-info" id="pb-info">Load a session to begin</span>
       </div>
 
@@ -439,12 +447,17 @@
 
       <!-- Drawing toolbar -->
       <div class="ind-toolbar" style="gap:3px">
-        <button class="ind-add-btn" data-draw-tool="line" onclick="setDrawTool('line')" title="Line">╱</button>
+        <button class="ind-add-btn" data-draw-tool="line" onclick="setDrawTool('line')" title="Free Line">╱</button>
         <button class="ind-add-btn" data-draw-tool="hline" onclick="setDrawTool('hline')" title="Horizontal">―</button>
+        <button class="ind-add-btn" data-draw-tool="vline" onclick="setDrawTool('vline')" title="Vertical">│</button>
+        <button class="ind-add-btn" data-draw-tool="arrow" onclick="setDrawTool('arrow')" title="Arrow">→</button>
+        <button class="ind-add-btn" data-draw-tool="channel" onclick="setDrawTool('channel')" title="Channel">═</button>
         <button class="ind-add-btn" data-draw-tool="rect" onclick="setDrawTool('rect')" title="Rectangle">▭</button>
+        <button class="ind-add-btn" data-draw-tool="ellipse" onclick="setDrawTool('ellipse')" title="Ellipse">⬭</button>
         <button class="ind-add-btn" data-draw-tool="fib" onclick="setDrawTool('fib')" title="Fib Retracement">Fib</button>
-        <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" title="Long Position" style="color:#4caf82;border-color:#4caf82">▲</button>
-        <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" title="Short Position" style="color:#e05c5c;border-color:#e05c5c">▼</button>
+        <button class="ind-add-btn" data-draw-tool="gannbox" onclick="setDrawTool('gannbox')" title="Gann Box">Gann</button>
+        <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" title="Long Position" style="color:#4caf8288">▲ Long</button>
+        <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" title="Short Position" style="color:#e05c5c88">▼ Short</button>
         <input type="color" id="draw-color" value="#f0c040" onchange="if(drawMgr)drawMgr.setColor(this.value)" style="width:24px;height:24px;border:1px solid #2a2a2a;border-radius:4px;background:#1a1a1a;cursor:pointer;padding:0">
         <button class="ind-add-btn" onclick="setDrawTool(null)" title="Cancel">✕</button>
         <button class="ind-add-btn" onclick="if(drawMgr)drawMgr.clear()" title="Clear all" style="color:#e05c5c;border-color:#e05c5c">Clear</button>
@@ -582,6 +595,43 @@ function initChart() {
   // Init drawing overlay
   if (drawMgr) drawMgr.destroy();
   drawMgr = new CanvasOverlay(chart, candleSeries, document.getElementById('sim-chart'));
+
+  // Off-hours shading overlay
+  const chartEl = document.getElementById('sim-chart');
+  if (window._pmCanvas && window._pmCanvas.parentNode) window._pmCanvas.parentNode.removeChild(window._pmCanvas);
+  const pmCanvas = document.createElement('canvas');
+  pmCanvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1';
+  pmCanvas.width = chartEl.clientWidth; pmCanvas.height = chartEl.clientHeight;
+  chartEl.appendChild(pmCanvas);
+  window._pmCanvas = pmCanvas;
+
+  function drawOffHoursShading() {
+    const cv = window._pmCanvas; if (!cv) return;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const hist = window._historyBars || [];
+    if (!hist.length) return;
+    ctx.fillStyle = 'rgba(80, 120, 180, 0.06)';
+    const ts = chart.timeScale();
+    let runStart = null;
+    for (let i = 0; i <= hist.length; i++) {
+      const isOff = i < hist.length && (() => {
+        const d = new Date(hist[i].time * 1000);
+        const mins = d.getUTCHours() * 60 + d.getUTCMinutes();
+        return mins < 570 || mins >= 960;
+      })();
+      if (isOff && runStart === null) {
+        runStart = hist[i].time;
+      } else if (!isOff && runStart !== null) {
+        const x0 = ts.timeToCoordinate(runStart);
+        const x1 = ts.timeToCoordinate(hist[i - 1].time);
+        if (x0 !== null && x1 !== null) ctx.fillRect(x0, 0, Math.max(x1 - x0, 1), cv.height);
+        runStart = null;
+      }
+    }
+  }
+  chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
+  new ResizeObserver(() => { pmCanvas.width = chartEl.clientWidth; pmCanvas.height = chartEl.clientHeight; drawOffHoursShading(); }).observe(chartEl);
 }
 
 // ── Session loading ──────────────────────────────────────────────────────
@@ -610,12 +660,14 @@ function rebucketHistory(candles, tf) {
     }
     if (bucket) result.push(bucket);
   }
-  // Re-index sequentially to eliminate gaps (overnight, weekends)
-  if (result.length > 1) {
-    const step = Math.max(tf, 60);
+  // Re-index sequentially only for higher TFs to eliminate gaps
+  if (tf > 60 && result.length > 1) {
+    // Use a step that represents one bar's worth of real time at the source density
+    // Source is mixed 5-min/1-min; after bucketing, each result bar = tf seconds of market time
+    // Space them by tf so the chart axis reads correctly
     const baseTime = result[0].time;
     for (let i = 0; i < result.length; i++) {
-      result[i].time = baseTime + i * step;
+      result[i].time = baseTime + i * tf;
     }
   }
   return result;
@@ -760,6 +812,11 @@ function stepTick() {
   const cdEl = document.getElementById('candle-countdown');
   cdEl.textContent = cdText;
   cdEl.style.color = currentCandle && currentCandle.close >= currentCandle.open ? '#4caf82' : '#e05c5c';
+}
+
+function resetChartView() {
+  if (!chart) return;
+  chart.timeScale().scrollToRealTime();
 }
 
 function togglePlay() { isPlaying ? stopPlay() : startPlay(); }
