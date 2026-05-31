@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PatternFoundry — Simulator</title>
+  <title>PatternFoundry - Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -290,7 +290,7 @@
             <label>Seed <span style="font-size:0.6rem;color:#666">(blank = random)</span></label>
             <div style="display:flex;gap:4px">
               <input type="number" id="sim-seed" placeholder="random" min="0">
-              <button onclick="document.getElementById('sim-seed').value=''" style="background:transparent;border:1px solid #333;color:#888;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.7rem">🎲</button>
+              <button onclick="document.getElementById('sim-seed').value=Math.floor(Math.random()*1000000)" style="background:transparent;border:1px solid #333;color:#888;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.7rem">🎲</button>
             </div>
           </div>
           <button class="btn-new" onclick="loadSession()">New Session</button>
@@ -307,7 +307,7 @@
             <div class="acct-row"><span class="acct-label">Session P/L</span><span class="acct-val" id="a-spl">$0.00</span></div>
             <div style="display:flex;gap:12px">
               <div class="acct-row" style="flex:1"><span class="acct-label">Trades</span><span class="acct-val" id="a-cnt">0</span></div>
-              <div class="acct-row" style="flex:1"><span class="acct-label">Win Rate</span><span class="acct-val" id="a-wr">—</span></div>
+              <div class="acct-row" style="flex:1"><span class="acct-label">Win Rate</span><span class="acct-val" id="a-wr">-</span></div>
             </div>
           </div>
         </div>
@@ -398,9 +398,9 @@
       <!-- Order setup bar -->
       <div class="order-setup hidden" id="order-setup">
         <span id="os-dir" style="font-weight:700">BUY</span>
-        <span class="os-label">Entry</span><span class="os-price" id="os-entry">—</span>
-        <span class="os-label">SL</span><span class="os-price" style="color:#e05c5c" id="os-sl">—</span>
-        <span class="os-label">TP</span><span class="os-price" style="color:#4caf82" id="os-tp">—</span>
+        <span class="os-label">Entry</span><span class="os-price" id="os-entry">-</span>
+        <span class="os-label">SL</span><span class="os-price" style="color:#e05c5c" id="os-sl">-</span>
+        <span class="os-label">TP</span><span class="os-price" style="color:#4caf82" id="os-tp">-</span>
         <span id="os-riskinfo" style="font-size:0.7rem;color:#ddd;margin-left:8px"></span>
         <span style="flex:1"></span>
         <span style="font-size:0.68rem;color:#bbb">Drag lines to adjust •</span>
@@ -569,7 +569,7 @@ function initChart() {
     const pct = (chg / bar.open * 100).toFixed(2);
     const dir = chg >= 0 ? '+' : '';
     const col = chg >= 0 ? '#4caf82' : '#e05c5c';
-    const volStr = volBar && typeof volBar.value === 'number' ? volBar.value.toLocaleString() : '—';
+    const volStr = volBar && typeof volBar.value === 'number' ? volBar.value.toLocaleString() : '-';
     // Indicator values at this bar
     let indHtml = '';
     if (activeIndicators && activeIndicators.length) {
@@ -609,32 +609,9 @@ function initChart() {
   chartEl.appendChild(pmCanvas);
   window._pmCanvas = pmCanvas;
 
-  function drawOffHoursShading() {
-    const cv = window._pmCanvas; if (!cv) return;
-    const ctx = cv.getContext('2d');
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    const hist = window._historyBars || [];
-    if (!hist.length) return;
-    ctx.fillStyle = 'rgba(80, 120, 180, 0.06)';
-    const ts = chart.timeScale();
-    let runStart = null;
-    for (let i = 0; i <= hist.length; i++) {
-      const isOff = i < hist.length && (() => {
-        const d = new Date(hist[i].time * 1000);
-        const mins = d.getUTCHours() * 60 + d.getUTCMinutes();
-        return mins < 570 || mins >= 960;
-      })();
-      if (isOff && runStart === null) {
-        runStart = hist[i].time;
-      } else if (!isOff && runStart !== null) {
-        const x0 = ts.timeToCoordinate(runStart);
-        const x1 = ts.timeToCoordinate(hist[i - 1].time);
-        if (x0 !== null && x1 !== null) ctx.fillRect(x0, 0, Math.max(x1 - x0, 1), cv.height);
-        runStart = null;
-      }
-    }
-  }
+  function drawOffHoursShading() {}
   chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
+  chart.timeScale().subscribeVisibleLogicalRangeChange(drawOffHoursShading);
   new ResizeObserver(() => { pmCanvas.width = chartEl.clientWidth; pmCanvas.height = chartEl.clientHeight; drawOffHoursShading(); }).observe(chartEl);
 }
 
@@ -644,36 +621,22 @@ function getCandleTime(ts) {
 }
 
 function rebucketHistory(candles, tf) {
-  let result;
-  if (tf <= 60) {
-    result = candles.map(c => ({...c}));
-  } else {
-    result = [];
-    let bucket = null;
-    for (const c of candles) {
-      const bt = Math.floor(c.time / tf) * tf;
-      if (!bucket || bucket.time !== bt) {
-        if (bucket) result.push(bucket);
-        bucket = { time: bt, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume };
-      } else {
-        bucket.high = Math.max(bucket.high, c.high);
-        bucket.low  = Math.min(bucket.low,  c.low);
-        bucket.close = c.close;
-        bucket.volume += c.volume;
-      }
-    }
-    if (bucket) result.push(bucket);
-  }
-  // Re-index sequentially only for higher TFs to eliminate gaps
-  if (tf > 60 && result.length > 1) {
-    // Use a step that represents one bar's worth of real time at the source density
-    // Source is mixed 5-min/1-min; after bucketing, each result bar = tf seconds of market time
-    // Space them by tf so the chart axis reads correctly
-    const baseTime = result[0].time;
-    for (let i = 0; i < result.length; i++) {
-      result[i].time = baseTime + i * tf;
+  if (tf <= 60) return candles;
+  const result = [];
+  let bucket = null;
+  for (const c of candles) {
+    const bt = Math.floor(c.time / tf) * tf;
+    if (!bucket || bucket.time !== bt) {
+      if (bucket) result.push(bucket);
+      bucket = { time: bt, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume };
+    } else {
+      bucket.high = Math.max(bucket.high, c.high);
+      bucket.low  = Math.min(bucket.low,  c.low);
+      bucket.close = c.close;
+      bucket.volume += c.volume;
     }
   }
+  if (bucket) result.push(bucket);
   return result;
 }
 
@@ -717,13 +680,13 @@ async function loadSession() {
 
   initChart();
 
-  // History is pre-built 1-min candles — load statically onto chart
+  // History is pre-built 1-min candles - load statically onto chart
   window._historyBars = data.history || [];
   window._sessionStart = 0; // ticks start at session open, no offset needed
 
   const histBucketed = rebucketHistory(window._historyBars, candleTF);
   if (histBucketed.length) {
-    candleSeries.setData(histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
+    window._chartData = histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData);
     volSeries.setData(histBucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
     currentPrice = histBucketed[histBucketed.length - 1].close;
   }
@@ -733,7 +696,7 @@ async function loadSession() {
   document.getElementById('btn-long').disabled  = false;
   document.getElementById('btn-short').disabled = false;
   document.getElementById('chart-overlay').classList.add('hidden');
-  document.getElementById('pb-info').textContent = `Ready — ${allTicks.length} ticks · ${data.session_date || ''}`;
+  document.getElementById('pb-info').textContent = `Ready - ${allTicks.length} ticks · ${data.session_date || ''}`;
   chart.timeScale().fitContent();
 }
 
@@ -798,7 +761,7 @@ function stepTick() {
   const played = tickIdx - sessionStart;
   const total  = allTicks.length - sessionStart;
   const pct    = Math.round(played / total * 100);
-  document.getElementById('pb-info').textContent = `Bar ${played}/${total} (${pct}%) — $${currentPrice.toFixed(2)}`;
+  document.getElementById('pb-info').textContent = `Bar ${played}/${total} (${pct}%) - $${currentPrice.toFixed(2)}`;
   const d = new Date(allTicks[tickIdx - 1].time * 1000);
   document.getElementById('chart-overlay-tr').textContent =
     `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
@@ -919,7 +882,7 @@ document.getElementById('chart-tf').addEventListener('change', () => {
   const allSoFar = [...histBars, ...playedCandles];
   if (allSoFar.length) {
     const bucketed = rebucketHistory(allSoFar, candleTF);
-    candleSeries.setData(bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
+    window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData);
     volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
     if (activeIndicators.length) rebuildIndicators();
     chart.timeScale().fitContent();
@@ -1015,7 +978,7 @@ function updateSetupDisplay() {
   const tpp = 1 / tickSize;
   const riskDollars = riskPts * tpp * tickValue * (setupMode.qty || 1);
   const riskPct = account.balance > 0 ? (riskDollars / account.balance * 100).toFixed(1) : '0.0';
-  const rr = riskPts > 0 ? (Math.abs(setupMode.tp - setupMode.entry) / riskPts).toFixed(1) : '—';
+  const rr = riskPts > 0 ? (Math.abs(setupMode.tp - setupMode.entry) / riskPts).toFixed(1) : '-';
   document.getElementById('os-riskinfo').textContent = `Risk: $${riskDollars.toFixed(0)} (${riskPct}%)  |  R:R ${rr}`;
 }
 
@@ -1183,7 +1146,7 @@ function updateAccount() {
   sEl.style.color = account.sessionPnl >= 0 ? '#4caf82' : '#e05c5c';
   document.getElementById('a-cnt').textContent = account.trades.length;
   const tot = account.wins + account.losses;
-  document.getElementById('a-wr').textContent = tot > 0 ? Math.round(account.wins / tot * 100) + '%' : '—';
+  document.getElementById('a-wr').textContent = tot > 0 ? Math.round(account.wins / tot * 100) + '%' : '-';
 }
 
 function updatePosition() {
@@ -1210,7 +1173,7 @@ function updatePosition() {
   const pc = pnl >= 0 ? '#4caf82' : '#e05c5c';
   const riskPts = Math.abs(entry - sl);
   const riskDollars = riskPts * tpp * tickValue * qty;
-  const rr = riskPts > 0 ? (Math.abs(tp - entry) / riskPts).toFixed(1) : '—';
+  const rr = riskPts > 0 ? (Math.abs(tp - entry) / riskPts).toFixed(1) : '-';
   box.innerHTML = `<div style="font-weight:600;color:${dir === 'long' ? '#4caf82' : '#e05c5c'};margin-bottom:4px">${dir.toUpperCase()} ${qty} @ ${entry.toFixed(2)}</div>`
     + `<div class="acct-row"><span class="acct-label">P/L</span><span style="color:${pc};font-weight:600">${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}</span></div>`
     + `<div class="acct-row"><span class="acct-label">SL</span><span style="color:#e05c5c">${sl.toFixed(2)}</span></div>`
@@ -1226,7 +1189,7 @@ function addLogRow(t) {
   const r = document.createElement('div'); r.className = 'log-row';
   r.innerHTML = `<span style="font-weight:600;color:${t.dir === 'long' ? '#4caf82' : '#e05c5c'}">${t.dir.toUpperCase()} ${t.qty}</span>`
     + `<span style="color:#bbb">${t.entry.toFixed(2)}→${t.exit.toFixed(2)}</span>`
-    + `<span style="color:${pc};font-weight:600">${t.pnl >= 0 ? '+' : ''}$${Math.abs(t.pnl).toFixed(2)}</span>`
+    + `<span style="color:${pc};font-weight:600">$${Math.abs(t.pnl).toFixed(2)}</span>`
     + `<span style="color:#888">${t.reason}</span>`;
   log.prepend(r);
 }
@@ -1237,11 +1200,15 @@ function saveSession() {
   const name = prompt('Session name:', document.getElementById('sim-instrument').value + ' ' + new Date().toLocaleDateString());
   if (!name) return;
   const state = {
-    name, instrument: document.getElementById('sim-instrument').value,
-    candleTF, tickIdx, account: { ...account },
+    name,
+    instrument: document.getElementById('sim-instrument').value,
+    histDays: document.getElementById('sim-hist-days').value,
+    seed: document.getElementById('sim-seed').value,
+    candleTF, tickIdx,
+    account: { ...account },
     position: position ? { ...position } : null,
     pendingOrder: pendingOrder ? { ...pendingOrder } : null,
-    ticks: allTicks, savedAt: new Date().toISOString(),
+    savedAt: new Date().toISOString(),
   };
   const saved = JSON.parse(localStorage.getItem('pf_sessions') || '[]');
   const idx = saved.findIndex(s => s.name === name);
@@ -1267,20 +1234,60 @@ function refreshSavedList() {
   }).join('');
 }
 
-function loadSavedSession(idx) {
+async function loadSavedSession(idx) {
   const saved = JSON.parse(localStorage.getItem('pf_sessions') || '[]');
   const s = saved[idx]; if (!s) return;
   stopPlay();
-  allTicks = s.ticks || []; tickIdx = s.tickIdx || 0; candleTF = s.candleTF || 60;
-  account  = s.account || { balance: 5000, startBal: 5000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
-  position = s.position || null; pendingOrder = s.pendingOrder || null;
+
+  // Set UI to match saved state
   document.getElementById('sim-instrument').value = s.instrument || 'ES';
-  document.getElementById('chart-tf').value = String(candleTF);
+  document.getElementById('sim-hist-days').value  = s.histDays || '5';
+  document.getElementById('sim-seed').value       = s.seed || '';
+  document.getElementById('chart-tf').value       = String(s.candleTF || 60);
+  candleTF = s.candleTF || 60;
+
+  // Regenerate the session from the same seed (deterministic = same data)
+  const inst     = s.instrument || 'ES';
+  const histDays = s.histDays || '5';
+  const seedVal  = s.seed || '';
+
+  document.getElementById('pb-info').textContent = 'Restoring session…';
+  const url = `/api/sim-session?instrument=${inst}&num_hist_days=${histDays}` + (seedVal ? `&seed=${seedVal}` : '');
+  const res  = await fetch(url);
+  const data = await res.json();
+  if (data.error) { alert('Restore failed: ' + data.error); return; }
+
+  allTicks      = data.ticks;
+  tickIdx       = 0;
+  currentCandle = null;
+  tickSize      = data.tick_size || 0.25;
+  tickValue     = data.tick_value || 1.25;
+  window._historyBars = data.history || [];
+  window._sessionStart = 0;
+
+  // Restore account/position state
+  account      = s.account || { balance: 5000, startBal: 5000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
+  position     = s.position || null;
+  pendingOrder = s.pendingOrder || null;
+
   initChart();
-  const history = rebucketHistory(allTicks.slice(0, tickIdx), candleTF);
-  candleSeries.setData(history.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
-  volSeries.setData(history.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
-  if (history.length) currentPrice = history[history.length - 1].close;
+
+  // Load history onto chart
+  const histBucketed = rebucketHistory(window._historyBars, candleTF);
+  if (histBucketed.length) {
+    window._chartData = histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData);
+    volSeries.setData(histBucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
+    currentPrice = histBucketed[histBucketed.length - 1].close;
+  }
+
+  // Fast-forward ticks to saved position
+  const targetIdx = s.tickIdx || 0;
+  for (let i = 0; i < targetIdx && i < allTicks.length; i++) {
+    processTick(allTicks[i]);
+    tickIdx = i + 1;
+  }
+
+  // Restore position lines
   entryLine = slLine = tpLine = pendingLine = null;
   if (position) {
     entryLine = candleSeries.createPriceLine({ price: position.entry, color: '#f0c040', lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: 'Entry' });
@@ -1292,13 +1299,14 @@ function loadSavedSession(idx) {
   } else {
     document.getElementById('btn-long').disabled = document.getElementById('btn-short').disabled = false;
   }
+
   updateAccount(); updatePosition();
   const log = document.getElementById('trade-log');
   log.innerHTML = '';
   if (account.trades?.length) account.trades.forEach(t => addLogRow(t));
   else log.innerHTML = '<div style="font-size:0.72rem;color:#bbb;padding:4px 0">No trades yet</div>';
   chart.timeScale().fitContent();
-  document.getElementById('pb-info').textContent = `Restored — Bar ${tickIdx}/${allTicks.length}`;
+  document.getElementById('pb-info').textContent = `Restored - Bar ${tickIdx}/${allTicks.length}`;
 }
 
 function deleteSavedSession(idx) {
