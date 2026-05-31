@@ -290,7 +290,9 @@ def sim_session():
             'volume': int(row['Volume']),
         })
 
-    ticks = dg.generate_tick_path(session_df, tick_size=profile.tick, seconds_per_candle=60)
+    from tick_engine import generate_tick_path_v2, MicroConfig
+    tick_cfg = MicroConfig(tick_size=profile.tick, seconds_per_candle=60)
+    ticks = generate_tick_path_v2(session_df, tick_size=profile.tick, seconds_per_candle=60, config=tick_cfg)
 
     return jsonify({
         'history':      hist_1min,
