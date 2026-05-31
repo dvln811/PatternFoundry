@@ -316,4 +316,4 @@ def generate_tick_path_v2(ohlc_df, tick_size=0.25, seconds_per_candle=60, config
     raw_ticks = generate_microstructure_ticks(candles, config)
 
     # Return simplified format for frontend compatibility
-    return [{'time': t['time'], 'price': t['price'], 'volume': t['volume']} for t in raw_ticks]
+    return [{'time': t['time'], 'price': t['price'], 'volume': t['volume'], 'bid': t['bid'], 'ask': t['ask']} for t in raw_ticks]

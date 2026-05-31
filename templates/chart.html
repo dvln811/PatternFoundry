@@ -742,7 +742,7 @@ async function loadSession() {
 // ── Tick processing ──────────────────────────────────────────────────────
 function processTick(tick) {
   currentPrice = tick.price;
-  updateDOM(tick.price, tickSize * (1 + Math.random() * 0.5));
+  updateDOM(tick.price, tick.bid && tick.ask ? tick.ask - tick.bid : tickSize);
   const ct = getCandleTime(tick.time);
   if (!currentCandle || currentCandle.time !== ct) {
     currentCandle = { time: ct, open: tick.price, high: tick.price, low: tick.price, close: tick.price, volume: tick.volume };
@@ -1570,21 +1570,21 @@ function updateDOM(price, spread) {
   html += `<div style="text-align:center;padding:2px;background:#1a1a1a;border-bottom:1px solid #333;font-size:0.68rem;color:#f0c040">Spread: ${spread.toFixed(2)}</div>`;
   html += '<div style="display:flex">';
 
-  // Bid side
+  // Bid side - volume decays away from best bid
   html += '<div style="flex:1;border-right:1px solid #2a2a2a">';
   for (let i = 0; i < levels; i++) {
     const p = snap(bid - i * tick);
-    const vol = Math.floor(Math.random() * 40 + 10) * (levels - i);
-    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(76,175,130,${0.12 - i * 0.02})"><span style="color:#4caf82">${vol}</span><span style="color:#ddd">${p.toFixed(2)}</span></div>`;
+    const baseVol = Math.max(5, Math.floor(50 * Math.pow(0.7, i) + Math.random() * 15));
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(76,175,130,${0.12 - i * 0.02})"><span style="color:#4caf82">${baseVol}</span><span style="color:#ddd">${p.toFixed(2)}</span></div>`;
   }
   html += '</div>';
 
-  // Ask side
+  // Ask side - volume decays away from best ask
   html += '<div style="flex:1">';
   for (let i = 0; i < levels; i++) {
     const p = snap(ask + i * tick);
-    const vol = Math.floor(Math.random() * 40 + 10) * (levels - i);
-    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(224,92,92,${0.12 - i * 0.02})"><span style="color:#ddd">${p.toFixed(2)}</span><span style="color:#e05c5c">${vol}</span></div>`;
+    const baseVol = Math.max(5, Math.floor(50 * Math.pow(0.7, i) + Math.random() * 15));
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(224,92,92,${0.12 - i * 0.02})"><span style="color:#ddd">${p.toFixed(2)}</span><span style="color:#e05c5c">${baseVol}</span></div>`;
   }
   html += '</div></div>';
 
