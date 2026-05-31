@@ -190,8 +190,8 @@
       <div id="tick-debug-panel" style="flex:1;background:#0e1217;border:1px solid #1e1e1e;border-radius:6px;padding:8px 10px;font-size:0.72rem;overflow-y:auto;display:none">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           <span style="color:#38bdf8;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em">Tick Engine Preview</span>
-          <button id="tick-play-btn" onclick="runTickPreview()" style="background:transparent;border:1px solid #38bdf8;color:#38bdf8;padding:2px 8px;border-radius:4px;font-size:0.68rem;cursor:pointer">▶ Play</button>
-          <button onclick="stopTickPreview()" style="background:transparent;border:1px solid #2a2a2a;color:#888;padding:2px 8px;border-radius:4px;font-size:0.68rem;cursor:pointer">■ Stop</button>
+          <button id="tick-play-btn" onclick="toggleTickPreview()" style="background:transparent;border:1px solid #38bdf8;color:#38bdf8;padding:2px 8px;border-radius:4px;font-size:0.68rem;cursor:pointer">▶ Play</button>
+          <button onclick="stopTickPreview()" style="background:transparent;border:1px solid #e05c5c55;color:#e05c5c88;padding:2px 8px;border-radius:4px;font-size:0.68rem;cursor:pointer">■ Stop</button>
           <select id="tick-speed" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:2px 6px;border-radius:4px;font-size:0.68rem">
             <option value="0.5">0.5x</option>
             <option value="1">1x</option>
@@ -493,22 +493,22 @@ function rebucket(candles, tf) {
 
 function renderCandles() {
   const tf = parseInt(document.getElementById('tf').value);
-  // Combine historical + played ticks into one array
-  const tickCandles = [];
+  // Rebucket historical
+  const bucketed = rebucket(allCandles, tf);
+  // Rebucket played ticks at current TF
   if (_playedTicks.length) {
     let b = null;
     for (const t of _playedTicks) {
-      const ct = Math.floor(t.time / 60) * 60; // always bucket ticks at 1m first
-      if (!b || b.time !== ct) { if (b) tickCandles.push(b); b = {time:ct, open:t.price, high:t.price, low:t.price, close:t.price, volume:t.volume}; }
+      const ct = Math.floor(t.time / tf) * tf;
+      if (!b || b.time !== ct) { if (b) bucketed.push(b); b = {time:ct, open:t.price, high:t.price, low:t.price, close:t.price, volume:t.volume}; }
       else { b.high = Math.max(b.high, t.price); b.low = Math.min(b.low, t.price); b.close = t.price; b.volume += t.volume; }
     }
-    if (b) tickCandles.push(b);
+    if (b) bucketed.push(b);
   }
-  const all1m = [...allCandles, ...tickCandles];
-  const bucketed = rebucket(all1m, tf);
   window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
   candleSeries.setData(window._chartData);
   volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
+  _tickPreviewCandle = null;
 }
 
 function onTfChange() {
@@ -743,10 +743,7 @@ function startTickPlayback() {
       const t = _tickPreviewData[_tickPreviewIdx++];
       _playedTicks.push(t);
       const tf = parseInt(document.getElementById('tf').value);
-      const ticksPerBar = tf;
-      const barIdx = Math.floor((_tickPreviewIdx - 1) / ticksPerBar);
-      const lastChartTime = window._chartData && window._chartData.length ? window._chartData[window._chartData.length-1].time : 0;
-      const ct = lastChartTime + (barIdx + 1) * tf;
+      const ct = Math.floor(t.time / tf) * tf;
       if (!_tickPreviewCandle || _tickPreviewCandle.time !== ct) {
         if (_tickPreviewCandle) {} // completed candle stays in chart via update()
         _tickPreviewCandle = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
@@ -781,6 +778,21 @@ function startTickPlayback() {
     document.getElementById('td-inst-dir').style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
     document.getElementById('td-candle-num').textContent = Math.ceil(_tickPreviewIdx / 60);
   }, interval);
+}
+
+function toggleTickPreview() {
+  if (_tickPreviewTimer) {
+    // Playing -> pause
+    clearInterval(_tickPreviewTimer); _tickPreviewTimer = null;
+    document.getElementById('tick-play-btn').textContent = '▶ Resume';
+  } else if (_tickPreviewData && _tickPreviewIdx > 0 && _tickPreviewIdx < _tickPreviewData.length) {
+    // Paused -> resume
+    document.getElementById('tick-play-btn').textContent = '⏸ Playing';
+    startTickPlayback();
+  } else {
+    // Fresh start
+    runTickPreview();
+  }
 }
 
 function stopTickPreview() {
