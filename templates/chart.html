@@ -414,6 +414,8 @@
         <button class="pb-btn" onclick="stepTick()" title="Step forward">&#9193;</button>
         <label style="font-size:0.72rem;color:#bbb">Speed</label>
         <select id="pb-speed" style="width:auto;padding:4px 8px;font-size:0.72rem">
+          <option value="0.25">0.25x</option>
+          <option value="0.5">0.5x</option>
           <option value="1">1x</option>
           <option value="5" selected>5x</option>
           <option value="10">10x</option>
@@ -830,7 +832,7 @@ function startPlay() {
   isPlaying = true;
   document.getElementById('pb-play').innerHTML = '&#9208;';
   document.getElementById('pb-play').classList.add('active');
-  const speed = parseInt(document.getElementById('pb-speed').value);
+  const speed = parseFloat(document.getElementById('pb-speed').value);
   playTimer = setInterval(stepTick, Math.max(Math.round(1000 / speed), 16));
 }
 
@@ -850,6 +852,42 @@ document.addEventListener('DOMContentLoaded', () => {
     sel.innerHTML = list.map(c => `<option value="${c.id}">${c.name}${c.kind === 'custom' ? ' (custom)' : ''}</option>`).join('');
   }).catch(() => {
     document.getElementById('sim-instrument').innerHTML = '<option value="ES">ES</option>';
+  });
+
+  // Ctrl+drag zoom-to-selection
+  const chartEl = document.getElementById('sim-chart');
+  let zoomState = null;
+  chartEl.addEventListener('mousedown', (e) => {
+    if (!e.ctrlKey || !chart) return;
+    e.preventDefault();
+    chart.applyOptions({ handleScroll: false, handleScale: false });
+    zoomState = { startX: e.clientX, rect: document.createElement('div') };
+    zoomState.rect.style.cssText = 'position:absolute;top:0;bottom:0;background:rgba(249,115,22,0.1);border-left:1px solid #f97316;border-right:1px solid #f97316;pointer-events:none;z-index:20';
+    zoomState.rect.style.left = (e.clientX - chartEl.getBoundingClientRect().left) + 'px';
+    zoomState.rect.style.width = '0px';
+    chartEl.appendChild(zoomState.rect);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!zoomState) return;
+    const left = chartEl.getBoundingClientRect().left;
+    const x0 = Math.min(zoomState.startX, e.clientX) - left;
+    const w  = Math.abs(e.clientX - zoomState.startX);
+    zoomState.rect.style.left = x0 + 'px';
+    zoomState.rect.style.width = w + 'px';
+  });
+  document.addEventListener('mouseup', (e) => {
+    if (!zoomState) return;
+    const left = chartEl.getBoundingClientRect().left;
+    const x0 = Math.min(zoomState.startX, e.clientX) - left;
+    const x1 = Math.max(zoomState.startX, e.clientX) - left;
+    zoomState.rect.remove();
+    zoomState = null;
+    chart.applyOptions({ handleScroll: true, handleScale: true });
+    if (x1 - x0 < 10) return;
+    const ts = chart.timeScale();
+    const t0 = ts.coordinateToTime(x0);
+    const t1 = ts.coordinateToTime(x1);
+    if (t0 != null && t1 != null) ts.setVisibleRange({ from: t0, to: t1 });
   });
 });
 
