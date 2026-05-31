@@ -433,6 +433,14 @@ loadPreset();
 // ── Chart ─────────────────────────────────────────────────────────────────────
 let chart, candleSeries, volSeries, allCandles = [], abortCtrl = null;
 
+window.addEventListener('beforeunload', (e) => {
+  if (allCandles.length > 0) {
+    e.preventDefault();
+    e.returnValue = 'Unsaved chart data will be lost. Leave anyway?';
+    return e.returnValue;
+  }
+});
+
 function initChart() {
   const el = document.getElementById('chart');
   if (chart) chart.remove();

@@ -411,7 +411,6 @@
       <!-- Playback bar -->
       <div class="playback">
         <button class="pb-btn" id="pb-play" onclick="togglePlay()" title="Play/Pause">&#9654;</button>
-        <button class="pb-btn" onclick="stepTick()" title="Step forward">&#9193;</button>
         <label style="font-size:0.72rem;color:#bbb">Speed</label>
         <select id="pb-speed" style="width:auto;padding:4px 8px;font-size:0.72rem">
           <option value="0.25">0.25x</option>
@@ -507,6 +506,14 @@
 <script>
 // ── State ────────────────────────────────────────────────────────────────
 let chart, candleSeries, volSeries;
+
+window.addEventListener('beforeunload', (e) => {
+  if (allTicks.length > 0 && tickIdx > 0) {
+    e.preventDefault();
+    e.returnValue = 'Active simulator session will be lost. Leave anyway?';
+    return e.returnValue;
+  }
+});
 let allTicks = [], tickIdx = 0;
 let playTimer = null, isPlaying = false;
 let currentPrice = 0, tickSize = 0.25, tickValue = 1.25;
