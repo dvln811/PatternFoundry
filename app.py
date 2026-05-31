@@ -46,7 +46,98 @@ def _resolve_spec(instrument: str):
 
 @app.route('/')
 def index():
-    return render_template('simulator.html')
+    return render_template('chart.html')
+
+
+@app.route('/chartdesigner')
+def chartdesigner():
+    return render_template('chartdesigner.html')
+
+
+@app.route('/api/character/generate', methods=['POST'])
+def character_generate():
+    import copy
+    data = request.get_json()
+    seed_arg = data.get('seed')
+    seed     = int(seed_arg) if seed_arg else random.randrange(0, 1_000_000)
+    n        = int(data.get('n', 1950))
+
+    spec = CharacterSpec(
+        name        = data.get('name', 'Custom'),
+        price_range = (float(data.get('p_lo', 5000)), float(data.get('p_hi', 7000))),
+        tick        = float(data.get('p_tick', 0.25)),
+        regime      = RegimeSpec(mean_duration={
+            'chop': int(data.get('reg_chop', 25)), 'trend_up': int(data.get('reg_trendup', 20)),
+            'trend_down': int(data.get('reg_trenddn', 20)), 'impulse': int(data.get('reg_impulse', 3)), 'gap_hold': 1,
+        }),
+        drift = DriftSpec(
+            chop_sigma=float(data.get('drift_chop_sigma', 0.05)),
+            trend_sigma=float(data.get('drift_trend_sigma', 0.15)),
+            trend_magnitude=float(data.get('drift_trend_mag', 0.3)),
+            impulse_magnitude=float(data.get('drift_impulse_mag', 1.5)),
+            global_bias=float(data.get('drift_global_bias', 0.0)),
+        ),
+        volatility = VolatilitySpec(
+            chop=float(data.get('vol_chop', 1.0)), trend=float(data.get('vol_trend', 2.0)),
+            impulse=float(data.get('vol_impulse', 4.0)), gap_hold=float(data.get('vol_gaphold', 1.5)),
+        ),
+        wick = WickSpec(
+            chop_ratio=float(data.get('wick_chop', 2.0)), trend_ratio=float(data.get('wick_trend', 0.6)),
+            impulse_ratio=float(data.get('wick_impulse', 0.4)), gap_hold_ratio=float(data.get('wick_gaphold', 0.3)),
+            asymmetry=float(data.get('wick_asym', 0.3)),
+        ),
+        volume = VolumeSpec(
+            base=int(data.get('vol_base', 1000)), tod_open_mult=float(data.get('vol_open', 2.2)),
+            tod_midday_mult=float(data.get('vol_midday', 0.8)), tod_close_mult=float(data.get('vol_close', 1.3)),
+            spike_prob=float(data.get('vol_spike_p', 0.1)),
+        ),
+        gap = GapSpec(
+            prob=float(data.get('gap_prob', 0.0)), min_size=float(data.get('gap_min', 0.005)),
+            max_size=float(data.get('gap_max', 0.02)), intraday_prob=float(data.get('gap_intra', 0.0)),
+        ),
+        event = EventSpec(
+            wick_stab_prob=float(data.get('ev_stab_prob', 0.02)),
+            wick_stab_magnitude=float(data.get('ev_stab_mag', 3.0)),
+        ),
+    )
+
+    gap_cfg = extract_gap_cfg(spec)
+    disable_internal_gaps(spec)
+    df      = generate_v2(n, spec, seed=seed)
+    candles = apply_session_structure(df, gap_cfg, tf_seconds=60, seed=seed)
+    return jsonify({'candles': candles, 'seed': seed, 'n': len(candles)})
+
+
+@app.route('/api/character/save', methods=['POST'])
+def character_save():
+    data = request.get_json()
+    name = data.get('name', 'Custom').strip()
+    if not name:
+        return jsonify({'error': 'Name required'}), 400
+    filename = ''.join(c if c.isalnum() or c in '-_ ' else '_' for c in name).strip() + '.json'
+    path = os.path.join('library', 'characters', filename)
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=2)
+    return jsonify({'status': 'ok', 'filename': filename, 'name': name})
+
+
+@app.route('/api/character/list')
+def character_list():
+    items = []
+    for key, spec in CHARACTERS.items():
+        items.append({'id': key, 'name': spec.name, 'kind': 'builtin'})
+    chars_dir = os.path.join('library', 'characters')
+    if os.path.isdir(chars_dir):
+        for fn in sorted(os.listdir(chars_dir)):
+            if not fn.endswith('.json'): continue
+            try:
+                with open(os.path.join(chars_dir, fn)) as f:
+                    d = json.load(f)
+                cid = fn.replace('.json', '')
+                items.append({'id': cid, 'name': d.get('name', cid), 'kind': 'custom'})
+            except Exception:
+                pass
+    return jsonify(items)
 
 
 # ── /api/session — simple candle generation (used by chart.html) ─────────────
@@ -101,8 +192,9 @@ def sim_session():
         target = datetime.strptime(session_date, '%Y-%m-%d').date()
     else:
         target = date.today()
+        from datetime import timedelta
         while target.weekday() >= 5:
-            target = target.replace(day=target.day + 1)
+            target += timedelta(days=1)
 
     # Generate 5-min history (78 candles/day)
     num_5min = num_hist_days * 78

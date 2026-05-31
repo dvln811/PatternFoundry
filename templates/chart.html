@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <script src="/static/indicators.js"></script>
+  <script src="/static/canvas-overlay.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { color-scheme: dark; }
@@ -246,6 +247,7 @@
     <span class="page-title">Simulator</span>
     <nav>
       <a href="/" class="active">Simulator</a>
+      <a href="/chartdesigner">Chart Designer</a>
     </nav>
   </header>
 
@@ -260,12 +262,7 @@
         <div class="sec-body">
           <div class="field">
             <label>Instrument</label>
-            <select id="sim-instrument">
-              <option value="ES">ES</option>
-              <option value="NQ">NQ</option>
-              <option value="GC">GC</option>
-              <option value="CL">CL</option>
-            </select>
+            <select id="sim-instrument"></select>
           </div>
           <div style="display:flex;gap:5px">
             <div class="field" style="flex:1">
@@ -319,8 +316,18 @@
               <input type="number" id="t-qty" value="1" min="1" max="100">
             </div>
             <div class="field" style="flex:1">
-              <label>Entry <span style="font-size:0.58rem;color:#888">(blank=mkt)</span></label>
-              <input type="number" id="t-entry" step="0.25" placeholder="Market">
+              <label>Type</label>
+              <select id="t-order-type" onchange="onOrderTypeChange()">
+                <option value="market">Market</option>
+                <option value="limit">Limit</option>
+                <option value="stop-limit">Stop-Limit</option>
+              </select>
+            </div>
+          </div>
+          <div id="entry-price-row" style="display:none">
+            <div class="field">
+              <label>Entry Price</label>
+              <input type="number" id="t-entry" step="0.25" placeholder="Price">
             </div>
           </div>
           <div style="display:flex;gap:5px">
@@ -406,6 +413,7 @@
           <option value="30">30x</option>
           <option value="60">60x</option>
         </select>
+        <button onclick="toggleDOM()" title="Depth of Market" style="background:#1a1a1a;border:1px solid #f0c040;color:#f0c040;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">DOM</button>
         <span class="pb-info" id="pb-info">Load a session to begin</span>
       </div>
 
@@ -421,14 +429,25 @@
           <option value="bbands">BBands</option>
           <option value="atr">ATR</option>
         </select>
-        <span id="ind-params">
+        <span id="ind-params" style="display:none">
           <input type="number" id="ind-period" value="20" min="1" max="500" placeholder="Period">
         </span>
-        <button class="ind-add-btn" onclick="addIndicator()">Add</button>
-        <div class="tb-sep"></div>
-        <button class="ind-add-btn" onclick="toggleDOM()" style="border-color:#f0c040;color:#f0c040">DOM</button>
+        <button class="ind-add-btn" onclick="addIndicator()">+</button>
         <div class="tb-sep"></div>
         <div id="ind-chips" style="display:flex;flex-wrap:wrap;gap:2px"></div>
+      </div>
+
+      <!-- Drawing toolbar -->
+      <div class="ind-toolbar" style="gap:3px">
+        <button class="ind-add-btn" data-draw-tool="line" onclick="setDrawTool('line')" title="Line">╱</button>
+        <button class="ind-add-btn" data-draw-tool="hline" onclick="setDrawTool('hline')" title="Horizontal">―</button>
+        <button class="ind-add-btn" data-draw-tool="rect" onclick="setDrawTool('rect')" title="Rectangle">▭</button>
+        <button class="ind-add-btn" data-draw-tool="fib" onclick="setDrawTool('fib')" title="Fib Retracement">Fib</button>
+        <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" title="Long Position" style="color:#4caf82;border-color:#4caf82">▲</button>
+        <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" title="Short Position" style="color:#e05c5c;border-color:#e05c5c">▼</button>
+        <input type="color" id="draw-color" value="#f0c040" onchange="if(drawMgr)drawMgr.setColor(this.value)" style="width:24px;height:24px;border:1px solid #2a2a2a;border-radius:4px;background:#1a1a1a;cursor:pointer;padding:0">
+        <button class="ind-add-btn" onclick="setDrawTool(null)" title="Cancel">✕</button>
+        <button class="ind-add-btn" onclick="if(drawMgr)drawMgr.clear()" title="Clear all" style="color:#e05c5c;border-color:#e05c5c">Clear</button>
       </div>
 
       <!-- Chart -->
@@ -439,8 +458,15 @@
             <option value="300">5m</option>
             <option value="900">15m</option>
             <option value="3600">1H</option>
+            <option value="14400">4H</option>
+            <option value="86400">1D</option>
+            <option value="604800">1W</option>
+            <option value="2592000">1M</option>
           </select>
-          <span id="chart-overlay-tr" style="font-size:0.78rem;color:#ddd;font-family:monospace;pointer-events:none"></span>
+          <div style="display:flex;flex-direction:column;line-height:1.2;font-family:monospace;pointer-events:none">
+            <span id="chart-overlay-tr" style="font-size:0.78rem;color:#ddd"></span>
+            <span id="candle-countdown" style="font-size:0.72rem;color:#888"></span>
+          </div>
         </div>
         <div id="sim-readout" style="position:absolute;top:46px;left:10px;z-index:9;pointer-events:none;font-family:monospace;font-size:0.72rem;color:#ddd;background:rgba(14,18,23,0.75);border:1px solid #222;border-radius:4px;padding:4px 8px;display:none;line-height:1.5"></div>
       </div>
@@ -475,6 +501,18 @@ let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
 let setupMode = null;
 let setupEntryLine = null, setupSlLine = null, setupTpLine = null;
 let posDragState = null;
+let drawMgr = null;
+
+function setDrawTool(tool) {
+  if (!drawMgr) return;
+  drawMgr.setColor(document.getElementById('draw-color').value);
+  drawMgr.setTool(tool);
+  // Highlight active tool button
+  document.querySelectorAll('[data-draw-tool]').forEach(b => {
+    b.style.background = (tool && b.dataset.drawTool === tool) ? '#f9731630' : '';
+    b.style.borderColor = (tool && b.dataset.drawTool === tool) ? '#f97316' : '';
+  });
+}
 
 // ── Chart init ───────────────────────────────────────────────────────────
 function initChart() {
@@ -507,18 +545,43 @@ function initChart() {
     if (!ro || !param || !param.time || !param.seriesData) { if (ro) ro.style.display = 'none'; return; }
     const bar = param.seriesData.get(candleSeries);
     if (!bar) { ro.style.display = 'none'; return; }
+    const volBar = param.seriesData.get(volSeries);
     const d = new Date(param.time * 1000);
     const ts = `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
     const chg = bar.close - bar.open;
+    const pct = (chg / bar.open * 100).toFixed(2);
+    const dir = chg >= 0 ? '+' : '';
     const col = chg >= 0 ? '#4caf82' : '#e05c5c';
+    const volStr = volBar && typeof volBar.value === 'number' ? volBar.value.toLocaleString() : '—';
+    // Indicator values at this bar
+    let indHtml = '';
+    if (activeIndicators && activeIndicators.length) {
+      for (const ind of activeIndicators) {
+        if (!ind.series) continue;
+        for (const s of ind.series) {
+          const v = param.seriesData.get(s);
+          if (!v) continue;
+          const val = v.value !== undefined ? v.value : v.close;
+          if (typeof val !== 'number') continue;
+          indHtml += `<span style="color:${ind.color};margin-left:8px">${ind.label}:<b>${val.toFixed(2)}</b></span>`;
+          break;
+        }
+      }
+    }
     ro.innerHTML = `<span style="color:#888">${ts}</span>  `
       + `O <b style="color:${col}">${bar.open.toFixed(2)}</b>  `
       + `H <b style="color:${col}">${bar.high.toFixed(2)}</b>  `
       + `L <b style="color:${col}">${bar.low.toFixed(2)}</b>  `
       + `C <b style="color:${col}">${bar.close.toFixed(2)}</b>  `
-      + `<span style="color:${col}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}</span>`;
+      + `<span style="color:${col}">${dir}${chg.toFixed(2)} (${dir}${pct}%)</span>  `
+      + `<span style="color:#888">Vol <b style="color:${col}">${volStr}</b></span>`
+      + indHtml;
     ro.style.display = '';
   });
+
+  // Init drawing overlay
+  if (drawMgr) drawMgr.destroy();
+  drawMgr = new CanvasOverlay(chart, candleSeries, document.getElementById('sim-chart'));
 }
 
 // ── Session loading ──────────────────────────────────────────────────────
@@ -527,28 +590,40 @@ function getCandleTime(ts) {
 }
 
 function rebucketHistory(candles, tf) {
-  if (tf <= 60) return candles;
-  const result = [];
-  let bucket = null;
-  for (const c of candles) {
-    const bt = Math.floor(c.time / tf) * tf;
-    if (!bucket || bucket.time !== bt) {
-      if (bucket) result.push(bucket);
-      bucket = { time: bt, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume };
-    } else {
-      bucket.high = Math.max(bucket.high, c.high);
-      bucket.low  = Math.min(bucket.low,  c.low);
-      bucket.close = c.close;
-      bucket.volume += c.volume;
+  let result;
+  if (tf <= 60) {
+    result = candles.map(c => ({...c}));
+  } else {
+    result = [];
+    let bucket = null;
+    for (const c of candles) {
+      const bt = Math.floor(c.time / tf) * tf;
+      if (!bucket || bucket.time !== bt) {
+        if (bucket) result.push(bucket);
+        bucket = { time: bt, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume };
+      } else {
+        bucket.high = Math.max(bucket.high, c.high);
+        bucket.low  = Math.min(bucket.low,  c.low);
+        bucket.close = c.close;
+        bucket.volume += c.volume;
+      }
+    }
+    if (bucket) result.push(bucket);
+  }
+  // Re-index sequentially to eliminate gaps (overnight, weekends)
+  if (result.length > 1) {
+    const step = Math.max(tf, 60);
+    const baseTime = result[0].time;
+    for (let i = 0; i < result.length; i++) {
+      result[i].time = baseTime + i * step;
     }
   }
-  if (bucket) result.push(bucket);
   return result;
 }
 
 async function loadSession() {
   stopPlay();
-  const inst    = document.getElementById('sim-instrument').value;
+  const inst     = document.getElementById('sim-instrument').value;
   const histDays = document.getElementById('sim-hist-days').value;
   const seedVal  = document.getElementById('sim-seed').value.trim();
   candleTF = parseInt(document.getElementById('chart-tf').value);
@@ -556,17 +631,23 @@ async function loadSession() {
   document.getElementById('chart-overlay').classList.remove('hidden');
   document.getElementById('load-text').textContent = 'Generating session…';
 
-  const url = `/api/session?instrument=${inst}&timeframe=1&history_days=${histDays}` + (seedVal ? `&seed=${seedVal}` : '');
+  const url = `/api/sim-session?instrument=${inst}&num_hist_days=${histDays}` + (seedVal ? `&seed=${seedVal}` : '');
   const res  = await fetch(url);
   const data = await res.json();
 
-  if (seedVal === '') document.getElementById('sim-seed').value = data.seed;
+  if (data.error) {
+    document.getElementById('load-text').textContent = 'Error: ' + data.error;
+    return;
+  }
 
-  allTicks   = data.candles; // 1-min bars as "ticks"
-  tickIdx    = 0;
+  if (seedVal === '') document.getElementById('sim-seed').value = data.seed || '';
+
+  // /api/sim-session returns { history: [...1-min candles], ticks: [...second-by-second] }
+  allTicks      = data.ticks;   // second-by-second {time, price, volume}
+  tickIdx       = 0;
   currentCandle = null;
-  tickSize   = { ES: 0.25, NQ: 0.25, GC: 0.10, CL: 0.01 }[inst] || 0.25;
-  tickValue  = 1.25;
+  tickSize      = data.tick_size  || 0.25;
+  tickValue     = data.tick_value || 1.25;
 
   account = {
     balance: parseFloat(document.getElementById('start-bal').value) || 5000,
@@ -580,41 +661,37 @@ async function loadSession() {
 
   initChart();
 
-  // Split: history = everything before the live session, session = last 390 bars
-  const sessionStart = data.session_start_idx || (allTicks.length - 390);
-  window._sessionStart = Math.max(0, sessionStart);
-  window._historyBars  = allTicks.slice(0, window._sessionStart);
-  tickIdx = window._sessionStart; // start playback at session open
+  // History is pre-built 1-min candles — load statically onto chart
+  window._historyBars = data.history || [];
+  window._sessionStart = 0; // ticks start at session open, no offset needed
 
-  // Load history onto chart (static, already complete)
-  const historyBucketed = rebucketHistory(window._historyBars, candleTF);
-  if (historyBucketed.length) {
-    candleSeries.setData(historyBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
-    volSeries.setData(historyBucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
-    currentPrice = historyBucketed[historyBucketed.length - 1].close;
+  const histBucketed = rebucketHistory(window._historyBars, candleTF);
+  if (histBucketed.length) {
+    candleSeries.setData(histBucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
+    volSeries.setData(histBucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
+    currentPrice = histBucketed[histBucketed.length - 1].close;
   }
 
-  // Compute indicators over full history so they appear on chart from the start
   if (activeIndicators.length) recomputeIndicators();
 
   document.getElementById('btn-long').disabled  = false;
   document.getElementById('btn-short').disabled = false;
   document.getElementById('chart-overlay').classList.add('hidden');
-  document.getElementById('pb-info').textContent = `Ready — ${allTicks.length - window._sessionStart} session bars · seed ${data.seed}`;
+  document.getElementById('pb-info').textContent = `Ready — ${allTicks.length} ticks · ${data.session_date || ''}`;
   chart.timeScale().fitContent();
 }
 
 // ── Tick processing ──────────────────────────────────────────────────────
 function processTick(tick) {
-  currentPrice = tick.close;
-  updateDOM(tick.close, tickSize * (1 + Math.random() * 0.5));
+  currentPrice = tick.price;
+  updateDOM(tick.price, tickSize * (1 + Math.random() * 0.5));
   const ct = getCandleTime(tick.time);
   if (!currentCandle || currentCandle.time !== ct) {
-    currentCandle = { time: ct, open: tick.open, high: tick.high, low: tick.low, close: tick.close, volume: tick.volume };
+    currentCandle = { time: ct, open: tick.price, high: tick.price, low: tick.price, close: tick.price, volume: tick.volume };
   } else {
-    currentCandle.high  = Math.max(currentCandle.high, tick.high);
-    currentCandle.low   = Math.min(currentCandle.low,  tick.low);
-    currentCandle.close = tick.close;
+    currentCandle.high   = Math.max(currentCandle.high, tick.price);
+    currentCandle.low    = Math.min(currentCandle.low,  tick.price);
+    currentCandle.close  = tick.price;
     currentCandle.volume += tick.volume;
   }
   candleSeries.update({ time: currentCandle.time, open: currentCandle.open, high: currentCandle.high, low: currentCandle.low, close: currentCandle.close });
@@ -623,7 +700,7 @@ function processTick(tick) {
   // Pending order trigger
   if (pendingOrder && !position) {
     const po = pendingOrder;
-    const triggered = (po.direction === 'long' && tick.close >= po.entry) || (po.direction === 'short' && tick.close <= po.entry);
+    const triggered = (po.direction === 'long' && tick.price >= po.entry) || (po.direction === 'short' && tick.price <= po.entry);
     if (triggered) {
       if (pendingLine) { candleSeries.removePriceLine(pendingLine); pendingLine = null; }
       if (slLine) { candleSeries.removePriceLine(slLine); slLine = null; }
@@ -643,10 +720,10 @@ function processTick(tick) {
   // SL/TP check
   if (position) {
     const dir = position.direction;
-    if (dir === 'long'  && tick.low  <= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
-    if (dir === 'long'  && tick.high >= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
-    if (dir === 'short' && tick.high >= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
-    if (dir === 'short' && tick.low  <= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
+    if (dir === 'long'  && tick.price <= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
+    if (dir === 'long'  && tick.price >= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
+    if (dir === 'short' && tick.price >= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
+    if (dir === 'short' && tick.price <= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
     updateAccount(); updatePosition();
   }
 }
@@ -669,8 +746,20 @@ function stepTick() {
   const d = new Date(allTicks[tickIdx - 1].time * 1000);
   document.getElementById('chart-overlay-tr').textContent =
     `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
-  // Keep chart scrolled to current bar
-  chart.timeScale().scrollToRealTime();
+  // Candle time remaining
+  const tickTime = allTicks[tickIdx - 1].time;
+  const candleEnd = getCandleTime(tickTime) + candleTF;
+  const remain = Math.max(0, candleEnd - tickTime);
+  const tfLabel = document.getElementById('chart-tf').selectedOptions[0].text;
+  let cdText;
+  if (candleTF >= 3600) {
+    cdText = `${tfLabel}  ${String(Math.floor(remain/3600)).padStart(2,'0')}:${String(Math.floor((remain%3600)/60)).padStart(2,'0')}:${String(remain%60).padStart(2,'0')}`;
+  } else {
+    cdText = `${tfLabel}  ${String(Math.floor(remain/60)).padStart(2,'0')}:${String(remain%60).padStart(2,'0')}`;
+  }
+  const cdEl = document.getElementById('candle-countdown');
+  cdEl.textContent = cdText;
+  cdEl.style.color = currentCandle && currentCandle.close >= currentCandle.open ? '#4caf82' : '#e05c5c';
 }
 
 function togglePlay() { isPlaying ? stopPlay() : startPlay(); }
@@ -696,6 +785,13 @@ function stopPlay() {
 document.addEventListener('DOMContentLoaded', () => {
   initChart();
   refreshSavedList();
+  // Populate instrument dropdown from character list
+  fetch('/api/character/list').then(r => r.json()).then(list => {
+    const sel = document.getElementById('sim-instrument');
+    sel.innerHTML = list.map(c => `<option value="${c.id}">${c.name}${c.kind === 'custom' ? ' (custom)' : ''}</option>`).join('');
+  }).catch(() => {
+    document.getElementById('sim-instrument').innerHTML = '<option value="ES">ES</option>';
+  });
 });
 
 document.getElementById('pb-speed').addEventListener('change', () => { if (isPlaying) { stopPlay(); startPlay(); } });
@@ -703,36 +799,57 @@ document.getElementById('chart-tf').addEventListener('change', () => {
   const wasPlaying = isPlaying;
   if (wasPlaying) stopPlay();
   candleTF = parseInt(document.getElementById('chart-tf').value);
-  currentCandle = null; // force rebuild of in-progress candle
+  currentCandle = null;
 
-  if (allTicks.length) {
-    const sessionStart = window._sessionStart || 0;
-    const histBars = window._historyBars || [];
-    const playedBars = allTicks.slice(sessionStart, tickIdx);
-    const allSoFar = [...histBars, ...playedBars];
+  // Rebuild chart from history + played ticks
+  initChart();
+  const histBars = window._historyBars || [];
+  const playedCandles = [];
+  let pb = null;
+  for (let i = 0; i < tickIdx; i++) {
+    const t = allTicks[i];
+    const ct = (Math.floor(t.time / 60)) * 60;
+    if (!pb || pb.time !== ct) {
+      if (pb) playedCandles.push(pb);
+      pb = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+    } else {
+      pb.high = Math.max(pb.high, t.price); pb.low = Math.min(pb.low, t.price);
+      pb.close = t.price; pb.volume += t.volume;
+    }
+  }
+  if (pb) playedCandles.push(pb);
+
+  const allSoFar = [...histBars, ...playedCandles];
+  if (allSoFar.length) {
     const bucketed = rebucketHistory(allSoFar, candleTF);
     candleSeries.setData(bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
     volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
-    if (activeIndicators.length) recomputeIndicators();
+    if (activeIndicators.length) rebuildIndicators();
     chart.timeScale().fitContent();
   }
   if (wasPlaying) startPlay();
 });
 
 // ── Trading ──────────────────────────────────────────────────────────────
+function onOrderTypeChange() {
+  const type = document.getElementById('t-order-type').value;
+  document.getElementById('entry-price-row').style.display = type === 'market' ? 'none' : 'block';
+}
+
 function placeTrade(dir) {
   if (position || pendingOrder || setupMode) return;
   if (!currentPrice) return;
-  const qty = parseInt(document.getElementById('t-qty').value) || 1;
-  const entryIn = document.getElementById('t-entry').value;
-  const slIn    = document.getElementById('t-sl').value;
-  const tpIn    = document.getElementById('t-tp').value;
-  let entry = entryIn ? parseFloat(entryIn) : currentPrice;
+  const qty      = parseInt(document.getElementById('t-qty').value) || 1;
+  const orderType = document.getElementById('t-order-type').value;
+  const entryIn  = document.getElementById('t-entry').value;
+  const slIn     = document.getElementById('t-sl').value;
+  const tpIn     = document.getElementById('t-tp').value;
+  let entry = (orderType === 'market' || !entryIn) ? currentPrice : parseFloat(entryIn);
   let sl, tp;
   if (dir === 'long')  { sl = slIn ? parseFloat(slIn) : entry - 4; tp = tpIn ? parseFloat(tpIn) : entry + 8; }
   else                 { sl = slIn ? parseFloat(slIn) : entry + 4; tp = tpIn ? parseFloat(tpIn) : entry - 8; }
 
-  setupMode = { direction: dir, entry, sl, tp, qty, dragging: null };
+  setupMode = { direction: dir, entry, sl, tp, qty, orderType, dragging: null };
   setupEntryLine = candleSeries.createPriceLine({ price: entry, color: '#f0c040', lineWidth: 2, lineStyle: 1, axisLabelVisible: true, title: 'Entry' });
   setupSlLine    = candleSeries.createPriceLine({ price: sl,    color: '#e05c5c', lineWidth: 2, lineStyle: 1, axisLabelVisible: true, title: 'SL' });
   setupTpLine    = candleSeries.createPriceLine({ price: tp,    color: '#4caf82', lineWidth: 2, lineStyle: 1, axisLabelVisible: true, title: 'TP' });
@@ -821,10 +938,10 @@ function _clearSetupLines() {
 
 function confirmOrder() {
   if (!setupMode) return;
-  const { direction: dir, entry, sl, tp, qty } = setupMode;
+  const { direction: dir, entry, sl, tp, qty, orderType } = setupMode;
   _clearSetupLines();
+  const isMarket = orderType === 'market' || Math.abs(entry - currentPrice) < tickSize * 2;
   setupMode = null;
-  const isMarket = Math.abs(entry - currentPrice) < tickSize * 2;
   if (isMarket) {
     position = { direction: dir, entry: currentPrice, qty, sl, tp };
     entryLine = candleSeries.createPriceLine({ price: currentPrice, color: '#f0c040', lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: 'Entry' });
@@ -905,11 +1022,18 @@ function attachPositionDrag() {
     } catch(ex) {}
   };
   posDragState.onMouseMove = (e) => {
-    const t = _t(); if (!t || !posDragState.dragging) return;
+    const t = _t(); if (!t) return;
     const rect = chartEl.getBoundingClientRect();
     try {
       const price = candleSeries.coordinateToPrice(e.clientY - rect.top);
       if (!price) return;
+      if (!posDragState.dragging) {
+        // Show resize cursor when hovering near SL/TP
+        const dS = Math.abs(price - t.sl), dT = Math.abs(price - t.tp);
+        const thr = Math.abs(t.entry - t.sl) * 0.15;
+        chartEl.style.cursor = Math.min(dS, dT) < thr ? 'ns-resize' : '';
+        return;
+      }
       const snapped = Math.round(price / tickSize) * tickSize;
       if (posDragState.dragging === 'sl') {
         t.sl = snapped;
@@ -926,6 +1050,7 @@ function attachPositionDrag() {
   posDragState.onMouseUp = () => {
     if (posDragState) posDragState.dragging = null;
     chart.applyOptions({ handleScroll: true, handleScale: true });
+    chartEl.style.cursor = '';
   };
   chartEl.addEventListener('mousedown', posDragState.onMouseDown);
   document.addEventListener('mousemove', posDragState.onMouseMove);
@@ -1117,23 +1242,38 @@ let indColorIdx = 0;
 const IND_COLORS = ['#f0c040','#a78bfa','#38bdf8','#fb923c','#f472b6','#34d399','#818cf8','#fbbf24'];
 
 function buildAllCandles() {
-  // Full history + played session bars → indicators cover the whole chart
+  // Build candle array matching what's currently on the chart (same TF, same timestamps)
   const histBars = window._historyBars || [];
-  const sessionStart = window._sessionStart || 0;
-  const playedBars = allTicks.slice(sessionStart, tickIdx);
-  allCandles = [...histBars, ...playedBars].map(c => ({
-    time: c.time, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume,
-  }));
+  // Aggregate played ticks into 1-min candles
+  const playedCandles = [];
+  let pb = null;
+  for (let i = 0; i < tickIdx; i++) {
+    const t = allTicks[i];
+    const ct = (Math.floor(t.time / 60)) * 60;
+    if (!pb || pb.time !== ct) {
+      if (pb) playedCandles.push(pb);
+      pb = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+    } else {
+      pb.high = Math.max(pb.high, t.price);
+      pb.low  = Math.min(pb.low,  t.price);
+      pb.close = t.price;
+      pb.volume += t.volume;
+    }
+  }
+  if (pb) playedCandles.push(pb);
+  // Rebucket to current TF (same function the chart uses, with sequential timestamps)
+  allCandles = rebucketHistory([...histBars, ...playedCandles], candleTF);
 }
 
 function onIndSelectChange() {
   const type = document.getElementById('ind-select').value;
   const paramsEl = document.getElementById('ind-params');
-  const noParams = ['vwap', 'macd'];
+  const noParams = ['vwap', 'macd', ''];
   const defaults = { sma: 20, ema: 20, rsi: 14, bbands: 20, atr: 14 };
-  if (noParams.includes(type) || !type) {
-    paramsEl.innerHTML = '';
+  if (noParams.includes(type)) {
+    paramsEl.style.display = 'none';
   } else {
+    paramsEl.style.display = '';
     paramsEl.innerHTML = `<input type="number" id="ind-period" value="${defaults[type] || 20}" min="1" max="500" placeholder="Period">`;
   }
 }
@@ -1214,6 +1354,47 @@ function recomputeIndicators() {
     else if (ind.type === 'vwap')    { ind.series[0]?.setData(Indicators.vwap(allCandles)); }
     else { ind.series[0]?.setData(Indicators[ind.type](allCandles, ind.period)); }
   }
+}
+
+function rebuildIndicators() {
+  // Re-create indicator series on the current chart after initChart() destroyed them
+  buildAllCandles();
+  const saved = activeIndicators.map(i => ({ type: i.type, period: i.period, color: i.color, label: i.label }));
+  activeIndicators = [];
+  for (const si of saved) {
+    const ind = { id: Date.now() + Math.random(), type: si.type, period: si.period, color: si.color, label: si.label, series: [] };
+    if (si.type === 'macd') {
+      const d = Indicators.macd(allCandles, 12, 26, 9);
+      const scaleId = 'macd_' + ind.id;
+      const s1 = chart.addLineSeries({ color: '#38bdf8', lineWidth: 1, priceLineVisible: false, lastValueVisible: true, title: 'MACD', priceScaleId: scaleId });
+      const s2 = chart.addLineSeries({ color: '#fb923c', lineWidth: 1, priceLineVisible: false, lastValueVisible: true, title: 'Signal', priceScaleId: scaleId });
+      const s3 = chart.addHistogramSeries({ priceScaleId: scaleId, priceLineVisible: false, lastValueVisible: false });
+      chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+      s1.setData(d.macd); s2.setData(d.signal); s3.setData(d.histogram);
+      ind.series = [s1, s2, s3];
+    } else if (si.type === 'bbands') {
+      const d = Indicators.bbands(allCandles, si.period, 2);
+      const s1 = chart.addLineSeries({ color: si.color, lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
+      const s2 = chart.addLineSeries({ color: si.color + '88', lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false });
+      const s3 = chart.addLineSeries({ color: si.color, lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
+      s1.setData(d.upper); s2.setData(d.mid); s3.setData(d.lower);
+      ind.series = [s1, s2, s3];
+    } else if (si.type === 'rsi' || si.type === 'atr') {
+      const d = si.type === 'rsi' ? Indicators.rsi(allCandles, si.period) : Indicators.atr(allCandles, si.period);
+      const scaleId = si.type + '_' + ind.id;
+      const s = chart.addLineSeries({ color: si.color, lineWidth: 1, priceLineVisible: false, lastValueVisible: true, title: si.label, priceScaleId: scaleId });
+      chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+      s.setData(d);
+      ind.series = [s];
+    } else {
+      const d = si.type === 'vwap' ? Indicators.vwap(allCandles) : Indicators[si.type](allCandles, si.period);
+      const s = chart.addLineSeries({ color: si.color, lineWidth: 1, priceLineVisible: false, lastValueVisible: true, title: si.label });
+      s.setData(d);
+      ind.series = [s];
+    }
+    activeIndicators.push(ind);
+  }
+  renderIndChips();
 }
 
 // ── DOM (Depth of Market) ─────────────────────────────────────────────────
