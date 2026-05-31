@@ -169,13 +169,53 @@
         <input type="number" id="seed" placeholder="random" style="width:80px">
         <button onclick="document.getElementById('seed').value=Math.floor(Math.random()*1000000)" style="background:transparent;border:1px solid #2a2a2a;color:#888;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:0.7rem">🎲</button>
       </label>
-      <button onclick="if(chart)chart.timeScale().fitContent()" style="background:transparent;border:1px solid #2a2a2a;color:#bbb;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.72rem">⊙ Reset</button>
+      <button onclick="resetView()" style="background:transparent;border:1px solid #2a2a2a;color:#bbb;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.72rem">⊙ Reset</button>
     </div>
     <div id="chart" style="position:relative">
       <div id="chart-readout" style="position:absolute;top:8px;left:10px;z-index:9;pointer-events:none;font-family:monospace;font-size:0.72rem;color:#ddd;background:rgba(14,18,23,0.75);border:1px solid #222;border-radius:4px;padding:4px 8px;display:none;line-height:1.5"></div>
       <div id="chart-overlay" style="position:absolute;inset:0;background:rgba(13,13,13,0.85);display:none;align-items:center;justify-content:center;z-index:10;flex-direction:column;gap:10px">
         <div style="width:32px;height:32px;border:3px solid #2a2a2a;border-top-color:#4caf82;border-radius:50%;animation:spin 0.8s linear infinite"></div>
-        <div style="font-size:0.82rem;color:#bbb">Generating...</div>
+        <div id="gen-progress" style="font-size:0.82rem;color:#f97316">Generating...</div>
+      </div>
+    </div>
+
+    <!-- Stats + Tick Debug Panel -->
+    <div style="display:flex;gap:8px;margin-top:8px;flex-shrink:0;max-height:180px;overflow:hidden">
+      <!-- Regime Stats -->
+      <div id="stats-panel" style="flex:1;background:#0e1217;border:1px solid #1e1e1e;border-radius:6px;padding:8px 10px;font-size:0.72rem;overflow-y:auto;display:none">
+        <div style="color:#f97316;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Generation Stats</div>
+        <div id="stats-content" style="color:#bbb"></div>
+      </div>
+      <!-- Tick Engine Debug -->
+      <div id="tick-debug-panel" style="flex:1;background:#0e1217;border:1px solid #1e1e1e;border-radius:6px;padding:8px 10px;font-size:0.72rem;overflow-y:auto;display:none">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="color:#38bdf8;font-weight:600;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em">Tick Engine Preview</span>
+          <button id="tick-play-btn" onclick="runTickPreview()" style="background:transparent;border:1px solid #38bdf8;color:#38bdf8;padding:2px 8px;border-radius:4px;font-size:0.68rem;cursor:pointer">▶ Play</button>
+          <button onclick="stopTickPreview()" style="background:transparent;border:1px solid #2a2a2a;color:#888;padding:2px 8px;border-radius:4px;font-size:0.68rem;cursor:pointer">■ Stop</button>
+          <select id="tick-speed" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:2px 6px;border-radius:4px;font-size:0.68rem">
+            <option value="0.5">0.5x</option>
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="5" selected>5x</option>
+            <option value="10">10x</option>
+            <option value="30">30x</option>
+            <option value="60">60x</option>
+          </select>
+        </div>
+        <div id="tick-debug-content" style="color:#bbb;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+          <div>Price: <b id="td-price" style="color:#ddd">-</b></div>
+          <div>Bid: <b id="td-bid" style="color:#4caf82">-</b></div>
+          <div>Ask: <b id="td-ask" style="color:#e05c5c">-</b></div>
+          <div>Spread: <b id="td-spread" style="color:#f0c040">-</b></div>
+          <div>Imbalance: <b id="td-imbalance" style="color:#38bdf8">-</b></div>
+          <div>Hawkes: <b id="td-hawkes" style="color:#888">-</b></div>
+          <div>Inst: <b id="td-inst" style="color:#555">-</b></div>
+          <div>Tick: <span id="td-tick-num" style="color:#888">-</span></div>
+          <div>Vol: <b id="td-vol" style="color:#888">-</b></div>
+        </div>
+        <div id="td-bar" style="margin-top:6px;height:4px;background:#1a1a1a;border-radius:2px;overflow:hidden">
+          <div id="td-bar-fill" style="height:100%;width:0%;background:#38bdf8;transition:width 0.1s"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -348,7 +388,7 @@ function setSlider(id, val) {
   document.getElementById(id + '-val').textContent = parseFloat(val).toFixed(decimals);
 }
 
-function getSlider(id) { return parseFloat(document.getElementById(id).value); }
+function getSlider(id) { const el = document.getElementById(id); return el ? parseFloat(el.value) : 0; }
 
 // ── Preset data ───────────────────────────────────────────────────────────────
 const PRESETS = {
@@ -436,25 +476,50 @@ function initChart() {
 
 function rebucket(candles, tf) {
   if (tf <= 60) return candles;
-  const out = []; let b = null;
-  for (const c of candles) {
-    const bt = Math.floor(c.time / tf) * tf;
-    if (!b || b.time !== bt) { if (b) out.push(b); b = { time: bt, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume }; }
-    else { b.high = Math.max(b.high, c.high); b.low = Math.min(b.low, c.low); b.close = c.close; b.volume += c.volume; }
+  const factor = {300:5, 900:15, 3600:60, 14400:240, 86400:1250, 604800:6250, 2592000:26250}[tf] || Math.round(tf/60);
+  const out = [];
+  for (let i = 0; i < candles.length; i += factor) {
+    const chunk = candles.slice(i, i + factor);
+    if (!chunk.length) continue;
+    let h = chunk[0].high, l = chunk[0].low, v = 0;
+    for (const c of chunk) { if (c.high > h) h = c.high; if (c.low < l) l = c.low; v += (c.volume||0); }
+    out.push({ time: chunk[0].time, open: chunk[0].open, high: h, low: l, close: chunk[chunk.length-1].close, volume: v });
   }
-  if (b) out.push(b);
   return out;
 }
 
 function renderCandles() {
   const tf = parseInt(document.getElementById('tf').value);
-  const bucketed = rebucket(allCandles, tf);
-  candleSeries.setData(bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })));
+  // Combine historical + played ticks into one array
+  const tickCandles = [];
+  if (_playedTicks.length) {
+    let b = null;
+    for (const t of _playedTicks) {
+      const ct = Math.floor(t.time / 60) * 60; // always bucket ticks at 1m first
+      if (!b || b.time !== ct) { if (b) tickCandles.push(b); b = {time:ct, open:t.price, high:t.price, low:t.price, close:t.price, volume:t.volume}; }
+      else { b.high = Math.max(b.high, t.price); b.low = Math.min(b.low, t.price); b.close = t.price; b.volume += t.volume; }
+    }
+    if (b) tickCandles.push(b);
+  }
+  const all1m = [...allCandles, ...tickCandles];
+  const bucketed = rebucket(all1m, tf);
+  window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
+  candleSeries.setData(window._chartData);
   volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
-  chart.timeScale().fitContent();
 }
 
-function onTfChange() { if (allCandles.length) renderCandles(); }
+function onTfChange() {
+  renderCandles();
+}
+
+function resetView() {
+  if (!chart || !window._chartData || !window._chartData.length) return;
+  const n = window._chartData.length;
+  // Show last 30 bars on the left half, 30 bars of empty space on right half
+  // Logical range: bars are indexed 0..n-1, values > n-1 are empty space
+  chart.timeScale().setVisibleLogicalRange({ from: n - 30, to: n + 30 });
+  chart.priceScale('right').applyOptions({ autoScale: true });
+}
 
 async function generate() {
   if (abortCtrl) abortCtrl.abort();
@@ -463,6 +528,11 @@ async function generate() {
   document.getElementById('cancel-btn').style.display = 'inline-block';
   document.getElementById('status').textContent = 'Generating…';
   document.getElementById('chart-overlay').style.display = 'flex';
+  const _nReq = parseInt(document.getElementById('duration').value);
+  const _t0 = Date.now();
+  const _progTimer = setInterval(() => {
+    document.getElementById('gen-progress').textContent = `Generating ${_nReq.toLocaleString()} candles… (${((Date.now()-_t0)/1000).toFixed(1)}s)`;
+  }, 200);
 
   const seedVal = document.getElementById('seed').value.trim();
   const payload = {
@@ -500,13 +570,30 @@ async function generate() {
     allCandles = data.candles;
     if (!seedVal) document.getElementById('seed').value = data.seed;
     renderCandles();
-    document.getElementById('status').textContent = `${data.n} candles · seed ${data.seed}`;
+    resetView();
+    document.getElementById('status').textContent = `${data.n.toLocaleString()}/${_nReq.toLocaleString()} candles · seed ${data.seed} · ${((Date.now()-_t0)/1000).toFixed(1)}s`;
+    // Show regime stats
+    if (data.stats) {
+      const sp = document.getElementById('stats-panel'); sp.style.display = '';
+      const s = data.stats;
+      let html = `<div style="margin-bottom:4px">Bars: <b style="color:#ddd">${s.total_bars}</b> · Avg Body: <b style="color:#ddd">${s.avg_body}</b> · Avg Range: <b style="color:#ddd">${s.avg_range}</b></div>`;
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      const colors = {chop:'#888', trend_up:'#4caf82', trend_down:'#e05c5c', impulse:'#f97316', gap_hold:'#a78bfa'};
+      for (const [regime, info] of Object.entries(s.regimes)) {
+        const c = colors[regime] || '#888';
+        html += `<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:3px 8px"><span style="color:${c};font-weight:600">${regime}</span> <span style="color:#ddd">${info.pct}%</span> <span style="color:#666">(${info.count})</span></div>`;
+      }
+      html += '</div>';
+      document.getElementById('stats-content').innerHTML = html;
+      document.getElementById('tick-debug-panel').style.display = '';
+    }
   } catch(e) {
     if (e.name !== 'AbortError') document.getElementById('status').textContent = 'Error: ' + e.message;
   } finally {
     document.getElementById('gen-btn').style.display    = 'inline-block';
     document.getElementById('cancel-btn').style.display = 'none';
     document.getElementById('chart-overlay').style.display = 'none';
+    clearInterval(_progTimer);
     abortCtrl = null;
   }
 }
@@ -578,6 +665,127 @@ initChart();
     if (t0 != null && t1 != null) ts.setVisibleRange({ from: t0, to: t1 });
   });
 })();
+
+// ── Tick Engine Preview ───────────────────────────────────────────────────────
+let _tickPreviewData = null, _tickPreviewIdx = 0, _tickPreviewTimer = null;
+let _tickPreviewCandle = null;
+let _playedTicks = []; // raw ticks played so far
+
+async function runTickPreview() {
+  stopTickPreview();
+  document.getElementById('tick-play-btn').textContent = '⏳ Loading...';
+
+  const seedVal = document.getElementById('seed').value.trim() || '42';
+  const payload = {
+    name: document.getElementById('c-name').value,
+    p_lo: document.getElementById('p-lo').value, p_hi: document.getElementById('p-hi').value,
+    p_tick: document.getElementById('p-tick').value, n_candles: 390, seed: seedVal,
+    vol_chop: getSlider('vol-chop'), vol_trend: getSlider('vol-trend'),
+    vol_impulse: getSlider('vol-impulse'), vol_gaphold: getSlider('vol-gaphold'),
+    drift_chop_sigma: getSlider('drift-chop-sigma'), drift_trend_sigma: getSlider('drift-trend-sigma'),
+    drift_trend_mag: getSlider('drift-trend-mag'), drift_impulse_mag: getSlider('drift-impulse-mag'),
+    drift_global_bias: getSlider('drift-global-bias'),
+    wick_chop: getSlider('wick-chop'), wick_trend: getSlider('wick-trend'),
+    wick_impulse: getSlider('wick-impulse'), wick_gaphold: getSlider('wick-gaphold'), wick_asym: getSlider('wick-asym'),
+    reg_chop: getSlider('reg-chop'), reg_trendup: getSlider('reg-trendup'),
+    reg_trenddn: getSlider('reg-trenddn'), reg_impulse: getSlider('reg-impulse'),
+    mc_spread_base: getSlider('mc-spread-base'), mc_spread_vol: getSlider('mc-spread-vol'),
+    mc_inst_rate: getSlider('mc-inst-rate'), mc_inst_size_min: getSlider('mc-inst-size-min'),
+    mc_inst_size_max: getSlider('mc-inst-size-max'), mc_inst_persist: getSlider('mc-inst-persist'),
+    mc_retail_rate: getSlider('mc-retail-rate'), mc_momentum_rate: getSlider('mc-momentum-rate'),
+    mc_hawkes_base: getSlider('mc-hawkes-base'), mc_hawkes_alpha: getSlider('mc-hawkes-alpha'),
+    mc_hawkes_beta: getSlider('mc-hawkes-beta'), mc_pool_strength: getSlider('mc-pool-strength'),
+    mc_pool_count: getSlider('mc-pool-count'), mc_mean_rev: getSlider('mc-mean-rev'),
+  };
+
+  const res = await fetch('/api/character/tick-preview', {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (data.error) { document.getElementById('tick-play-btn').textContent = '▶ Play'; return; }
+
+  _tickPreviewData = data.ticks;
+  _tickPreviewIdx = 0;
+  _tickPreviewCandle = null;
+  _playedTicks = [];
+  document.getElementById('tick-play-btn').textContent = '⏸ Playing';
+
+  // Offset tick timestamps to come after the last historical candle
+  const lastHistTime = allCandles.length ? allCandles[allCandles.length - 1].time : 0;
+  const lastHistClose = allCandles.length ? allCandles[allCandles.length - 1].close : _tickPreviewData[0].price;
+  const firstTickTime = _tickPreviewData[0].time;
+  const firstTickPrice = _tickPreviewData[0].price;
+  const timeOffset = lastHistTime - firstTickTime + 60;
+  const priceOffset = lastHistClose - firstTickPrice;
+  for (let i = 0; i < _tickPreviewData.length; i++) {
+    _tickPreviewData[i].time += timeOffset;
+    _tickPreviewData[i].price += priceOffset;
+    _tickPreviewData[i].bid += priceOffset;
+    _tickPreviewData[i].ask += priceOffset;
+  }
+
+  startTickPlayback();
+}
+
+function startTickPlayback() {
+  if (_tickPreviewTimer) clearInterval(_tickPreviewTimer);
+  const speed = parseFloat(document.getElementById('tick-speed').value);
+  // 1x = 1 tick per second. At 5x = 5 ticks per second.
+  const ticksPerFrame = 1;
+  const interval = Math.max(16, Math.round(1000 / speed));
+
+  _tickPreviewTimer = setInterval(() => {
+    for (let f = 0; f < ticksPerFrame; f++) {
+      if (_tickPreviewIdx >= _tickPreviewData.length) { stopTickPreview(); return; }
+      const t = _tickPreviewData[_tickPreviewIdx++];
+      _playedTicks.push(t);
+      const tf = parseInt(document.getElementById('tf').value);
+      const ticksPerBar = tf; // 1 tick = 1 second, tf seconds per bar
+      const barIdx = Math.floor((_tickPreviewIdx - 1) / ticksPerBar);
+      const lastChartTime = allCandles.length ? allCandles[allCandles.length-1].time : 0;
+      const ct = lastChartTime + (barIdx + 1) * tf;
+      if (!_tickPreviewCandle || _tickPreviewCandle.time !== ct) {
+        if (_tickPreviewCandle) {} // completed candle stays in chart via update()
+        _tickPreviewCandle = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+      } else {
+        _tickPreviewCandle.high = Math.max(_tickPreviewCandle.high, t.price);
+        _tickPreviewCandle.low = Math.min(_tickPreviewCandle.low, t.price);
+        _tickPreviewCandle.close = t.price;
+        _tickPreviewCandle.volume += t.volume;
+      }
+      candleSeries.update({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
+      volSeries.update({ time: _tickPreviewCandle.time, value: _tickPreviewCandle.volume, color: _tickPreviewCandle.close >= _tickPreviewCandle.open ? '#4caf8266' : '#e05c5c66' });
+    }
+    const t = _tickPreviewData[_tickPreviewIdx - 1];
+    document.getElementById('td-price').textContent = t.price.toFixed(2);
+    document.getElementById('td-bid').textContent = t.bid.toFixed(2);
+    document.getElementById('td-ask').textContent = t.ask.toFixed(2);
+    const spread = t.ask - t.bid;
+    document.getElementById('td-spread').textContent = spread.toFixed(2);
+    document.getElementById('td-spread').style.color = spread > parseFloat(document.getElementById('p-tick').value) * 2 ? '#e05c5c' : '#f0c040';
+    document.getElementById('td-imbalance').textContent = t.imbalance.toFixed(2);
+    document.getElementById('td-imbalance').style.color = t.imbalance > 0.5 ? '#4caf82' : t.imbalance < -0.5 ? '#e05c5c' : '#888';
+    document.getElementById('td-vol').textContent = t.volume;
+    document.getElementById('td-tick-num').textContent = `${Math.ceil(_tickPreviewIdx/60)}/${Math.ceil(_tickPreviewData.length/60)} candles`;
+    document.getElementById('td-bar-fill').style.width = (_tickPreviewIdx / _tickPreviewData.length * 100) + '%';
+    const hawkesEst = Math.min(1, Math.abs(t.imbalance) * 0.25 + 0.15);
+    document.getElementById('td-hawkes').textContent = hawkesEst.toFixed(2);
+    document.getElementById('td-hawkes').style.color = hawkesEst > 0.4 ? '#f97316' : '#888';
+    const instActive = Math.abs(t.imbalance) > 1.5;
+    document.getElementById('td-inst').textContent = instActive ? 'SWEEP' : 'quiet';
+    document.getElementById('td-inst').style.color = instActive ? '#a78bfa' : '#555';
+  }, interval);
+}
+
+function stopTickPreview() {
+  if (_tickPreviewTimer) { clearInterval(_tickPreviewTimer); _tickPreviewTimer = null; }
+  document.getElementById('tick-play-btn').textContent = '▶ Play';
+}
+
+// Speed change during playback
+document.getElementById('tick-speed').addEventListener('change', () => {
+  if (_tickPreviewTimer && _tickPreviewData) startTickPlayback();
+});
 </script>
 </body>
 </html>

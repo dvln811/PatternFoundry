@@ -49,6 +49,47 @@ def index():
     return render_template('chart.html')
 
 
+def _build_spec_from_payload(data):
+    return CharacterSpec(
+        name=data.get('name', 'Custom'),
+        price_range=(float(data.get('p_lo', 5000)), float(data.get('p_hi', 7000))),
+        tick=float(data.get('p_tick', 0.25)),
+        regime=RegimeSpec(mean_duration={
+            'chop': int(data.get('reg_chop', 25)), 'trend_up': int(data.get('reg_trendup', 20)),
+            'trend_down': int(data.get('reg_trenddn', 20)), 'impulse': int(data.get('reg_impulse', 3)), 'gap_hold': 1,
+        }),
+        drift=DriftSpec(
+            chop_sigma=float(data.get('drift_chop_sigma', 0.05)),
+            trend_sigma=float(data.get('drift_trend_sigma', 0.15)),
+            trend_magnitude=float(data.get('drift_trend_mag', 0.3)),
+            impulse_magnitude=float(data.get('drift_impulse_mag', 1.5)),
+            global_bias=float(data.get('drift_global_bias', 0.0)),
+        ),
+        volatility=VolatilitySpec(
+            chop=float(data.get('vol_chop', 1.0)), trend=float(data.get('vol_trend', 2.0)),
+            impulse=float(data.get('vol_impulse', 4.0)), gap_hold=float(data.get('vol_gaphold', 1.5)),
+        ),
+        wick=WickSpec(
+            chop_ratio=float(data.get('wick_chop', 2.0)), trend_ratio=float(data.get('wick_trend', 0.6)),
+            impulse_ratio=float(data.get('wick_impulse', 0.4)), gap_hold_ratio=float(data.get('wick_gaphold', 0.3)),
+            asymmetry=float(data.get('wick_asym', 0.3)),
+        ),
+        volume=VolumeSpec(
+            base=int(data.get('vol_base', 1000)), tod_open_mult=float(data.get('vol_open', 2.2)),
+            tod_midday_mult=float(data.get('vol_midday', 0.8)), tod_close_mult=float(data.get('vol_close', 1.3)),
+            spike_prob=float(data.get('vol_spike_p', 0.1)),
+        ),
+        gap=GapSpec(
+            prob=float(data.get('gap_prob', 0.0)), min_size=float(data.get('gap_min', 0.005)),
+            max_size=float(data.get('gap_max', 0.02)), intraday_prob=float(data.get('gap_intra', 0.0)),
+        ),
+        event=EventSpec(
+            wick_stab_prob=float(data.get('ev_stab_prob', 0.02)),
+            wick_stab_magnitude=float(data.get('ev_stab_mag', 3.0)),
+        ),
+    )
+
+
 @app.route('/chartdesigner')
 def chartdesigner():
     return render_template('chartdesigner.html')
@@ -62,50 +103,29 @@ def character_generate():
     seed     = int(seed_arg) if seed_arg else random.randrange(0, 1_000_000)
     n        = int(data.get('n', 1950))
 
-    spec = CharacterSpec(
-        name        = data.get('name', 'Custom'),
-        price_range = (float(data.get('p_lo', 5000)), float(data.get('p_hi', 7000))),
-        tick        = float(data.get('p_tick', 0.25)),
-        regime      = RegimeSpec(mean_duration={
-            'chop': int(data.get('reg_chop', 25)), 'trend_up': int(data.get('reg_trendup', 20)),
-            'trend_down': int(data.get('reg_trenddn', 20)), 'impulse': int(data.get('reg_impulse', 3)), 'gap_hold': 1,
-        }),
-        drift = DriftSpec(
-            chop_sigma=float(data.get('drift_chop_sigma', 0.05)),
-            trend_sigma=float(data.get('drift_trend_sigma', 0.15)),
-            trend_magnitude=float(data.get('drift_trend_mag', 0.3)),
-            impulse_magnitude=float(data.get('drift_impulse_mag', 1.5)),
-            global_bias=float(data.get('drift_global_bias', 0.0)),
-        ),
-        volatility = VolatilitySpec(
-            chop=float(data.get('vol_chop', 1.0)), trend=float(data.get('vol_trend', 2.0)),
-            impulse=float(data.get('vol_impulse', 4.0)), gap_hold=float(data.get('vol_gaphold', 1.5)),
-        ),
-        wick = WickSpec(
-            chop_ratio=float(data.get('wick_chop', 2.0)), trend_ratio=float(data.get('wick_trend', 0.6)),
-            impulse_ratio=float(data.get('wick_impulse', 0.4)), gap_hold_ratio=float(data.get('wick_gaphold', 0.3)),
-            asymmetry=float(data.get('wick_asym', 0.3)),
-        ),
-        volume = VolumeSpec(
-            base=int(data.get('vol_base', 1000)), tod_open_mult=float(data.get('vol_open', 2.2)),
-            tod_midday_mult=float(data.get('vol_midday', 0.8)), tod_close_mult=float(data.get('vol_close', 1.3)),
-            spike_prob=float(data.get('vol_spike_p', 0.1)),
-        ),
-        gap = GapSpec(
-            prob=float(data.get('gap_prob', 0.0)), min_size=float(data.get('gap_min', 0.005)),
-            max_size=float(data.get('gap_max', 0.02)), intraday_prob=float(data.get('gap_intra', 0.0)),
-        ),
-        event = EventSpec(
-            wick_stab_prob=float(data.get('ev_stab_prob', 0.02)),
-            wick_stab_magnitude=float(data.get('ev_stab_mag', 3.0)),
-        ),
-    )
+    spec = _build_spec_from_payload(data)
 
     gap_cfg = extract_gap_cfg(spec)
     disable_internal_gaps(spec)
     df      = generate_v2(n, spec, seed=seed)
     candles = apply_session_structure(df, gap_cfg, tf_seconds=60, seed=seed)
-    return jsonify({'candles': candles, 'seed': seed, 'n': len(candles)})
+
+    # Regime stats
+    regime_counts = df['Regime'].value_counts().to_dict()
+    total = len(df)
+    regime_stats = {k: {'count': int(v), 'pct': round(v / total * 100, 1)} for k, v in regime_counts.items()}
+    avg_body = float((df['Close'] - df['Open']).abs().mean())
+    avg_range = float((df['High'] - df['Low']).mean())
+
+    return jsonify({
+        'candles': candles, 'seed': seed, 'n': len(candles),
+        'stats': {
+            'regimes': regime_stats,
+            'avg_body': round(avg_body, 4),
+            'avg_range': round(avg_range, 4),
+            'total_bars': total,
+        }
+    })
 
 
 @app.route('/api/character/save', methods=['POST'])
@@ -119,6 +139,59 @@ def character_save():
     with open(path, 'w') as f:
         json.dump(data, f, indent=2)
     return jsonify({'status': 'ok', 'filename': filename, 'name': name})
+
+
+@app.route('/api/character/tick-preview', methods=['POST'])
+def character_tick_preview():
+    """Generate a few candles + full tick objects for microstructure debugging."""
+    data = request.get_json()
+    seed = int(data.get('seed', 42))
+    n_candles = int(data.get('n_candles', 30))  # 30 candles = 30 minutes of tick data
+
+    spec = _build_spec_from_payload(data)
+    gap_cfg = extract_gap_cfg(spec)
+    disable_internal_gaps(spec)
+    df = generate_v2(n_candles, spec, seed=seed)
+    candles_structured = apply_session_structure(df, gap_cfg, tf_seconds=60, seed=seed)
+
+    # Build a mini DataFrame for tick engine
+    import pandas as pd
+    mini_df = pd.DataFrame({
+        'Timestamp': pd.to_datetime([c['time'] for c in candles_structured[:n_candles]], unit='s', utc=True),
+        'Open': [c['open'] for c in candles_structured[:n_candles]],
+        'High': [c['high'] for c in candles_structured[:n_candles]],
+        'Low': [c['low'] for c in candles_structured[:n_candles]],
+        'Close': [c['close'] for c in candles_structured[:n_candles]],
+        'Volume': [c['volume'] for c in candles_structured[:n_candles]],
+    })
+
+    from tick_engine import generate_microstructure_ticks, MicroConfig
+    tick_cfg = MicroConfig(
+        tick_size=float(data.get('p_tick', 0.25)), seconds_per_candle=60,
+        spread_base=float(data.get('mc_spread_base', 1.0)),
+        spread_vol_mult=float(data.get('mc_spread_vol', 2.0)),
+        inst_rate=float(data.get('mc_inst_rate', 0.02)),
+        inst_size_min=int(data.get('mc_inst_size_min', 20)),
+        inst_size_max=int(data.get('mc_inst_size_max', 200)),
+        inst_persistence=float(data.get('mc_inst_persist', 0.92)),
+        retail_rate=float(data.get('mc_retail_rate', 0.08)),
+        momentum_rate=float(data.get('mc_momentum_rate', 0.04)),
+        hawkes_base=float(data.get('mc_hawkes_base', 0.15)),
+        hawkes_alpha=float(data.get('mc_hawkes_alpha', 0.6)),
+        hawkes_beta=float(data.get('mc_hawkes_beta', 3.0)),
+        pool_strength=float(data.get('mc_pool_strength', 0.3)),
+        pool_count=int(data.get('mc_pool_count', 3)),
+        mean_rev_strength=float(data.get('mc_mean_rev', 0.002)),
+    )
+
+    candle_dicts = [{
+        'time': c['time'], 'open': c['open'], 'high': c['high'],
+        'low': c['low'], 'close': c['close'], 'volume': c['volume'],
+    } for c in candles_structured[:n_candles]]
+
+    ticks = generate_microstructure_ticks(candle_dicts, tick_cfg)
+
+    return jsonify({'ticks': ticks, 'candles': candle_dicts, 'seed': seed})
 
 
 @app.route('/api/character/list')
