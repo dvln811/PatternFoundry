@@ -290,8 +290,32 @@ def sim_session():
             'volume': int(row['Volume']),
         })
 
-    from tick_engine import generate_tick_path_v2, MicroConfig
-    tick_cfg = MicroConfig(tick_size=profile.tick, seconds_per_candle=60)
+    from tick_engine import generate_tick_path_v2, MicroConfig, MICRO_DEFAULTS
+    # Use per-instrument micro defaults, or custom if saved
+    tick_cfg = MICRO_DEFAULTS.get(instrument, MicroConfig(tick_size=profile.tick))
+    # Check if custom character has micro params
+    custom_path = os.path.join('library', 'characters', f'{instrument}.json')
+    if os.path.isfile(custom_path):
+        with open(custom_path) as f:
+            cdata = json.load(f)
+        if 'mc_spread_base' in cdata:
+            tick_cfg = MicroConfig(
+                tick_size=profile.tick, seconds_per_candle=60,
+                spread_base=float(cdata.get('mc_spread_base', 1.0)),
+                spread_vol_mult=float(cdata.get('mc_spread_vol', 2.0)),
+                inst_rate=float(cdata.get('mc_inst_rate', 0.02)),
+                inst_size_min=int(cdata.get('mc_inst_size_min', 20)),
+                inst_size_max=int(cdata.get('mc_inst_size_max', 200)),
+                inst_persistence=float(cdata.get('mc_inst_persist', 0.92)),
+                retail_rate=float(cdata.get('mc_retail_rate', 0.08)),
+                momentum_rate=float(cdata.get('mc_momentum_rate', 0.04)),
+                hawkes_base=float(cdata.get('mc_hawkes_base', 0.15)),
+                hawkes_alpha=float(cdata.get('mc_hawkes_alpha', 0.6)),
+                hawkes_beta=float(cdata.get('mc_hawkes_beta', 3.0)),
+                pool_strength=float(cdata.get('mc_pool_strength', 0.3)),
+                pool_count=int(cdata.get('mc_pool_count', 3)),
+                mean_rev_strength=float(cdata.get('mc_mean_rev', 0.002)),
+            )
     ticks = generate_tick_path_v2(session_df, tick_size=profile.tick, seconds_per_candle=60, config=tick_cfg)
 
     return jsonify({

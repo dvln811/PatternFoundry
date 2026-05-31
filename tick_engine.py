@@ -54,6 +54,53 @@ class MicroConfig:
     spread_vol_mult: float = 2.0      # widens with volatility
 
 
+# Per-instrument microstructure defaults
+MICRO_DEFAULTS = {
+    'ES': MicroConfig(
+        tick_size=0.25, spread_base=1.0, spread_vol_mult=1.5,
+        inst_rate=0.015, inst_size_min=10, inst_size_max=80, inst_persistence=0.90,
+        retail_rate=0.06, momentum_rate=0.03,
+        hawkes_base=0.12, hawkes_alpha=0.4, hawkes_beta=3.5,
+        pool_strength=0.25, pool_count=3, mean_rev_strength=0.003,
+    ),
+    'NQ': MicroConfig(
+        tick_size=0.25, spread_base=1.0, spread_vol_mult=2.0,
+        inst_rate=0.025, inst_size_min=15, inst_size_max=150, inst_persistence=0.88,
+        retail_rate=0.08, momentum_rate=0.06,
+        hawkes_base=0.18, hawkes_alpha=0.7, hawkes_beta=2.5,
+        pool_strength=0.30, pool_count=4, mean_rev_strength=0.002,
+    ),
+    'SPY': MicroConfig(
+        tick_size=0.01, spread_base=1.0, spread_vol_mult=1.0,
+        inst_rate=0.01, inst_size_min=50, inst_size_max=500, inst_persistence=0.93,
+        retail_rate=0.10, momentum_rate=0.02,
+        hawkes_base=0.10, hawkes_alpha=0.3, hawkes_beta=4.0,
+        pool_strength=0.20, pool_count=2, mean_rev_strength=0.004,
+    ),
+    'TSLA': MicroConfig(
+        tick_size=0.01, spread_base=2.0, spread_vol_mult=3.0,
+        inst_rate=0.03, inst_size_min=20, inst_size_max=200, inst_persistence=0.94,
+        retail_rate=0.12, momentum_rate=0.07,
+        hawkes_base=0.20, hawkes_alpha=0.8, hawkes_beta=2.0,
+        pool_strength=0.35, pool_count=5, mean_rev_strength=0.001,
+    ),
+    'GME': MicroConfig(
+        tick_size=0.01, spread_base=3.0, spread_vol_mult=4.0,
+        inst_rate=0.01, inst_size_min=10, inst_size_max=100, inst_persistence=0.70,
+        retail_rate=0.20, momentum_rate=0.10,
+        hawkes_base=0.25, hawkes_alpha=1.0, hawkes_beta=1.5,
+        pool_strength=0.40, pool_count=4, mean_rev_strength=0.001,
+    ),
+    'CL': MicroConfig(
+        tick_size=0.01, spread_base=1.5, spread_vol_mult=2.5,
+        inst_rate=0.02, inst_size_min=10, inst_size_max=100, inst_persistence=0.85,
+        retail_rate=0.05, momentum_rate=0.04,
+        hawkes_base=0.14, hawkes_alpha=0.5, hawkes_beta=3.0,
+        pool_strength=0.30, pool_count=3, mean_rev_strength=0.003,
+    ),
+}
+
+
 def generate_microstructure_ticks(candles: list, config: MicroConfig = None) -> list:
     """
     Given a list of OHLCV candle dicts (from simulate_session_candles),

@@ -72,6 +72,7 @@
     .top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; padding: 6px 10px; background: #0e1217; border: 1px solid #1e1e1e; border-radius: 6px; font-size: 0.78rem; flex-shrink: 0; }
     .top-bar label { color: #888; display: flex; align-items: center; gap: 6px; }
     #chart { flex: 1; background: #0e0e0e; border-radius: 4px; min-height: 0; position: relative; }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .tv-lightweight-charts a[href*="tradingview"], .tv-lightweight-charts a[href*="lightweight-charts"] { display: none !important; }
   </style>
 </head>
@@ -111,13 +112,23 @@
     <input type="hidden" id="p-hi" value="7000">
     <input type="hidden" id="p-tick" value="0.25">
 
-    <details class="cat" open><summary>Volatility</summary><div class="cat-body" id="cat-vol"></div></details>
-    <details class="cat"><summary>Drift</summary><div class="cat-body" id="cat-drift"></div></details>
-    <details class="cat"><summary>Wicks</summary><div class="cat-body" id="cat-wick"></div></details>
-    <details class="cat"><summary>Regime Durations</summary><div class="cat-body" id="cat-regime"></div></details>
-    <details class="cat"><summary>Volume</summary><div class="cat-body" id="cat-volume"></div></details>
-    <details class="cat"><summary>Gaps</summary><div class="cat-body" id="cat-gap"></div></details>
-    <details class="cat"><summary>Events</summary><div class="cat-body" id="cat-event"></div></details>
+    <details class="cat" open style="border-color:#f97316">
+      <summary style="color:#f97316;font-weight:600">Chart Character (Historical Data)</summary>
+      <div class="cat-body" style="padding:0">
+        <details class="cat" open><summary>Volatility</summary><div class="cat-body" id="cat-vol"></div></details>
+        <details class="cat"><summary>Drift</summary><div class="cat-body" id="cat-drift"></div></details>
+        <details class="cat"><summary>Wicks</summary><div class="cat-body" id="cat-wick"></div></details>
+        <details class="cat"><summary>Regime Durations</summary><div class="cat-body" id="cat-regime"></div></details>
+        <details class="cat"><summary>Volume</summary><div class="cat-body" id="cat-volume"></div></details>
+        <details class="cat"><summary>Gaps</summary><div class="cat-body" id="cat-gap"></div></details>
+        <details class="cat"><summary>Events</summary><div class="cat-body" id="cat-event"></div></details>
+      </div>
+    </details>
+
+    <details class="cat" style="border-color:#38bdf8">
+      <summary style="color:#38bdf8;font-weight:600">Microstructure (Tick Engine)</summary>
+      <div class="cat-body" id="cat-micro"></div>
+    </details>
 
     <div class="actions">
       <button class="btn" onclick="loadPreset()">Reload</button>
@@ -139,19 +150,34 @@
           <option value="3600">1H</option>
           <option value="14400">4H</option>
           <option value="86400">1D</option>
+          <option value="604800">1W</option>
+          <option value="2592000">1M</option>
         </select>
       </label>
       <label>History:
         <select id="duration">
-          <option value="390">1 session</option>
-          <option value="1950" selected>1 week</option>
-          <option value="7800">1 month</option>
-          <option value="49920">6 months</option>
+          <option value="1250">1 session</option>
+          <option value="6250" selected>1 week</option>
+          <option value="26250">1 month</option>
+          <option value="78750">3 months</option>
+          <option value="157500">6 months</option>
+          <option value="315000">1 year</option>
+          <option value="630000">2 years</option>
         </select>
       </label>
-      <label>Seed: <input type="number" id="seed" placeholder="random" style="width:80px"></label>
+      <label>Seed:
+        <input type="number" id="seed" placeholder="random" style="width:80px">
+        <button onclick="document.getElementById('seed').value=Math.floor(Math.random()*1000000)" style="background:transparent;border:1px solid #2a2a2a;color:#888;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:0.7rem">🎲</button>
+      </label>
+      <button onclick="if(chart)chart.timeScale().fitContent()" style="background:transparent;border:1px solid #2a2a2a;color:#bbb;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.72rem">⊙ Reset</button>
     </div>
-    <div id="chart"></div>
+    <div id="chart" style="position:relative">
+      <div id="chart-readout" style="position:absolute;top:8px;left:10px;z-index:9;pointer-events:none;font-family:monospace;font-size:0.72rem;color:#ddd;background:rgba(14,18,23,0.75);border:1px solid #222;border-radius:4px;padding:4px 8px;display:none;line-height:1.5"></div>
+      <div id="chart-overlay" style="position:absolute;inset:0;background:rgba(13,13,13,0.85);display:none;align-items:center;justify-content:center;z-index:10;flex-direction:column;gap:10px">
+        <div style="width:32px;height:32px;border:3px solid #2a2a2a;border-top-color:#4caf82;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+        <div style="font-size:0.82rem;color:#bbb">Generating...</div>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -192,6 +218,20 @@ const TIPS = {
   'gap-intra': { title:'Intraday Spike Prob', body:'Rare mid-session gap (news shock during RTH). Almost never fires.' },
   'ev-stab-prob': { title:'Wick Stab Probability', body:'Chance of a liquidity-grab: a bar that spikes a long wick beyond normal range, then closes back near the body.' },
   'ev-stab-mag': { title:'Wick Stab Magnitude', body:'Size of wick stabs when they fire, as multiples of the candle body.' },
+  'mc-spread-base': { title:'Spread (ticks)', body:'Average bid-ask spread in tick units. ES/NQ = 1 tick, TSLA = 2-3 ticks, GME = 3-5 ticks.' },
+  'mc-spread-vol': { title:'Spread Vol Multiplier', body:'How much spread widens during volatile moments. Higher = more spread expansion on fast moves.' },
+  'mc-inst-rate': { title:'Institutional Rate', body:'Probability per second of a new institutional order. Higher = more large directional sweeps.' },
+  'mc-inst-size-min': { title:'Inst Size Min', body:'Minimum lots per institutional order. Larger = more price impact per event.' },
+  'mc-inst-size-max': { title:'Inst Size Max', body:'Maximum lots per institutional order.' },
+  'mc-inst-persist': { title:'Inst Persistence', body:'Probability institutional flow continues same direction. 0.95 = long sustained sweeps. 0.7 = erratic flipping.' },
+  'mc-retail-rate': { title:'Retail Rate', body:'Noise trader activity per second. Higher = more random small orders. GME/meme stocks have very high retail.' },
+  'mc-momentum-rate': { title:'Momentum Rate', body:'Rate of momentum-chasing orders that follow recent direction. Higher = more trend amplification.' },
+  'mc-hawkes-base': { title:'Hawkes Base Intensity', body:'Baseline trade arrival rate. Trades cluster in time \u2014 each trade increases probability of more trades.' },
+  'mc-hawkes-alpha': { title:'Hawkes Alpha (Excitation)', body:'How much each trade event boosts intensity. Higher = more aggressive clustering/cascades.' },
+  'mc-hawkes-beta': { title:'Hawkes Beta (Decay)', body:'How fast excitation decays. Low = long-lasting bursts. High = quick spikes that die fast.' },
+  'mc-pool-strength': { title:'Liquidity Pool Strength', body:'How strongly price is attracted to S/R levels (simulated order clustering). Higher = more magnetic levels.' },
+  'mc-pool-count': { title:'Liquidity Pool Count', body:'Number of S/R levels per session. More = more levels where price stalls.' },
+  'mc-mean-rev': { title:'Mean Reversion Strength', body:'Micro-scale pull toward session VWAP. Higher = price snaps back faster after deviations.' },
 };
 
 // ── Tip popover logic ─────────────────────────────────────────────────────────
@@ -264,9 +304,25 @@ const SLIDERS = {
     { id: 'ev-stab-prob', label: 'Wick Stab Prob', min: 0, max: 0.2, step: 0.001, def: 0.02 },
     { id: 'ev-stab-mag',  label: 'Wick Stab Mag',  min: 0, max: 10,  step: 0.1,   def: 3.0  },
   ],
+  micro: [
+    { id: 'mc-spread-base',    label: 'Spread (ticks)',      min: 0.5, max: 5,    step: 0.1,  def: 1.0  },
+    { id: 'mc-spread-vol',     label: 'Spread Vol Mult',     min: 0.5, max: 5,    step: 0.1,  def: 2.0  },
+    { id: 'mc-inst-rate',      label: 'Institutional Rate',  min: 0,   max: 0.1,  step: 0.001,def: 0.02 },
+    { id: 'mc-inst-size-min',  label: 'Inst Size Min',       min: 5,   max: 100,  step: 5,    def: 20   },
+    { id: 'mc-inst-size-max',  label: 'Inst Size Max',       min: 20,  max: 500,  step: 10,   def: 200  },
+    { id: 'mc-inst-persist',   label: 'Inst Persistence',    min: 0.5, max: 0.99, step: 0.01, def: 0.92 },
+    { id: 'mc-retail-rate',    label: 'Retail Rate',         min: 0,   max: 0.3,  step: 0.01, def: 0.08 },
+    { id: 'mc-momentum-rate',  label: 'Momentum Rate',       min: 0,   max: 0.2,  step: 0.01, def: 0.04 },
+    { id: 'mc-hawkes-base',    label: 'Hawkes Base',         min: 0.05,max: 0.5,  step: 0.01, def: 0.15 },
+    { id: 'mc-hawkes-alpha',   label: 'Hawkes Alpha',        min: 0.1, max: 2.0,  step: 0.05, def: 0.6  },
+    { id: 'mc-hawkes-beta',    label: 'Hawkes Beta',         min: 0.5, max: 5.0,  step: 0.1,  def: 3.0  },
+    { id: 'mc-pool-strength',  label: 'Pool Strength',       min: 0,   max: 1.0,  step: 0.05, def: 0.3  },
+    { id: 'mc-pool-count',     label: 'Pool Count',          min: 1,   max: 8,    step: 1,    def: 3    },
+    { id: 'mc-mean-rev',       label: 'Mean Rev Strength',   min: 0,   max: 0.01, step: 0.001,def: 0.002},
+  ],
 };
 
-const CAT_MAP = { vol:'cat-vol', drift:'cat-drift', wick:'cat-wick', regime:'cat-regime', volume:'cat-volume', gap:'cat-gap', event:'cat-event' };
+const CAT_MAP = { vol:'cat-vol', drift:'cat-drift', wick:'cat-wick', regime:'cat-regime', volume:'cat-volume', gap:'cat-gap', event:'cat-event', micro:'cat-micro' };
 
 function buildSliders() {
   for (const [cat, sliders] of Object.entries(SLIDERS)) {
@@ -296,12 +352,12 @@ function getSlider(id) { return parseFloat(document.getElementById(id).value); }
 
 // ── Preset data ───────────────────────────────────────────────────────────────
 const PRESETS = {
-  ES:   { name:'ES (calm futures)',      lo:5000,  hi:7000,  tick:0.25, vc:1.0,  vt:2.0,  vi:4.0,  vg:1.5, cs:0.05, ts:0.15, tm:0.25, im:1.5,  gb:0.02,  wcr:2.0, wtr:0.5, wir:0.3, wgr:0.3, wa:0.3, rc:25, ru:20, rd:20, ri:3, vb:1000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.02, em:3.0 },
-  NQ:   { name:'NQ (active)',            lo:18000, hi:22000, tick:0.25, vc:2.5,  vt:5.0,  vi:10.0, vg:1.5, cs:0.1,  ts:0.3,  tm:0.5,  im:3.0,  gb:0.03,  wcr:1.8, wtr:1.0, wir:0.4, wgr:0.3, wa:0.3, rc:15, ru:18, rd:18, ri:4, vb:800,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.04, em:3.0 },
-  SPY:  { name:'SPY (quiet)',            lo:520,   hi:580,   tick:0.01, vc:0.15, vt:0.35, vi:0.8,  vg:1.5, cs:0.01, ts:0.025,tm:0.04, im:0.2,  gb:0.008, wcr:2.2, wtr:0.7, wir:0.4, wgr:0.3, wa:0.3, rc:30, ru:25, rd:25, ri:2, vb:5000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.05, gn:0.002, gx:0.005, gi:0.0,   ep:0.005,em:3.0 },
-  TSLA: { name:'TSLA (gappy)',           lo:200,   hi:280,   tick:0.01, vc:0.2,  vt:0.45, vi:0.9,  vg:1.5, cs:0.03, ts:0.08, tm:0.08, im:0.4,  gb:0.0,   wcr:1.2, wtr:0.4, wir:0.25,wgr:0.3, wa:0.2, rc:20, ru:15, rd:15, ri:4, vb:3000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.12, gp:0.25, gn:0.005, gx:0.025, gi:0.005, ep:0.03, em:2.5 },
-  GME:  { name:'GME (high-beta retail)', lo:18,    hi:35,    tick:0.01, vc:0.04, vt:0.09, vi:0.25, vg:1.5, cs:0.008,ts:0.02, tm:0.02, im:0.08, gb:0.0,   wcr:1.5, wtr:0.5, wir:0.3, wgr:0.3, wa:0.2, rc:10, ru:8,  rd:8,  ri:4, vb:2500, vo:2.2, vm:0.8, vcl:1.3, vsp:0.15, gp:0.30, gn:0.01,  gx:0.05,  gi:0.005, ep:0.04, em:2.5 },
-  CL:   { name:'CL (choppy)',            lo:70,    hi:90,    tick:0.01, vc:0.15, vt:0.3,  vi:0.6,  vg:1.5, cs:0.015,ts:0.04, tm:0.05, im:0.2,  gb:0.0,   wcr:1.5, wtr:0.5, wir:0.4, wgr:0.3, wa:0.15,rc:30, ru:10, rd:10, ri:2, vb:600,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.08, gn:0.003, gx:0.015, gi:0.0,   ep:0.03, em:3.0 },
+  ES:   { name:'ES (calm futures)',      lo:5000,  hi:7000,  tick:0.25, vc:1.0,  vt:2.0,  vi:4.0,  vg:1.5, cs:0.05, ts:0.15, tm:0.25, im:1.5,  gb:0.02,  wcr:2.0, wtr:0.5, wir:0.3, wgr:0.3, wa:0.3, rc:25, ru:20, rd:20, ri:3, vb:1000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.02, em:3.0, msb:1.0, msv:1.5, mir:0.015, misn:10, misx:80,  mip:0.90, mrr:0.06, mmr:0.03, mhb:0.12, mha:0.4, mhbt:3.5, mps:0.25, mpc:3, mmv:0.003 },
+  NQ:   { name:'NQ (active)',            lo:18000, hi:22000, tick:0.25, vc:2.5,  vt:5.0,  vi:10.0, vg:1.5, cs:0.1,  ts:0.3,  tm:0.5,  im:3.0,  gb:0.03,  wcr:1.8, wtr:1.0, wir:0.4, wgr:0.3, wa:0.3, rc:15, ru:18, rd:18, ri:4, vb:800,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.04, em:3.0, msb:1.0, msv:2.0, mir:0.025, misn:15, misx:150, mip:0.88, mrr:0.08, mmr:0.06, mhb:0.18, mha:0.7, mhbt:2.5, mps:0.30, mpc:4, mmv:0.002 },
+  SPY:  { name:'SPY (quiet)',            lo:520,   hi:580,   tick:0.01, vc:0.15, vt:0.35, vi:0.8,  vg:1.5, cs:0.01, ts:0.025,tm:0.04, im:0.2,  gb:0.008, wcr:2.2, wtr:0.7, wir:0.4, wgr:0.3, wa:0.3, rc:30, ru:25, rd:25, ri:2, vb:5000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.05, gn:0.002, gx:0.005, gi:0.0,   ep:0.005,em:3.0, msb:1.0, msv:1.0, mir:0.01,  misn:50, misx:500, mip:0.93, mrr:0.10, mmr:0.02, mhb:0.10, mha:0.3, mhbt:4.0, mps:0.20, mpc:2, mmv:0.004 },
+  TSLA: { name:'TSLA (gappy)',           lo:200,   hi:280,   tick:0.01, vc:0.2,  vt:0.45, vi:0.9,  vg:1.5, cs:0.03, ts:0.08, tm:0.08, im:0.4,  gb:0.0,   wcr:1.2, wtr:0.4, wir:0.25,wgr:0.3, wa:0.2, rc:20, ru:15, rd:15, ri:4, vb:3000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.12, gp:0.25, gn:0.005, gx:0.025, gi:0.005, ep:0.03, em:2.5, msb:2.0, msv:3.0, mir:0.03,  misn:20, misx:200, mip:0.94, mrr:0.12, mmr:0.07, mhb:0.20, mha:0.8, mhbt:2.0, mps:0.35, mpc:5, mmv:0.001 },
+  GME:  { name:'GME (high-beta retail)', lo:18,    hi:35,    tick:0.01, vc:0.04, vt:0.09, vi:0.25, vg:1.5, cs:0.008,ts:0.02, tm:0.02, im:0.08, gb:0.0,   wcr:1.5, wtr:0.5, wir:0.3, wgr:0.3, wa:0.2, rc:10, ru:8,  rd:8,  ri:4, vb:2500, vo:2.2, vm:0.8, vcl:1.3, vsp:0.15, gp:0.30, gn:0.01,  gx:0.05,  gi:0.005, ep:0.04, em:2.5, msb:3.0, msv:4.0, mir:0.01,  misn:10, misx:100, mip:0.70, mrr:0.20, mmr:0.10, mhb:0.25, mha:1.0, mhbt:1.5, mps:0.40, mpc:4, mmv:0.001 },
+  CL:   { name:'CL (choppy)',            lo:70,    hi:90,    tick:0.01, vc:0.15, vt:0.3,  vi:0.6,  vg:1.5, cs:0.015,ts:0.04, tm:0.05, im:0.2,  gb:0.0,   wcr:1.5, wtr:0.5, wir:0.4, wgr:0.3, wa:0.15,rc:30, ru:10, rd:10, ri:2, vb:600,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.08, gn:0.003, gx:0.015, gi:0.0,   ep:0.03, em:3.0, msb:1.5, msv:2.5, mir:0.02,  misn:10, misx:100, mip:0.85, mrr:0.05, mmr:0.04, mhb:0.14, mha:0.5, mhbt:3.0, mps:0.30, mpc:3, mmv:0.003 },
 };
 
 function loadPreset() {
@@ -319,6 +375,11 @@ function loadPreset() {
   setSlider('vol-base', p.vb); setSlider('vol-open', p.vo); setSlider('vol-midday', p.vm); setSlider('vol-close', p.vcl); setSlider('vol-spike-p', p.vsp);
   setSlider('gap-prob', p.gp); setSlider('gap-min', p.gn); setSlider('gap-max', p.gx); setSlider('gap-intra', p.gi);
   setSlider('ev-stab-prob', p.ep); setSlider('ev-stab-mag', p.em);
+  setSlider('mc-spread-base', p.msb); setSlider('mc-spread-vol', p.msv);
+  setSlider('mc-inst-rate', p.mir); setSlider('mc-inst-size-min', p.misn); setSlider('mc-inst-size-max', p.misx);
+  setSlider('mc-inst-persist', p.mip); setSlider('mc-retail-rate', p.mrr); setSlider('mc-momentum-rate', p.mmr);
+  setSlider('mc-hawkes-base', p.mhb); setSlider('mc-hawkes-alpha', p.mha); setSlider('mc-hawkes-beta', p.mhbt);
+  setSlider('mc-pool-strength', p.mps); setSlider('mc-pool-count', p.mpc); setSlider('mc-mean-rev', p.mmv);
 }
 
 buildSliders();
@@ -348,6 +409,29 @@ function initChart() {
   volSeries = chart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: 'vol', color: '#4caf8266' });
   chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
   new ResizeObserver(() => chart.applyOptions({ width: el.clientWidth, height: el.clientHeight })).observe(el);
+
+  chart.subscribeCrosshairMove((param) => {
+    const ro = document.getElementById('chart-readout');
+    if (!ro || !param || !param.time || !param.seriesData) { if (ro) ro.style.display = 'none'; return; }
+    const bar = param.seriesData.get(candleSeries);
+    if (!bar) { ro.style.display = 'none'; return; }
+    const volBar = param.seriesData.get(volSeries);
+    const d = new Date(param.time * 1000);
+    const ts = `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;
+    const chg = bar.close - bar.open;
+    const pct = (chg / bar.open * 100).toFixed(2);
+    const dir = chg >= 0 ? '+' : '';
+    const col = chg >= 0 ? '#4caf82' : '#e05c5c';
+    const volStr = volBar && typeof volBar.value === 'number' ? volBar.value.toLocaleString() : '-';
+    ro.innerHTML = `<span style="color:#888">${ts}</span>  `
+      + `O <b style="color:${col}">${bar.open.toFixed(2)}</b>  `
+      + `H <b style="color:${col}">${bar.high.toFixed(2)}</b>  `
+      + `L <b style="color:${col}">${bar.low.toFixed(2)}</b>  `
+      + `C <b style="color:${col}">${bar.close.toFixed(2)}</b>  `
+      + `<span style="color:${col}">${dir}${chg.toFixed(2)} (${dir}${pct}%)</span>  `
+      + `<span style="color:#888">Vol <b style="color:${col}">${volStr}</b></span>`;
+    ro.style.display = '';
+  });
 }
 
 function rebucket(candles, tf) {
@@ -378,6 +462,7 @@ async function generate() {
   document.getElementById('gen-btn').style.display    = 'none';
   document.getElementById('cancel-btn').style.display = 'inline-block';
   document.getElementById('status').textContent = 'Generating…';
+  document.getElementById('chart-overlay').style.display = 'flex';
 
   const seedVal = document.getElementById('seed').value.trim();
   const payload = {
@@ -401,6 +486,11 @@ async function generate() {
     gap_prob: getSlider('gap-prob'), gap_min: getSlider('gap-min'),
     gap_max: getSlider('gap-max'), gap_intra: getSlider('gap-intra'),
     ev_stab_prob: getSlider('ev-stab-prob'), ev_stab_mag: getSlider('ev-stab-mag'),
+    mc_spread_base: getSlider('mc-spread-base'), mc_spread_vol: getSlider('mc-spread-vol'),
+    mc_inst_rate: getSlider('mc-inst-rate'), mc_inst_size_min: getSlider('mc-inst-size-min'), mc_inst_size_max: getSlider('mc-inst-size-max'),
+    mc_inst_persist: getSlider('mc-inst-persist'), mc_retail_rate: getSlider('mc-retail-rate'), mc_momentum_rate: getSlider('mc-momentum-rate'),
+    mc_hawkes_base: getSlider('mc-hawkes-base'), mc_hawkes_alpha: getSlider('mc-hawkes-alpha'), mc_hawkes_beta: getSlider('mc-hawkes-beta'),
+    mc_pool_strength: getSlider('mc-pool-strength'), mc_pool_count: getSlider('mc-pool-count'), mc_mean_rev: getSlider('mc-mean-rev'),
   };
 
   try {
@@ -416,6 +506,7 @@ async function generate() {
   } finally {
     document.getElementById('gen-btn').style.display    = 'inline-block';
     document.getElementById('cancel-btn').style.display = 'none';
+    document.getElementById('chart-overlay').style.display = 'none';
     abortCtrl = null;
   }
 }
@@ -441,6 +532,11 @@ async function saveCharacter() {
     gap_prob: getSlider('gap-prob'), gap_min: getSlider('gap-min'),
     gap_max: getSlider('gap-max'), gap_intra: getSlider('gap-intra'),
     ev_stab_prob: getSlider('ev-stab-prob'), ev_stab_mag: getSlider('ev-stab-mag'),
+    mc_spread_base: getSlider('mc-spread-base'), mc_spread_vol: getSlider('mc-spread-vol'),
+    mc_inst_rate: getSlider('mc-inst-rate'), mc_inst_size_min: getSlider('mc-inst-size-min'), mc_inst_size_max: getSlider('mc-inst-size-max'),
+    mc_inst_persist: getSlider('mc-inst-persist'), mc_retail_rate: getSlider('mc-retail-rate'), mc_momentum_rate: getSlider('mc-momentum-rate'),
+    mc_hawkes_base: getSlider('mc-hawkes-base'), mc_hawkes_alpha: getSlider('mc-hawkes-alpha'), mc_hawkes_beta: getSlider('mc-hawkes-beta'),
+    mc_pool_strength: getSlider('mc-pool-strength'), mc_pool_count: getSlider('mc-pool-count'), mc_mean_rev: getSlider('mc-mean-rev'),
   };
   const res = await fetch('/api/character/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   const d = await res.json();
@@ -448,6 +544,40 @@ async function saveCharacter() {
 }
 
 initChart();
+
+// Ctrl+drag zoom-to-selection
+(function() {
+  const chartEl = document.getElementById('chart');
+  let zs = null;
+  chartEl.addEventListener('mousedown', e => {
+    if (!e.ctrlKey || !chart) return;
+    e.preventDefault();
+    chart.applyOptions({ handleScroll: false, handleScale: false });
+    zs = { startX: e.clientX, rect: document.createElement('div') };
+    zs.rect.style.cssText = 'position:absolute;top:0;bottom:0;background:rgba(249,115,22,0.1);border-left:1px solid #f97316;border-right:1px solid #f97316;pointer-events:none;z-index:20';
+    zs.rect.style.left = (e.clientX - chartEl.getBoundingClientRect().left) + 'px';
+    zs.rect.style.width = '0px';
+    chartEl.appendChild(zs.rect);
+  });
+  document.addEventListener('mousemove', e => {
+    if (!zs) return;
+    const left = chartEl.getBoundingClientRect().left;
+    zs.rect.style.left = (Math.min(zs.startX, e.clientX) - left) + 'px';
+    zs.rect.style.width = Math.abs(e.clientX - zs.startX) + 'px';
+  });
+  document.addEventListener('mouseup', e => {
+    if (!zs) return;
+    const left = chartEl.getBoundingClientRect().left;
+    const x0 = Math.min(zs.startX, e.clientX) - left;
+    const x1 = Math.max(zs.startX, e.clientX) - left;
+    zs.rect.remove(); zs = null;
+    chart.applyOptions({ handleScroll: true, handleScale: true });
+    if (x1 - x0 < 10) return;
+    const ts = chart.timeScale();
+    const t0 = ts.coordinateToTime(x0), t1 = ts.coordinateToTime(x1);
+    if (t0 != null && t1 != null) ts.setVisibleRange({ from: t0, to: t1 });
+  });
+})();
 </script>
 </body>
 </html>
