@@ -19,6 +19,7 @@ class CanvasOverlay {
         this._handlers = {};
         this._rafId = null;
         this.onDrawingComplete = null;
+        this._propEditor = null;
         this._setup();
     }
 
@@ -55,8 +56,10 @@ class CanvasOverlay {
         this._handlers.mousemove = e => this._mouseMove(e);
         this._handlers.mouseup = e => this._mouseUp(e);
         this._handlers.keydown = e => this._keyDown(e);
+        this._handlers.contextmenu = e => this._contextMenu(e);
         this.chartEl.addEventListener('mousedown', this._handlers.mousedown, true);
         this.chartEl.addEventListener('mousemove', this._handlers.mousemove, true);
+        this.chartEl.addEventListener('contextmenu', this._handlers.contextmenu, true);
         document.addEventListener('mouseup', this._handlers.mouseup);
         document.addEventListener('keydown', this._handlers.keydown);
     }
@@ -64,11 +67,13 @@ class CanvasOverlay {
     destroy() {
         this.chartEl.removeEventListener('mousedown', this._handlers.mousedown, true);
         this.chartEl.removeEventListener('mousemove', this._handlers.mousemove, true);
+        this.chartEl.removeEventListener('contextmenu', this._handlers.contextmenu, true);
         document.removeEventListener('mouseup', this._handlers.mouseup);
         document.removeEventListener('keydown', this._handlers.keydown);
         if (this.canvas) this.canvas.remove();
         if (this._overlay) this._overlay.remove();
         if (this._rafId) cancelAnimationFrame(this._rafId);
+        this._closePropEditor();
     }
 
     // ── Coordinate mapping ───────────────────────────────────────────────────
@@ -133,6 +138,7 @@ class CanvasOverlay {
 
     // ── Mouse events ─────────────────────────────────────────────────────────
     _mouseDown(e) {
+        if (e.button === 2) return; // right-click handled by contextmenu
         const pt = this._localPt(e);
         if (window._simDragActive) return;
         if (!this.activeTool) {
@@ -170,6 +176,33 @@ class CanvasOverlay {
             }
         }
 
+        // Multi-click channel tool (3 clicks: p1, p2, p3)
+        if (this._drawState && this._drawState.tool === 'channel') {
+            const ds = this._drawState;
+            if (ds.phase === 1) {
+                ds.phase = 2;
+                ds.p2Price = this._snap(price);
+                ds.p2Time = time;
+                ds.p2X = pt.x;
+                ds.p2Y = pt.y;
+                return;
+            }
+            if (ds.phase === 2) {
+                const d = {
+                    type: 'channel',
+                    p1: { time: ds.startTime, price: ds.startPrice },
+                    p2: { time: ds.p2Time, price: ds.p2Price },
+                    p3: { time: time, price: this._snap(price) },
+                    color: ds.color, lineStyle: ds.lineStyle, lineWidth: ds.lineWidth, id: Date.now()
+                };
+                this.drawings.push(d);
+                this._drawState = null;
+                this._finalize();
+                if (this.onDrawingComplete) this.onDrawingComplete(d);
+                return;
+            }
+        }
+
         if (this.activeTool === 'hline') {
             this.drawings.push({ type: 'hline', price: this._snap(price), color: this.activeColor, lineStyle: this.activeLineStyle, lineWidth: this.activeLineWidth, id: Date.now() });
             this._finalize();
@@ -178,6 +211,8 @@ class CanvasOverlay {
             this._finalize();
         } else if (this.activeTool === 'longpos' || this.activeTool === 'shortpos') {
             this._drawState = { tool: this.activeTool, phase: 1, startX: pt.x, startY: pt.y, startPrice: price, startTime: time, curX: pt.x, curY: pt.y };
+        } else if (this.activeTool === 'channel') {
+            this._drawState = { tool: 'channel', phase: 1, color: this.activeColor, lineStyle: this.activeLineStyle, lineWidth: this.activeLineWidth, startX: pt.x, startY: pt.y, startPrice: price, startTime: time, curX: pt.x, curY: pt.y };
         } else {
             this._drawState = { tool: this.activeTool, color: this.activeColor, lineStyle: this.activeLineStyle, lineWidth: this.activeLineWidth, startX: pt.x, startY: pt.y, startPrice: price, startTime: time, curX: pt.x, curY: pt.y };
         }
@@ -190,7 +225,7 @@ class CanvasOverlay {
             this._drawState.curX = pt.x;
             this._drawState.curY = pt.y;
             if (this._drawState.tool === 'line' && e.shiftKey) this._drawState.curY = this._drawState.startY;
-            if (this._drawState.phase === 2) this._drawState.slY = pt.y;
+            if (this._drawState.phase === 2 && (this._drawState.tool === 'longpos' || this._drawState.tool === 'shortpos')) this._drawState.slY = pt.y;
             this._scheduleRedraw();
             return;
         }
@@ -210,9 +245,9 @@ class CanvasOverlay {
     _mouseUp(e) {
         if (this._dragState) { this._endDrag(); return; }
         if (!this._drawState) return;
-        const ds = this._drawState;
-        const pt = this._localPt(e);
+        const ds = this._drawState, pt = this._localPt(e);
         if (ds.tool === 'longpos' || ds.tool === 'shortpos') return;
+        if (ds.tool === 'channel') return; // channel uses multi-click
         const dist = Math.hypot(pt.x - ds.startX, pt.y - ds.startY);
         if (dist < 5) { this._drawState = null; this._scheduleRedraw(); return; }
 
@@ -248,6 +283,84 @@ class CanvasOverlay {
         if (window._persistedDrawings !== undefined) window._persistedDrawings = JSON.parse(JSON.stringify(this.drawings));
     }
 
+    // ── Right-click property editor ──────────────────────────────────────────
+    _contextMenu(e) {
+        const pt = this._localPt(e);
+        const { drawing } = this._hitTest(pt.x, pt.y);
+        if (!drawing) return;
+        e.preventDefault();
+        e.stopPropagation();
+        this._closePropEditor();
+        const popup = document.createElement('div');
+        popup.style.cssText = 'position:fixed;z-index:9999;background:#1e1e2e;border:1px solid #444;border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;font:12px Inter,sans-serif;color:#ccc;min-width:160px;';
+        popup.style.left = e.clientX + 'px';
+        popup.style.top = e.clientY + 'px';
+
+        // Color picker
+        const colorRow = document.createElement('label');
+        colorRow.textContent = 'Color: ';
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = drawing.color || '#f0c040';
+        colorInput.style.cssText = 'width:50px;height:22px;border:none;cursor:pointer;vertical-align:middle;';
+        colorInput.addEventListener('input', () => { drawing.color = colorInput.value; this._scheduleRedraw(); });
+        colorRow.appendChild(colorInput);
+        popup.appendChild(colorRow);
+
+        // Line width slider
+        const widthRow = document.createElement('label');
+        widthRow.textContent = 'Width: ';
+        const widthInput = document.createElement('input');
+        widthInput.type = 'range';
+        widthInput.min = '1'; widthInput.max = '5'; widthInput.step = '1';
+        widthInput.value = String(drawing.lineWidth || 1);
+        widthInput.style.cssText = 'width:80px;vertical-align:middle;';
+        widthInput.addEventListener('input', () => { drawing.lineWidth = Number(widthInput.value); this._scheduleRedraw(); });
+        widthRow.appendChild(widthInput);
+        popup.appendChild(widthRow);
+
+        // Line style dropdown
+        const styleRow = document.createElement('label');
+        styleRow.textContent = 'Style: ';
+        const styleSelect = document.createElement('select');
+        styleSelect.style.cssText = 'background:#2a2a3e;color:#ccc;border:1px solid #555;border-radius:3px;padding:2px;vertical-align:middle;';
+        for (const s of ['solid', 'dashed', 'dotted']) {
+            const opt = document.createElement('option');
+            opt.value = s; opt.textContent = s;
+            if ((drawing.lineStyle || 'solid') === s) opt.selected = true;
+            styleSelect.appendChild(opt);
+        }
+        styleSelect.addEventListener('change', () => { drawing.lineStyle = styleSelect.value; this._scheduleRedraw(); });
+        styleRow.appendChild(styleSelect);
+        popup.appendChild(styleRow);
+
+        // Delete button
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.style.cssText = 'background:#e05c5c;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;margin-top:4px;';
+        delBtn.addEventListener('click', () => { this.remove(drawing.id); this._closePropEditor(); });
+        popup.appendChild(delBtn);
+
+        document.body.appendChild(popup);
+        this._propEditor = popup;
+        this._propEditorClose = (ev) => {
+            if (!popup.contains(ev.target)) this._closePropEditor();
+        };
+        setTimeout(() => document.addEventListener('mousedown', this._propEditorClose), 0);
+    }
+
+    _closePropEditor() {
+        if (this._propEditor) {
+            this._propEditor.remove();
+            this._propEditor = null;
+        }
+        if (this._propEditorClose) {
+            document.removeEventListener('mousedown', this._propEditorClose);
+            this._propEditorClose = null;
+        }
+        if (window._persistedDrawings !== undefined) window._persistedDrawings = this.toJSON();
+    }
+
     // ── Hit testing ──────────────────────────────────────────────────────────
     _hitTest(x, y) {
         const T = 8;
@@ -265,9 +378,10 @@ class CanvasOverlay {
                 if (x1 == null || y1 == null || x2 == null || y2 == null) continue;
                 // p3 handle
                 if (d.p3) {
+                    const x3 = d.p3.time ? this._timeToX(d.p3.time) : null;
                     const y3 = this._priceToY(d.p3.price);
-                    const x3 = (d.type === 'longpos' || d.type === 'shortpos') ? Math.max(x1, x2) : this._timeToX(d.p3.time);
-                    if (y3 != null && x3 != null && Math.hypot(x - x3, y - y3) < T) return { drawing: d, handle: 'p3' };
+                    const px3 = (d.type === 'longpos' || d.type === 'shortpos') ? Math.max(x1, x2) : x3;
+                    if (y3 != null && px3 != null && Math.hypot(x - px3, y - y3) < T) return { drawing: d, handle: 'p3' };
                 }
                 // Position tool handles
                 if (d.type === 'longpos' || d.type === 'shortpos') {
@@ -281,6 +395,18 @@ class CanvasOverlay {
                 // Body detection
                 if (d.type === 'line' || d.type === 'arrow') {
                     if (this._segDist(x, y, x1, y1, x2, y2) < T) return { drawing: d, handle: 'body' };
+                } else if (d.type === 'channel') {
+                    // Channel: check both lines and the midline
+                    if (d.p3) {
+                        const x3 = this._timeToX(d.p3.time), y3 = this._priceToY(d.p3.price);
+                        if (x3 != null && y3 != null) {
+                            const offX = x3 - x1, offY = y3 - y1;
+                            if (this._segDist(x, y, x1, y1, x2, y2) < T) return { drawing: d, handle: 'body' };
+                            if (this._segDist(x, y, x1 + offX, y1 + offY, x2 + offX, y2 + offY) < T) return { drawing: d, handle: 'body' };
+                        }
+                    } else {
+                        if (this._segDist(x, y, x1, y1, x2, y2) < T) return { drawing: d, handle: 'body' };
+                    }
                 } else if (d.type === 'ellipse') {
                     const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2, rx2 = Math.abs(x2 - x1) / 2, ry2 = Math.abs(y2 - y1) / 2;
                     if (rx2 > 0 && ry2 > 0 && Math.abs(((x - cx) / rx2) ** 2 + ((y - cy) / ry2) ** 2 - 1) < 0.3) return { drawing: d, handle: 'body' };
@@ -319,7 +445,7 @@ class CanvasOverlay {
         else if (d.type === 'vline') { if (curTime) d.time = curTime; }
         else if (handle === 'p1') { if (curPrice != null) d.p1.price = this._snap(curPrice); if (curTime) d.p1.time = curTime; }
         else if (handle === 'p2') { if (curPrice != null) d.p2.price = this._snap(curPrice); if (curTime) d.p2.time = curTime; }
-        else if (handle === 'p3' && d.p3) { if (curPrice != null) d.p3.price = this._snap(curPrice); }
+        else if (handle === 'p3' && d.p3) { if (curPrice != null) d.p3.price = this._snap(curPrice); if (curTime) d.p3.time = curTime; }
         else if (curPrice != null && startPrice != null && orig.p1 && orig.p2) {
             const dp = curPrice - startPrice;
             const dx = pt.x - startX;
@@ -328,7 +454,11 @@ class CanvasOverlay {
             const t2 = ox2 != null ? this._xToTimeExt(ox2 + dx) : orig.p2.time;
             d.p1 = { time: t1 || orig.p1.time, price: this._snap(orig.p1.price + dp) };
             d.p2 = { time: t2 || orig.p2.time, price: this._snap(orig.p2.price + dp) };
-            if (orig.p3) d.p3 = { time: orig.p3.time, price: this._snap(orig.p3.price + dp) };
+            if (orig.p3) {
+                const ox3 = this._timeToX(orig.p3.time);
+                const t3 = ox3 != null ? this._xToTimeExt(ox3 + dx) : orig.p3.time;
+                d.p3 = { time: t3 || orig.p3.time, price: this._snap(orig.p3.price + dp) };
+            }
         }
         this._scheduleRedraw();
     }
@@ -436,15 +566,7 @@ class CanvasOverlay {
             ctx.beginPath(); ctx.arc(x1, y1, Math.max(r, 1), 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             if (hovered) { ctx.fillStyle = d.color || '#f0c040'; ctx.beginPath(); ctx.arc(x2, y2, 4, 0, Math.PI * 2); ctx.fill(); }
         } else if (d.type === 'channel') {
-            const x1 = this._timeToX(d.p1.time), y1 = this._priceToY(d.p1.price);
-            const x2 = this._timeToX(d.p2.time), y2 = this._priceToY(d.p2.price);
-            if (x1 == null || y1 == null || x2 == null || y2 == null) { ctx.restore(); return; }
-            ctx.strokeStyle = d.color || '#38bdf8'; ctx.lineWidth = hovered ? 2 : 1; ctx.setLineDash([]);
-            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y1); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(x1, y2); ctx.lineTo(x2, y2); ctx.stroke();
-            ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(x1, (y1 + y2) / 2); ctx.lineTo(x2, (y1 + y2) / 2); ctx.stroke();
-            ctx.fillStyle = (d.color || '#38bdf8') + '10';
-            ctx.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+            this._renderChannel(d, hovered);
         } else if (d.type === 'fib') {
             this._renderFib(d, hovered);
         } else if (d.type === 'fibcircle') {
@@ -452,11 +574,111 @@ class CanvasOverlay {
         } else if (d.type === 'gannbox') {
             this._renderGannBox(d, hovered);
         } else if (d.type === 'gannfan') {
-            this._renderGannFan(d);
+            this._renderGannFan(d, hovered);
         } else if (d.type === 'longpos' || d.type === 'shortpos') {
             this._renderPosition(d, hovered);
         }
         ctx.restore();
+    }
+
+    _renderChannel(d, hovered) {
+        const ctx = this.ctx;
+        const x1 = this._timeToX(d.p1.time), y1 = this._priceToY(d.p1.price);
+        const x2 = this._timeToX(d.p2.time), y2 = this._priceToY(d.p2.price);
+        if (x1 == null || y1 == null || x2 == null || y2 == null) return;
+        const color = d.color || '#38bdf8';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = hovered ? 2 : (d.lineWidth || 1);
+        ctx.setLineDash([]);
+
+        // First line: p1 to p2
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+
+        if (d.p3) {
+            const x3 = this._timeToX(d.p3.time), y3 = this._priceToY(d.p3.price);
+            if (x3 != null && y3 != null) {
+                // Offset vector from p1 to p3
+                const offX = x3 - x1, offY = y3 - y1;
+                // Second parallel line
+                ctx.beginPath(); ctx.moveTo(x1 + offX, y1 + offY); ctx.lineTo(x2 + offX, y2 + offY); ctx.stroke();
+                // Midline dashed
+                ctx.setLineDash([4, 3]);
+                ctx.beginPath(); ctx.moveTo(x1 + offX / 2, y1 + offY / 2); ctx.lineTo(x2 + offX / 2, y2 + offY / 2); ctx.stroke();
+                // Fill between
+                ctx.setLineDash([]);
+                ctx.fillStyle = color + '10';
+                ctx.beginPath();
+                ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                ctx.lineTo(x2 + offX, y2 + offY); ctx.lineTo(x1 + offX, y1 + offY);
+                ctx.closePath(); ctx.fill();
+                if (hovered) {
+                    this._drawHandle(ctx, x1, y1, color);
+                    this._drawHandle(ctx, x2, y2, color);
+                    this._drawHandle(ctx, x3, y3, color);
+                }
+            }
+        } else {
+            // Fallback: just the line
+            if (hovered) {
+                this._drawHandle(ctx, x1, y1, color);
+                this._drawHandle(ctx, x2, y2, color);
+            }
+        }
+    }
+
+    _renderGannFan(d, hovered) {
+        const ctx = this.ctx;
+        const x1 = this._timeToX(d.p1.time), y1 = this._priceToY(d.p1.price);
+        const x2 = this._timeToX(d.p2.time), y2 = this._priceToY(d.p2.price);
+        if (x1 == null || y1 == null || x2 == null || y2 == null) return;
+        const color = d.color || '#fb923c';
+        const dx = x2 - x1, dy = y2 - y1;
+        const baseLen = Math.hypot(dx, dy);
+        if (baseLen < 1) return;
+
+        // Direction sign: fan radiates from p1 toward p2
+        const signX = Math.sign(dx) || 1;
+        const signY = Math.sign(dy) || 1;
+        // Use the 1x1 line distance as reference length
+        const refLen = Math.max(baseLen, 200);
+
+        // Gann angles: [label, time_units, price_units, opacity]
+        const angles = [
+            ['1x4', 1, 4, 0.35],
+            ['1x3', 1, 3, 0.45],
+            ['1x2', 1, 2, 0.55],
+            ['1x1', 1, 1, 1.0],
+            ['2x1', 2, 1, 0.55],
+            ['3x1', 3, 1, 0.45],
+            ['4x1', 4, 1, 0.35],
+        ];
+
+        // The 1x1 angle is 45° in pixel space based on p1->p2 direction
+        // We normalize so that 1x1 goes at 45° from horizontal in the direction of p2
+        const unitX = refLen; // horizontal pixel distance for 1 time unit
+        const unitY = refLen; // vertical pixel distance for 1 price unit
+
+        for (const [label, tUnits, pUnits, opacity] of angles) {
+            const endX = x1 + signX * unitX * tUnits;
+            const endY = y1 + signY * unitY * pUnits;
+
+            ctx.globalAlpha = opacity;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = label === '1x1' ? (hovered ? 2.5 : 2) : (hovered ? 1.5 : 1);
+            ctx.setLineDash(label === '1x1' ? [] : [4, 3]);
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(endX, endY); ctx.stroke();
+
+            // Label at end
+            ctx.fillStyle = color;
+            ctx.font = '9px Inter,sans-serif';
+            ctx.fillText(label, endX + 3, endY - 3);
+        }
+        ctx.globalAlpha = 1.0;
+
+        if (hovered) {
+            this._drawHandle(ctx, x1, y1, color);
+            this._drawHandle(ctx, x2, y2, color);
+        }
     }
 
     _renderFib(d, hovered) {
@@ -528,25 +750,6 @@ class CanvasOverlay {
         ctx.beginPath(); ctx.moveTo(left + bw, top); ctx.lineTo(left, top + bh); ctx.stroke();
     }
 
-    _renderGannFan(d) {
-        const ctx = this.ctx;
-        const x1 = this._timeToX(d.p1.time), y1 = this._priceToY(d.p1.price);
-        const x2 = this._timeToX(d.p2.time), y2 = this._priceToY(d.p2.price);
-        if (x1 == null || y1 == null || x2 == null || y2 == null) return;
-        const color = d.color || '#fb923c';
-        const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) * 2;
-        const angles = [1 / 8, 1 / 4, 1 / 3, 1 / 2, 1, 2, 3, 4, 8];
-        for (const a of angles) {
-            ctx.strokeStyle = a === 1 ? color : color + '88'; ctx.lineWidth = 1;
-            ctx.setLineDash(a === 1 ? [] : [3, 3]);
-            const ex = x1 + len * Math.sign(dx);
-            const ey = y1 + len * Math.sign(dx) * (dy / dx) * a;
-            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(ex, ey); ctx.stroke();
-        }
-        ctx.fillStyle = color; ctx.font = '9px Inter,sans-serif';
-        ctx.fillText('1x1', x1 + dx + 3, y1 + dy - 3);
-    }
-
     _renderPosition(d, hovered) {
         const ctx = this.ctx;
         const x1 = this._timeToX(d.p1.time), x2 = this._timeToX(d.p2.time);
@@ -607,10 +810,24 @@ class CanvasOverlay {
             ctx.beginPath(); ctx.arc(ds.startX, ds.startY, Math.max(r, 1), 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         } else if (ds.tool === 'channel') {
             ctx.strokeStyle = ds.color; ctx.lineWidth = 1; ctx.setLineDash([]);
-            ctx.beginPath(); ctx.moveTo(ds.startX, ds.startY); ctx.lineTo(ds.curX, ds.startY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(ds.startX, ds.curY); ctx.lineTo(ds.curX, ds.curY); ctx.stroke();
-            ctx.fillStyle = ds.color + '10';
-            ctx.fillRect(Math.min(ds.startX, ds.curX), Math.min(ds.startY, ds.curY), Math.abs(ds.curX - ds.startX), Math.abs(ds.curY - ds.startY));
+            if (ds.phase === 1) {
+                // Drawing first line from p1 toward cursor
+                ctx.beginPath(); ctx.moveTo(ds.startX, ds.startY); ctx.lineTo(ds.curX, ds.curY); ctx.stroke();
+            } else if (ds.phase === 2) {
+                // First line locked, showing parallel offset
+                const x1 = ds.startX, y1 = ds.startY, x2 = ds.p2X, y2 = ds.p2Y;
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                const offX = ds.curX - x1, offY = ds.curY - y1;
+                ctx.beginPath(); ctx.moveTo(x1 + offX, y1 + offY); ctx.lineTo(x2 + offX, y2 + offY); ctx.stroke();
+                ctx.setLineDash([4, 3]);
+                ctx.beginPath(); ctx.moveTo(x1 + offX / 2, y1 + offY / 2); ctx.lineTo(x2 + offX / 2, y2 + offY / 2); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = ds.color + '10';
+                ctx.beginPath();
+                ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                ctx.lineTo(x2 + offX, y2 + offY); ctx.lineTo(x1 + offX, y1 + offY);
+                ctx.closePath(); ctx.fill();
+            }
         } else if (ds.tool === 'fib') {
             const sp = this._yToPrice(ds.startY), cp = this._yToPrice(ds.curY);
             if (sp != null && cp != null) {
@@ -644,8 +861,24 @@ class CanvasOverlay {
             ctx.strokeRect(left, top, bw, bh);
             ctx.beginPath(); ctx.moveTo(left, top); ctx.lineTo(left + bw, top + bh); ctx.stroke();
         } else if (ds.tool === 'gannfan') {
-            ctx.strokeStyle = ds.color; ctx.lineWidth = 1; ctx.setLineDash([]);
-            ctx.beginPath(); ctx.moveTo(ds.startX, ds.startY); ctx.lineTo(ds.curX, ds.curY); ctx.stroke();
+            // Preview: show radiating lines from start toward cursor
+            const dx = ds.curX - ds.startX, dy = ds.curY - ds.startY;
+            const baseLen = Math.hypot(dx, dy);
+            if (baseLen > 1) {
+                const signX = Math.sign(dx) || 1, signY = Math.sign(dy) || 1;
+                const refLen = Math.max(baseLen, 150);
+                const angles = [['1x4',1,4,0.35],['1x3',1,3,0.45],['1x2',1,2,0.55],['1x1',1,1,1.0],['2x1',2,1,0.55],['3x1',3,1,0.45],['4x1',4,1,0.35]];
+                for (const [label, tU, pU, opacity] of angles) {
+                    ctx.globalAlpha = 0.6 * opacity;
+                    ctx.strokeStyle = ds.color;
+                    ctx.lineWidth = label === '1x1' ? 2 : 1;
+                    ctx.setLineDash(label === '1x1' ? [] : [4, 3]);
+                    ctx.beginPath(); ctx.moveTo(ds.startX, ds.startY);
+                    ctx.lineTo(ds.startX + signX * refLen * tU, ds.startY + signY * refLen * pU);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 0.6;
+            }
         } else if (ds.tool === 'longpos' || ds.tool === 'shortpos') {
             const entryY = ds.startY;
             if (ds.phase === 1) {
