@@ -939,6 +939,23 @@ document.addEventListener('DOMContentLoaded', () => {
   initChart();
   refreshSavedList();
   populateCustomIndicatorDropdown();
+
+  // Ctrl+scroll = zoom price axis
+  document.getElementById('sim-chart').addEventListener('wheel', (e) => {
+    if (!e.ctrlKey || !chart) return;
+    e.preventDefault();
+    const scale = chart.priceScale('right');
+    const opts = scale.options();
+    if (opts.autoScale) scale.applyOptions({ autoScale: false });
+    const factor = e.deltaY > 0 ? 1.1 : 0.9;
+    const mode = opts.mode || 0;
+    scale.applyOptions({ autoScale: false });
+    // Zoom by adjusting visible price range margins
+    const margins = opts.scaleMargins || { top: 0.1, bottom: 0.1 };
+    const newTop = Math.min(0.45, Math.max(0, margins.top + (e.deltaY > 0 ? 0.02 : -0.02)));
+    const newBot = Math.min(0.45, Math.max(0, margins.bottom + (e.deltaY > 0 ? 0.02 : -0.02)));
+    scale.applyOptions({ scaleMargins: { top: newTop, bottom: newBot } });
+  }, { passive: false });
   // Populate instrument dropdown from character list
   fetch('/api/character/list').then(r => r.json()).then(list => {
     const sel = document.getElementById('sim-instrument');
@@ -1365,6 +1382,8 @@ async function loadSavedSession(idx) {
   const saved = JSON.parse(localStorage.getItem('pf_sessions') || '[]');
   const s = saved[idx]; if (!s) return;
   stopPlay();
+  document.getElementById('chart-overlay').classList.remove('hidden');
+  document.getElementById('load-text').textContent = 'Restoring session...';
 
   // Set UI to match saved state
   document.getElementById('sim-instrument').value = s.instrument || 'ES';
@@ -1434,6 +1453,7 @@ async function loadSavedSession(idx) {
   else log.innerHTML = '<div style="font-size:0.72rem;color:#bbb;padding:4px 0">No trades yet</div>';
   chart.timeScale().fitContent();
   document.getElementById('pb-info').textContent = `Restored - Bar ${tickIdx}/${allTicks.length}`;
+  document.getElementById('chart-overlay').classList.add('hidden');
 }
 
 function deleteSavedSession(idx) {
