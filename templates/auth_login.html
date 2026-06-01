@@ -2,48 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Login — PatternFoundry</title>
+<title>Sign In — PatternFoundry</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d0d;color:#ddd;font-family:'Inter',sans-serif;min-height:100vh}
-a{color:#f97316;text-decoration:none}a:hover{text-decoration:underline}
-header{display:flex;align-items:center;padding:1rem 2rem;border-bottom:1px solid #222}
-header img{height:36px;margin-right:.75rem}header .brand{font-size:1.25rem;font-weight:700;color:#f97316;margin-right:2rem}
-header nav a{margin-right:1.25rem;color:#ddd;font-size:.9rem}header nav a:hover{color:#f97316}
-.container{max-width:400px;margin:4rem auto;padding:2rem;background:#181818;border-radius:8px;border:1px solid #222}
-h2{margin-bottom:1.5rem;color:#f97316}
-.error{background:#3b1111;border:1px solid #f44;color:#f88;padding:.75rem;border-radius:4px;margin-bottom:1rem;font-size:.85rem}
-label{display:block;margin-bottom:.25rem;font-size:.85rem;color:#aaa}
-input{width:100%;padding:.6rem .75rem;margin-bottom:1rem;background:#111;border:1px solid #333;border-radius:4px;color:#ddd;font-size:.9rem}
-input:focus{outline:none;border-color:#f97316}
-button{width:100%;padding:.7rem;background:#4caf82;color:#fff;border:none;border-radius:4px;font-size:1rem;font-weight:600;cursor:pointer}
-button:hover{background:#3d9e6f}
-.links{margin-top:1rem;font-size:.85rem;text-align:center}
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+a{color:#f97316;text-decoration:none}a:hover{color:#fb923c}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px}
+.container{max-width:380px;margin:80px auto;padding:32px;background:#111;border-radius:8px;border:1px solid #2a2a2a}
+h2{margin-bottom:20px;color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em}
+.error{background:#1a0f0f;border:1px solid #e05c5c44;color:#e05c5c;padding:10px 12px;border-radius:5px;margin-bottom:16px;font-size:.8rem}
+label{display:block;margin-bottom:4px;font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.04em}
+input{width:100%;padding:8px 10px;margin-bottom:14px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;color:#ddd;font-size:.85rem;font-family:inherit}
+input:focus{outline:none;border-color:#4caf82}
+button{width:100%;padding:10px;background:#4caf82;color:#0a0a0a;border:none;border-radius:5px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.03em}
+button:hover{background:#5cc992}
+.links{margin-top:16px;font-size:.8rem;text-align:center;color:#888}
+.links a{margin:0 6px}
 </style>
 </head>
 <body>
-<header>
-<img src="/static/patternFoundryLogo.png" alt="PatternFoundry">
-<span class="brand">PatternFoundry</span>
-<nav>
-<a href="/dashboard">Dashboard</a>
-<a href="/simulator">Simulator</a>
-<a href="/chartdesigner">Chart Designer</a>
-{% if is_admin %}<a href="/admin/users">Users</a>{% endif %}
-</nav>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
 </header>
 <div class="container">
-<h2>Login</h2>
+<h2>Sign In</h2>
 {% if error %}<div class="error">{{ error }}</div>{% endif %}
 <form method="POST" action="/login">
-<label for="email">Email</label>
-<input type="email" id="email" name="email" required>
-<label for="password">Password</label>
-<input type="password" id="password" name="password" required>
+<label>Email</label>
+<input type="email" name="email" value="{{ email or '' }}" required autofocus>
+<label>Password</label>
+<input type="password" name="password" required>
 <button type="submit">Sign In</button>
 </form>
 <div class="links">
-<a href="/register">Create an account</a> &middot; <a href="/forgot">Forgot password?</a>
+<a href="/register">Create account</a>
 </div>
 </div>
 </body>

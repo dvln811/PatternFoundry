@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <script src="/static/indicators.js"></script>
   <script src="/static/canvas-overlay.js"></script>
+  <script src="/static/custom-indicator.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { color-scheme: dark; }
@@ -446,6 +447,7 @@
           <input type="number" id="ind-period" value="20" min="1" max="500" placeholder="Period">
         </span>
         <button class="ind-add-btn" onclick="addIndicator()">+</button>
+        <button class="ind-add-btn" onclick="openCustomIndicator()" title="Custom Indicator" style="font-family:monospace">{ }</button>
         <div class="tb-sep"></div>
         <div id="ind-chips" style="display:flex;flex-wrap:wrap;gap:2px"></div>
       </div>
@@ -505,6 +507,75 @@
     </aside>
 
   </div><!-- .layout -->
+
+<!-- Custom Indicator Modal -->
+<div id="ci-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeCustomIndicator()">
+  <div onclick="event.stopPropagation()" style="background:#111;border:1px solid #2a2a2a;border-radius:10px;width:700px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:14px 18px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between">
+      <span style="color:#f97316;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.1em">Custom Indicator</span>
+      <button onclick="closeCustomIndicator()" style="background:none;border:none;color:#888;font-size:1.2rem;cursor:pointer">&times;</button>
+    </div>
+    <div style="display:flex;flex:1;overflow:hidden">
+      <!-- Editor -->
+      <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #222">
+        <div style="padding:8px 12px;display:flex;gap:8px;align-items:center">
+          <input type="text" id="ci-name" placeholder="Indicator name" value="My Indicator" style="flex:1;min-width:150px;background:#1a1a1a;border:1px solid #2a2a2a;color:#ddd;padding:5px 8px;border-radius:4px;font-size:.8rem">
+          <select id="ci-type" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#ddd;padding:5px;border-radius:4px;font-size:.75rem">
+            <option value="overlay">Overlay</option>
+            <option value="oscillator">Oscillator</option>
+          </select>
+        </div>
+        <textarea id="ci-code" spellcheck="false" style="flex:1;background:#0a0a0a;color:#ddd;border:none;padding:12px;font-family:monospace;font-size:.8rem;resize:none;outline:none;line-height:1.5">// Available: candles, close, open, high, low, volume
+// Helpers: sma(candles, period), ema(candles, period),
+//   rsi(candles, period), atr(candles, period),
+//   stdev(candles, period), highest(candles, period),
+//   lowest(candles, period)
+//
+// Return: [{time, value}] or [{time, value, color}]
+// Use color per-point for conditional coloring:
+//   color: val > 0 ? '#4caf82' : '#e05c5c'
+
+const fast = ema(candles, 9);
+const slow = ema(candles, 21);
+return fast.map((f, i) => ({
+  time: f.time,
+  value: f.value - (slow[i] ? slow[i].value : f.value),
+  color: f.value > (slow[i] ? slow[i].value : 0) ? '#4caf82' : '#e05c5c'
+}));
+</textarea>
+        <div id="ci-error" style="padding:6px 12px;font-size:.72rem;color:#e05c5c;background:#1a0f0f;display:none"></div>
+        <div style="padding:10px 12px;display:flex;gap:8px;border-top:1px solid #222">
+          <button onclick="applyCustomIndicator()" style="padding:6px 16px;background:#4caf82;color:#0a0a0a;border:none;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer">Apply</button>
+          <button onclick="saveCustomIndicator()" style="padding:6px 16px;background:transparent;border:1px solid #f97316;color:#f97316;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer">Save</button>
+          <select id="ci-saved" onchange="loadSavedIndicator()" style="margin-left:auto;background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:4px 8px;border-radius:4px;font-size:.72rem">
+            <option value="">-- Saved --</option>
+          </select>
+          <button onclick="deleteCustomIndicator()" title="Delete selected" style="background:transparent;border:1px solid #e05c5c44;color:#e05c5c88;border-radius:4px;padding:4px 8px;font-size:.68rem;cursor:pointer">✕</button>
+        </div>
+      </div>
+      <!-- Reference -->
+      <div style="width:200px;padding:10px;overflow-y:auto;font-size:.68rem;color:#888;line-height:1.6">
+        <div style="color:#f97316;font-weight:600;margin-bottom:6px;text-transform:uppercase;font-size:.6rem;letter-spacing:.05em">Available Functions</div>
+        <code style="color:#4caf82">sma(candles, period)</code><br>
+        <code style="color:#4caf82">ema(candles, period)</code><br>
+        <code style="color:#4caf82">rsi(candles, period)</code><br>
+        <code style="color:#4caf82">atr(candles, period)</code><br>
+        <code style="color:#4caf82">stdev(candles, period)</code><br>
+        <code style="color:#4caf82">highest(candles, period)</code><br>
+        <code style="color:#4caf82">lowest(candles, period)</code><br>
+        <code style="color:#4caf82">crossover(a, b)</code><br>
+        <code style="color:#4caf82">crossunder(a, b)</code><br>
+        <div style="margin-top:10px;color:#f97316;font-weight:600;text-transform:uppercase;font-size:.6rem;letter-spacing:.05em">Arrays</div>
+        <code style="color:#38bdf8">candles</code> [{time,open,high,low,close,volume}]<br>
+        <code style="color:#38bdf8">close</code> [numbers]<br>
+        <code style="color:#38bdf8">open, high, low, volume</code><br>
+        <div style="margin-top:10px;color:#f97316;font-weight:600;text-transform:uppercase;font-size:.6rem;letter-spacing:.05em">Return</div>
+        Array of <code style="color:#ddd">{time, value}</code><br>
+        Optional: <code style="color:#ddd">{time, value, color}</code>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── State ────────────────────────────────────────────────────────────────
@@ -857,6 +928,7 @@ function stopPlay() {
 document.addEventListener('DOMContentLoaded', () => {
   initChart();
   refreshSavedList();
+  populateCustomIndicatorDropdown();
   // Populate instrument dropdown from character list
   fetch('/api/character/list').then(r => r.json()).then(list => {
     const sel = document.getElementById('sim-instrument');
@@ -1388,31 +1460,21 @@ async function importSession(event) {
 // ── Indicators ────────────────────────────────────────────────────────────
 let activeIndicators = [];
 let allCandles = [];
-let indColorIdx = 0;
+let indColorIdx = Math.floor(Math.random() * 8);
 const IND_COLORS = ['#f0c040','#a78bfa','#38bdf8','#fb923c','#f472b6','#34d399','#818cf8','#fbbf24'];
 
 function buildAllCandles() {
-  // Build candle array matching what's currently on the chart (same TF, same timestamps)
+  // Use exactly what's on the chart - timestamps guaranteed to match
+  const data = window._chartData || [];
   const histBars = window._historyBars || [];
-  // Aggregate played ticks into 1-min candles
-  const playedCandles = [];
-  let pb = null;
-  for (let i = 0; i < tickIdx; i++) {
-    const t = allTicks[i];
-    const ct = (Math.floor(t.time / 60)) * 60;
-    if (!pb || pb.time !== ct) {
-      if (pb) playedCandles.push(pb);
-      pb = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
-    } else {
-      pb.high = Math.max(pb.high, t.price);
-      pb.low  = Math.min(pb.low,  t.price);
-      pb.close = t.price;
-      pb.volume += t.volume;
-    }
-  }
-  if (pb) playedCandles.push(pb);
-  // Rebucket to current TF (same function the chart uses, with sequential timestamps)
-  allCandles = rebucketHistory([...histBars, ...playedCandles], candleTF);
+  // _chartData has {time,open,high,low,close} but no volume
+  // Build a time->volume lookup from histBars
+  const volMap = {};
+  for (const c of histBars) volMap[c.time] = c.volume || 0;
+  allCandles = data.map(c => ({
+    time: c.time, open: c.open, high: c.high, low: c.low, close: c.close,
+    volume: volMap[c.time] || 0
+  }));
 }
 
 function onIndSelectChange() {
@@ -1420,7 +1482,9 @@ function onIndSelectChange() {
   const paramsEl = document.getElementById('ind-params');
   const noParams = ['vwap', 'macd', ''];
   const defaults = { sma: 20, ema: 20, rsi: 14, bbands: 20, atr: 14 };
-  if (noParams.includes(type)) {
+  if (type.startsWith('custom:')) {
+    paramsEl.style.display = 'none';
+  } else if (noParams.includes(type)) {
     paramsEl.style.display = 'none';
   } else {
     paramsEl.style.display = '';
@@ -1428,9 +1492,44 @@ function onIndSelectChange() {
   }
 }
 
+function populateCustomIndicatorDropdown() {
+  const sel = document.getElementById('ind-select');
+  // Remove old custom options
+  sel.querySelectorAll('option[data-custom]').forEach(o => o.remove());
+  const saved = CustomIndicator.loadAll();
+  if (saved.length) {
+    const sep = document.createElement('option'); sep.disabled = true; sep.textContent = '── Custom ──'; sep.dataset.custom = '1';
+    sel.appendChild(sep);
+    saved.forEach(s => {
+      const opt = document.createElement('option'); opt.value = 'custom:' + s.name; opt.textContent = s.name; opt.dataset.custom = '1';
+      sel.appendChild(opt);
+    });
+  }
+}
+
 function addIndicator() {
   const type = document.getElementById('ind-select').value;
   if (!type || !chart) return;
+
+  // Handle custom indicators
+  if (type.startsWith('custom:')) {
+    const name = type.replace('custom:', '');
+    const saved = CustomIndicator.loadAll().find(s => s.name === name);
+    if (!saved) return;
+    buildAllCandles();
+    const result = CustomIndicator.execute(saved.code, allCandles);
+    if (result.error) { alert('Error in ' + name + ': ' + result.error); return; }
+    const color = saved.color || IND_COLORS[indColorIdx++ % IND_COLORS.length];
+    const scaleId = 'custom_' + Date.now();
+    const s = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
+    chart.priceScale(scaleId).applyOptions({ scaleMargins: saved.displayType === 'oscillator' ? { top: 0.75, bottom: 0 } : { top: 0.1, bottom: 0.1 } });
+    s.setData(result);
+    activeIndicators.push({ id: Date.now(), type: 'custom', label: name, color, series: [s], period: 0 });
+    renderIndChips();
+    document.getElementById('ind-select').value = '';
+    return;
+  }
+
   const periodEl = document.getElementById('ind-period');
   const period = periodEl ? (parseInt(periodEl.value) || 20) : 20;
   const color = IND_COLORS[indColorIdx++ % IND_COLORS.length];
@@ -1507,13 +1606,31 @@ function recomputeIndicators() {
 }
 
 function rebuildIndicators() {
-  // Re-create indicator series on the current chart after initChart() destroyed them
+  // Remove all existing indicator series from chart
+  for (const ind of activeIndicators) {
+    for (const s of (ind.series || [])) { try { chart.removeSeries(s); } catch(e) {} }
+  }
+  if (_customIndSeries) { try { chart.removeSeries(_customIndSeries); } catch(e) {} _customIndSeries = null; }
+
   buildAllCandles();
   const saved = activeIndicators.map(i => ({ type: i.type, period: i.period, color: i.color, label: i.label }));
   activeIndicators = [];
   for (const si of saved) {
     const ind = { id: Date.now() + Math.random(), type: si.type, period: si.period, color: si.color, label: si.label, series: [] };
-    if (si.type === 'macd') {
+    if (si.type === 'custom') {
+      // Re-apply custom indicator
+      const customSaved = CustomIndicator.loadAll().find(s => s.name === si.label);
+      if (customSaved) {
+        const result = CustomIndicator.execute(customSaved.code, allCandles);
+        if (!result.error) {
+          const scaleId = 'custom_' + ind.id;
+          const s = chart.addLineSeries({ color: si.color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: si.label, priceScaleId: scaleId });
+          chart.priceScale(scaleId).applyOptions({ scaleMargins: customSaved.displayType === 'oscillator' ? { top: 0.75, bottom: 0 } : { top: 0.1, bottom: 0.1 } });
+          s.setData(result);
+          ind.series = [s];
+        }
+      }
+    } else if (si.type === 'macd') {
       const d = Indicators.macd(allCandles, 12, 26, 9);
       const scaleId = 'macd_' + ind.id;
       const s1 = chart.addLineSeries({ color: '#38bdf8', lineWidth: 1, priceLineVisible: false, lastValueVisible: true, title: 'MACD', priceScaleId: scaleId });
@@ -1597,6 +1714,73 @@ function updateDOM(price, spread, tick) {
     spreadLabel.textContent = spread.toFixed(2);
     spreadLabel.style.color = spread > tick ? '#e05c5c' : '#f0c040';
   }
+}
+
+// ── Custom Indicator Modal ─────────────────────────────────────────────────────
+let _customIndSeries = null;
+
+function openCustomIndicator() {
+  document.getElementById('ci-modal').style.display = 'flex';
+  refreshSavedIndicatorList();
+}
+function closeCustomIndicator() {
+  document.getElementById('ci-modal').style.display = 'none';
+}
+function applyCustomIndicator() {
+  const code = document.getElementById('ci-code').value;
+  const color = IND_COLORS[indColorIdx++ % IND_COLORS.length];
+  const type = document.getElementById('ci-type').value;
+  const name = document.getElementById('ci-name').value.trim() || 'Custom';
+  const errEl = document.getElementById('ci-error');
+  errEl.style.display = 'none';
+  buildAllCandles();
+  const result = CustomIndicator.execute(code, allCandles);
+  if (result.error) { errEl.textContent = result.error; errEl.style.display = ''; return; }
+  if (_customIndSeries) { try { chart.removeSeries(_customIndSeries); } catch(e) {} _customIndSeries = null; }
+  // Detect if result has per-point colors → use histogram, else line
+  const hasColors = result.length > 0 && result[0].color;
+  const scaleId = 'custom_' + Date.now();
+  if (hasColors) {
+    _customIndSeries = chart.addHistogramSeries({ priceScaleId: scaleId, priceLineVisible: false, lastValueVisible: true, title: name });
+    chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+  } else if (type === 'oscillator') {
+    _customIndSeries = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
+    chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+  } else {
+    _customIndSeries = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
+    chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.1, bottom: 0.1 } });
+  }
+  _customIndSeries.setData(result);
+}
+function saveCustomIndicator() {
+  const name = document.getElementById('ci-name').value.trim();
+  if (!name) { alert('Name required'); return; }
+  CustomIndicator.save(name, document.getElementById('ci-code').value, document.getElementById('ci-type').value, '');
+  refreshSavedIndicatorList();
+  populateCustomIndicatorDropdown();
+}
+function deleteCustomIndicator() {
+  const name = document.getElementById('ci-saved').value;
+  if (!name) return;
+  if (!confirm('Delete "' + name + '"?')) return;
+  CustomIndicator.remove(name);
+  refreshSavedIndicatorList();
+  document.getElementById('ci-saved').value = '';
+}
+function refreshSavedIndicatorList() {
+  const sel = document.getElementById('ci-saved');
+  const saved = CustomIndicator.loadAll();
+  sel.innerHTML = '<option value="">-- Saved --</option>' + saved.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+}
+function loadSavedIndicator() {
+  const name = document.getElementById('ci-saved').value;
+  if (!name) return;
+  const saved = CustomIndicator.loadAll().find(s => s.name === name);
+  if (!saved) return;
+  document.getElementById('ci-name').value = saved.name;
+  document.getElementById('ci-code').value = saved.code;
+  document.getElementById('ci-type').value = saved.displayType || 'overlay';
+  document.getElementById('ci-color').value = saved.color || '#f0c040';
 }
 </script>
 </body>

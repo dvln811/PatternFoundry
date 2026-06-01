@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Board — PatternFoundry</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0;z-index:100}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 16px;flex:1;overflow-x:auto;min-height:0}
+.column{background:#111;border:1px solid #2a2a2a;border-radius:6px;display:flex;flex-direction:column;min-height:0}
+.column-header{padding:10px 12px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between}
+.column-header h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:#888}
+.column-header .count{font-size:.7rem;color:#555;margin-left:6px}
+.add-btn{background:none;border:1px solid #2a2a2a;color:#888;font-size:16px;width:24px;height:24px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.add-btn:hover{border-color:#4caf82;color:#4caf82}
+.cards{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:10px;cursor:grab;border-left:3px solid #555;position:relative}
+.card.dragging{opacity:.4}
+.card.drag-over{border-top:2px solid #4caf82}
+.card[data-priority="low"]{border-left-color:#4a9eff}
+.card[data-priority="med"]{border-left-color:#f5c542}
+.card[data-priority="high"]{border-left-color:#f97316}
+.card[data-priority="crit"]{border-left-color:#e05c5c}
+.card-title{font-size:.8rem;font-weight:600;color:#e0e0e0;outline:none;border:none;background:none;width:100%;color:inherit;font-family:inherit}
+.card-title:focus{border-bottom:1px solid #4caf82}
+.card-notes{font-size:.7rem;color:#777;margin-top:4px}
+.card-footer{display:flex;align-items:center;gap:6px;margin-top:8px}
+.badge{font-size:.6rem;padding:2px 6px;border-radius:8px;font-weight:600;text-transform:uppercase}
+.badge-feature{background:#4caf8220;color:#4caf82;border:1px solid #4caf8244}
+.badge-bug{background:#e05c5c20;color:#e05c5c;border:1px solid #e05c5c44}
+.badge-improvement{background:#4a9eff20;color:#4a9eff;border:1px solid #4a9eff44}
+.card-del{margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:14px;padding:0 2px}
+.card-del:hover{color:#e05c5c}
+.empty-col{color:#444;font-size:.7rem;text-align:center;padding:20px 0}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/board" class="active">Board</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<div class="board" id="board"></div>
+<script>
+const COLS=['Backlog','In Progress','Review','Done'];
+const PRIORITIES=['low','med','high','crit'];
+const TYPES=['feature','bug','improvement'];
+const LS_KEY='pf_board';
+
+function load(){try{return JSON.parse(localStorage.getItem(LS_KEY))||defaultData()}catch(e){return defaultData()}}
+function defaultData(){return COLS.reduce((o,c)=>(o[c]=[],o),{})}
+function save(data){localStorage.setItem(LS_KEY,JSON.stringify(data))}
+
+let data=load();
+
+function render(){
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  COLS.forEach(col=>{
+    const div=document.createElement('div');
+    div.className='column';
+    div.dataset.col=col;
+    const cards=data[col]||[];
+    div.innerHTML=`<div class="column-header"><h3>${col}<span class="count">${cards.length}</span></h3><button class="add-btn" onclick="addCard('${col}')">+</button></div><div class="cards" data-col="${col}"></div>`;
+    board.appendChild(div);
+    const container=div.querySelector('.cards');
+    if(!cards.length)container.innerHTML='<div class="empty-col">No cards</div>';
+    cards.forEach((card,i)=>{
+      const el=document.createElement('div');
+      el.className='card';el.draggable=true;el.dataset.priority=card.priority;el.dataset.col=col;el.dataset.idx=i;
+      el.innerHTML=`<input class="card-title" value="${esc(card.title)}" onchange="updateCard('${col}',${i},'title',this.value)"><div class="card-notes">${esc(card.notes||'')}</div><div class="card-footer"><span class="badge badge-${card.type}">${card.type}</span><select onchange="updateCard('${col}',${i},'priority',this.value)" style="background:#111;border:1px solid #2a2a2a;color:#aaa;font-size:.6rem;border-radius:4px;padding:1px 4px">${PRIORITIES.map(p=>`<option${p===card.priority?' selected':''}>${p}</option>`).join('')}</select><select onchange="updateCard('${col}',${i},'type',this.value)" style="background:#111;border:1px solid #2a2a2a;color:#aaa;font-size:.6rem;border-radius:4px;padding:1px 4px">${TYPES.map(t=>`<option${t===card.type?' selected':''}>${t}</option>`).join('')}</select><button class="card-del" onclick="delCard('${col}',${i})">✕</button></div>`;
+      container.appendChild(el);
+      el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',JSON.stringify({col,idx:i}));el.classList.add('dragging')});
+      el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+    });
+    container.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
+    container.addEventListener('drop',e=>{
+      e.preventDefault();
+      const src=JSON.parse(e.dataTransfer.getData('text/plain'));
+      const card=data[src.col].splice(src.idx,1)[0];
+      data[col].push(card);save(data);render();
+    });
+  });
+}
+
+function addCard(col){data[col].push({title:'New Card',notes:'',priority:'low',type:'feature'});save(data);render()}
+function delCard(col,idx){data[col].splice(idx,1);save(data);render()}
+function updateCard(col,idx,key,val){data[col][idx][key]=val;save(data);render()}
+function esc(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+render();
+</script>
+</body>
+</html>

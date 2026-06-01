@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketing Plan — PatternFoundry</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0;z-index:100}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.wrap{padding:24px 32px;max-width:1100px;margin:0 auto}
+h1{color:#f97316;font-size:1.1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:24px}
+.section{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:20px;margin-bottom:16px}
+.section h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:#f97316;margin-bottom:12px}
+.section p,.section li{font-size:.82rem;color:#bbb;line-height:1.6}
+.section ul{list-style:none;padding:0}
+.section ul li{padding:4px 0;border-bottom:1px solid #1a1a1a}
+.section ul li:last-child{border:none}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th{text-align:left;font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid #2a2a2a;background:#0e1217}
+td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
+.highlight{color:#4caf82;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/board">Board</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<div class="wrap">
+<h1>Marketing Plan</h1>
+<div class="grid2">
+<div class="section">
+  <h2>Target Audience</h2>
+  <ul>
+    <li>Beginner traders looking to practice without risk</li>
+    <li>Intermediate traders refining pattern recognition</li>
+    <li>Trading educators needing simulation tools</li>
+    <li>Prop firm candidates preparing for evaluations</li>
+    <li>Crypto/forex enthusiasts wanting 24/7 practice</li>
+  </ul>
+</div>
+<div class="section">
+  <h2>Channels</h2>
+  <ul>
+    <li>Twitter/X — trading community engagement</li>
+    <li>YouTube — tutorial & demo content</li>
+    <li>Reddit — r/daytrading, r/forex, r/algotrading</li>
+    <li>Discord — trading communities & partnerships</li>
+    <li>SEO — "trading simulator", "practice trading"</li>
+    <li>Product Hunt — launch campaign</li>
+  </ul>
+</div>
+</div>
+
+<div class="section">
+  <h2>Pricing Tiers</h2>
+  <table>
+    <thead><tr><th>Feature</th><th>Free</th><th>Practice — $9.99/mo</th><th>Edge — $19.99/mo</th></tr></thead>
+    <tbody>
+      <tr><td>Sessions per day</td><td>3</td><td>Unlimited</td><td>Unlimited</td></tr>
+      <tr><td>Instruments</td><td>2</td><td>All 6</td><td>All 6</td></tr>
+      <tr><td>Chart Designer</td><td>—</td><td class="highlight">✓</td><td class="highlight">✓</td></tr>
+      <tr><td>Performance Analytics</td><td>—</td><td>Basic</td><td class="highlight">Advanced</td></tr>
+      <tr><td>Custom Patterns</td><td>—</td><td>—</td><td class="highlight">✓</td></tr>
+      <tr><td>API Access</td><td>—</td><td>—</td><td class="highlight">✓</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grid2">
+<div class="section">
+  <h2>Content Calendar</h2>
+  <ul>
+    <li><strong>Week 1:</strong> Launch announcement + Product Hunt</li>
+    <li><strong>Week 2:</strong> "How to read candlestick patterns" blog post</li>
+    <li><strong>Week 3:</strong> YouTube demo video — full session walkthrough</li>
+    <li><strong>Week 4:</strong> Twitter thread — "5 mistakes new traders make"</li>
+    <li><strong>Week 5:</strong> Reddit AMA in r/daytrading</li>
+    <li><strong>Week 6:</strong> Case study — user testimonial</li>
+    <li><strong>Week 7:</strong> Partnership announcement with trading educator</li>
+    <li><strong>Week 8:</strong> Feature release — Chart Designer launch</li>
+  </ul>
+</div>
+<div class="section">
+  <h2>Competitive Analysis</h2>
+  <ul>
+    <li><strong>TradingView Paper Trading:</strong> Full platform, complex — we're simpler & focused</li>
+    <li><strong>Investopedia Simulator:</strong> Delayed data, no pattern focus</li>
+    <li><strong>Forex Tester:</strong> Desktop-only, expensive ($299) — we're web & affordable</li>
+    <li><strong>NinjaTrader Replay:</strong> Steep learning curve — we're instant-start</li>
+  </ul>
+  <p style="margin-top:12px;color:#888;font-size:.75rem"><strong style="color:#4caf82">Our edge:</strong> Instant generated sessions, pattern-focused, zero setup, dark modern UI, affordable pricing.</p>
+</div>
+</div>
+</div>
+</body>
+</html>

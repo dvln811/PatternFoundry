@@ -153,6 +153,22 @@ def _resolve_spec(instrument: str):
 def simulator():
     return render_template('chart.html')
 
+@app.route('/landing')
+def landing_preview():
+    return render_template('landing.html')
+
+@app.route('/board')
+def board():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('board.html')
+
+@app.route('/marketing')
+def marketing():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('marketing.html')
+
 
 def _build_spec_from_payload(data):
     return CharacterSpec(
