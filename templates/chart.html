@@ -10,7 +10,7 @@
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <script src="/static/indicators.js"></script>
   <script src="/static/canvas-overlay.js"></script>
-  <script src="/static/custom-indicator.js"></script>
+  <script src="/static/custom-indicator.js?v=2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { color-scheme: dark; }
@@ -490,6 +490,7 @@
           </div>
         </div>
         <div id="sim-readout" style="position:absolute;top:46px;left:10px;z-index:9;pointer-events:none;font-family:monospace;font-size:0.72rem;color:#ddd;background:rgba(14,18,23,0.75);border:1px solid #222;border-radius:4px;padding:4px 8px;display:none;line-height:1.5"></div>
+        <div id="ind-legend" style="position:absolute;top:70px;left:10px;z-index:8;font-size:0.68rem;display:flex;flex-direction:column;gap:2px;pointer-events:auto"></div>
       </div>
 
     </div><!-- .chart-area -->
@@ -510,7 +511,7 @@
 
 <!-- Custom Indicator Modal -->
 <div id="ci-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeCustomIndicator()">
-  <div onclick="event.stopPropagation()" style="background:#111;border:1px solid #2a2a2a;border-radius:10px;width:700px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+  <div onclick="event.stopPropagation()" style="background:#111;border:1px solid #2a2a2a;border-radius:10px;width:900px;max-width:95vw;height:70vh;display:flex;flex-direction:column;overflow:hidden">
     <div style="padding:14px 18px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between">
       <span style="color:#f97316;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.1em">Custom Indicator</span>
       <button onclick="closeCustomIndicator()" style="background:none;border:none;color:#888;font-size:1.2rem;cursor:pointer">&times;</button>
@@ -525,24 +526,28 @@
             <option value="oscillator">Oscillator</option>
           </select>
         </div>
-        <textarea id="ci-code" spellcheck="false" style="flex:1;background:#0a0a0a;color:#ddd;border:none;padding:12px;font-family:monospace;font-size:.8rem;resize:none;outline:none;line-height:1.5">// Available: candles, close, open, high, low, volume
+        <div style="flex:1;position:relative;overflow:hidden;background:#0a0a0a">
+          <pre id="ci-highlight" aria-hidden="true" style="position:absolute;inset:0;margin:0;padding:12px;font-family:'Fira Code',monospace;font-size:.8rem;line-height:1.6;pointer-events:none;white-space:pre-wrap;word-wrap:break-word;overflow:hidden;color:#ddd;tab-size:2"></pre>
+          <textarea id="ci-code" spellcheck="false" oninput="highlightCode()" onscroll="document.getElementById('ci-highlight').scrollTop=this.scrollTop" style="position:absolute;inset:0;width:100%;height:100%;background:transparent;color:transparent;caret-color:#f97316;border:none;padding:12px;font-family:'Fira Code',monospace;font-size:.8rem;resize:none;outline:none;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;overflow:auto;tab-size:2">// Available: candles, close, open, high, low, volume
 // Helpers: sma(candles, period), ema(candles, period),
 //   rsi(candles, period), atr(candles, period),
 //   stdev(candles, period), highest(candles, period),
 //   lowest(candles, period)
 //
 // Return: [{time, value}] or [{time, value, color}]
-// Use color per-point for conditional coloring:
-//   color: val > 0 ? '#4caf82' : '#e05c5c'
+// Multi-line: {lines: [{data, label, color, style}]}
 
 const fast = ema(candles, 9);
 const slow = ema(candles, 21);
-return fast.map((f, i) => ({
-  time: f.time,
-  value: f.value - (slow[i] ? slow[i].value : f.value),
-  color: f.value > (slow[i] ? slow[i].value : 0) ? '#4caf82' : '#e05c5c'
+// align() matches by timestamp (different-length arrays)
+const pairs = align(fast, slow);
+return pairs.map(p => ({
+  time: p.time,
+  value: p.a - p.b,
+  color: p.a > p.b ? '#4caf82' : '#e05c5c'
 }));
 </textarea>
+        </div>
         <div id="ci-error" style="padding:6px 12px;font-size:.72rem;color:#e05c5c;background:#1a0f0f;display:none"></div>
         <div style="padding:10px 12px;display:flex;gap:8px;border-top:1px solid #222">
           <button onclick="applyCustomIndicator()" style="padding:6px 16px;background:#4caf82;color:#0a0a0a;border:none;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer">Apply</button>
@@ -565,13 +570,17 @@ return fast.map((f, i) => ({
         <code style="color:#4caf82">lowest(candles, period)</code><br>
         <code style="color:#4caf82">crossover(a, b)</code><br>
         <code style="color:#4caf82">crossunder(a, b)</code><br>
+        <code style="color:#4caf82">align(a, b)</code> → [{time, a, b}]<br>
         <div style="margin-top:10px;color:#f97316;font-weight:600;text-transform:uppercase;font-size:.6rem;letter-spacing:.05em">Arrays</div>
         <code style="color:#38bdf8">candles</code> [{time,open,high,low,close,volume}]<br>
         <code style="color:#38bdf8">close</code> [numbers]<br>
         <code style="color:#38bdf8">open, high, low, volume</code><br>
         <div style="margin-top:10px;color:#f97316;font-weight:600;text-transform:uppercase;font-size:.6rem;letter-spacing:.05em">Return</div>
         Array of <code style="color:#ddd">{time, value}</code><br>
-        Optional: <code style="color:#ddd">{time, value, color}</code>
+        Optional: <code style="color:#ddd">{time, value, color}</code><br>
+        <div style="margin-top:6px;font-size:.62rem;color:#666">Multi-line:</div>
+        <code style="color:#ddd;font-size:.6rem">{lines: [{data, label, color, style}]}</code><br>
+        <span style="font-size:.6rem;color:#555">style: 'solid'|'dashed'|'dotted'</span>
       </div>
     </div>
   </div>
@@ -1464,17 +1473,25 @@ let indColorIdx = Math.floor(Math.random() * 8);
 const IND_COLORS = ['#f0c040','#a78bfa','#38bdf8','#fb923c','#f472b6','#34d399','#818cf8','#fbbf24'];
 
 function buildAllCandles() {
-  // Use exactly what's on the chart - timestamps guaranteed to match
-  const data = window._chartData || [];
+  // Include history + played tick candles for live indicator updates
   const histBars = window._historyBars || [];
-  // _chartData has {time,open,high,low,close} but no volume
-  // Build a time->volume lookup from histBars
-  const volMap = {};
-  for (const c of histBars) volMap[c.time] = c.volume || 0;
-  allCandles = data.map(c => ({
-    time: c.time, open: c.open, high: c.high, low: c.low, close: c.close,
-    volume: volMap[c.time] || 0
-  }));
+  const playedCandles = [];
+  if (tickIdx > 0) {
+    let pb = null;
+    for (let i = 0; i < tickIdx; i++) {
+      const t = allTicks[i];
+      const ct = Math.floor(t.time / candleTF) * candleTF;
+      if (!pb || pb.time !== ct) {
+        if (pb) playedCandles.push(pb);
+        pb = {time:ct, open:t.price, high:t.price, low:t.price, close:t.price, volume:t.volume};
+      } else {
+        pb.high = Math.max(pb.high, t.price); pb.low = Math.min(pb.low, t.price);
+        pb.close = t.price; pb.volume += t.volume;
+      }
+    }
+    if (pb) playedCandles.push(pb);
+  }
+  allCandles = rebucketHistory([...histBars, ...playedCandles], candleTF);
 }
 
 function onIndSelectChange() {
@@ -1519,12 +1536,27 @@ function addIndicator() {
     buildAllCandles();
     const result = CustomIndicator.execute(saved.code, allCandles);
     if (result.error) { alert('Error in ' + name + ': ' + result.error); return; }
-    const color = saved.color || IND_COLORS[indColorIdx++ % IND_COLORS.length];
+    const color = IND_COLORS[indColorIdx++ % IND_COLORS.length];
     const scaleId = 'custom_' + Date.now();
-    const s = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
-    chart.priceScale(scaleId).applyOptions({ scaleMargins: saved.displayType === 'oscillator' ? { top: 0.75, bottom: 0 } : { top: 0.1, bottom: 0.1 } });
-    s.setData(result);
-    activeIndicators.push({ id: Date.now(), type: 'custom', label: name, color, series: [s], period: 0 });
+    const ind = { id: Date.now(), type: 'custom', label: name, color, series: [], period: 0 };
+    if (result.multiLine) {
+      ind.color = result.lines[0].color || color;
+      result.lines.forEach((line, i) => {
+        const lc = line.color || IND_COLORS[(indColorIdx + i) % IND_COLORS.length];
+        const lineStyle = line.style === 'dashed' ? 2 : line.style === 'dotted' ? 1 : 0;
+        const ls = chart.addLineSeries({ color: lc, lineWidth: line.width || 1, lineStyle, priceLineVisible: false, lastValueVisible: true, title: line.label || name, priceScaleId: saved.displayType === 'overlay' ? undefined : scaleId });
+        ls.setData(line.data);
+        ind.series.push(ls);
+      });
+      if (saved.displayType === 'oscillator') chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+    } else {
+      const s = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: saved.displayType === 'overlay' ? undefined : scaleId });
+      if (saved.displayType === 'oscillator') chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+      s.setData(result);
+      ind.series.push(s);
+    }
+    if (!result.multiLine && Array.isArray(result) && result.length && result[0].color) ind._hasColors = true;
+    activeIndicators.push(ind);
     renderIndChips();
     document.getElementById('ind-select').value = '';
     return;
@@ -1583,16 +1615,73 @@ function removeIndicator(id) {
   renderIndChips();
 }
 
+function toggleIndicator(id) {
+  const ind = activeIndicators.find(i => i.id === id);
+  if (!ind) return;
+  ind._hidden = !ind._hidden;
+  for (const s of ind.series) { s.applyOptions({ visible: !ind._hidden }); }
+  renderIndChips();
+}
+
+function changeIndicatorPeriod(id, newPeriod) {
+  const ind = activeIndicators.find(i => i.id === id);
+  if (!ind) return;
+  const period = parseInt(newPeriod) || 20;
+  ind.period = period;
+  ind.label = ind.type.toUpperCase() + (ind.type === 'vwap' ? '' : '(' + period + ')');
+  // Recompute data
+  buildAllCandles();
+  let data;
+  if (ind.type === 'bbands') {
+    data = Indicators.bbands(allCandles, period, 2);
+    if (ind.series[0]) ind.series[0].setData(data.upper);
+    if (ind.series[1]) ind.series[1].setData(data.mid);
+    if (ind.series[2]) ind.series[2].setData(data.lower);
+  } else if (ind.type === 'rsi') { data = Indicators.rsi(allCandles, period); ind.series[0]?.setData(data); }
+  else if (ind.type === 'atr') { data = Indicators.atr(allCandles, period); ind.series[0]?.setData(data); }
+  else { data = Indicators[ind.type] ? Indicators[ind.type](allCandles, period) : []; ind.series[0]?.setData(data); }
+  renderIndChips();
+}
+
 function renderIndChips() {
-  document.getElementById('ind-chips').innerHTML = activeIndicators.map(i =>
-    `<span class="ind-chip" style="border-color:${i.color}44;color:${i.color}">${i.label} <span class="chip-x" onclick="removeIndicator(${i.id})">×</span></span>`
-  ).join('');
+  document.getElementById('ind-chips').innerHTML = activeIndicators.map(i => {
+    const chipColor = i._hasColors ? '#888' : i.color;
+    return `<span class="ind-chip" style="border-color:${chipColor}44;color:${chipColor}">${i.label} <span class="chip-x" onclick="removeIndicator(${i.id})">×</span></span>`;
+  }).join('');
+  // Indicator legend on chart
+  const legend = document.getElementById('ind-legend');
+  if (legend) {
+    legend.innerHTML = activeIndicators.map(i => {
+      const vis = i._hidden ? '0.3' : '1';
+      const periodInput = (i.type !== 'custom' && i.type !== 'vwap' && i.type !== 'macd')
+        ? `<input type="number" value="${i.period}" min="1" max="500" style="width:52px;background:#1a1a1a;border:1px solid #333;color:#ddd;border-radius:3px;padding:1px 4px;font-size:.65rem;font-family:monospace" onchange="changeIndicatorPeriod(${i.id},this.value)">`
+        : '';
+      return `<div style="display:flex;align-items:center;gap:5px;opacity:${vis};background:rgba(14,18,23,0.7);padding:2px 6px;border-radius:3px">
+        <span style="color:${i._hasColors ? '#888' : i.color};font-weight:600;font-size:.66rem">${i.label}</span>
+        ${periodInput}
+        <span style="cursor:pointer;color:#888;font-size:.7rem" onclick="toggleIndicator(${i.id})" title="Show/Hide">👁</span>
+        <span style="cursor:pointer;color:#666;font-size:.7rem" onclick="removeIndicator(${i.id})" title="Remove">✕</span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function recomputeIndicators() {
   buildAllCandles();
   for (const ind of activeIndicators) {
-    if (ind.type === 'macd') {
+    if (ind.type === 'custom') {
+      const saved = CustomIndicator.loadAll().find(s => s.name === ind.label);
+      if (saved) {
+        const result = CustomIndicator.execute(saved.code, allCandles);
+        if (!result.error) {
+          if (result.multiLine) {
+            result.lines.forEach((line, i) => { if (ind.series[i]) ind.series[i].setData(line.data); });
+          } else {
+            if (ind.series[0]) ind.series[0].setData(result);
+          }
+        }
+      }
+    } else if (ind.type === 'macd') {
       const d = Indicators.macd(allCandles, 12, 26, 9);
       ind.series[0]?.setData(d.macd); ind.series[1]?.setData(d.signal); ind.series[2]?.setData(d.histogram);
     } else if (ind.type === 'bbands') {
@@ -1601,7 +1690,18 @@ function recomputeIndicators() {
     } else if (ind.type === 'rsi')   { ind.series[0]?.setData(Indicators.rsi(allCandles, ind.period)); }
     else if (ind.type === 'atr')     { ind.series[0]?.setData(Indicators.atr(allCandles, ind.period)); }
     else if (ind.type === 'vwap')    { ind.series[0]?.setData(Indicators.vwap(allCandles)); }
-    else { ind.series[0]?.setData(Indicators[ind.type](allCandles, ind.period)); }
+    else if (Indicators[ind.type])   { ind.series[0]?.setData(Indicators[ind.type](allCandles, ind.period)); }
+  }
+  // Also update the custom indicator applied via the modal
+  if (_customIndSeries && document.getElementById('ci-code')) {
+    const result = CustomIndicator.execute(document.getElementById('ci-code').value, allCandles);
+    if (!result.error) {
+      if (result.multiLine && Array.isArray(_customIndSeries)) {
+        result.lines.forEach((line, i) => { if (_customIndSeries[i]) _customIndSeries[i].setData(line.data); });
+      } else if (!result.multiLine && !Array.isArray(_customIndSeries)) {
+        _customIndSeries.setData(result);
+      }
+    }
   }
 }
 
@@ -1613,21 +1713,31 @@ function rebuildIndicators() {
   if (_customIndSeries) { try { chart.removeSeries(_customIndSeries); } catch(e) {} _customIndSeries = null; }
 
   buildAllCandles();
-  const saved = activeIndicators.map(i => ({ type: i.type, period: i.period, color: i.color, label: i.label }));
+  const saved = activeIndicators.map(i => ({ type: i.type, period: i.period, color: i.color, label: i.label, _hasColors: i._hasColors }));
   activeIndicators = [];
   for (const si of saved) {
-    const ind = { id: Date.now() + Math.random(), type: si.type, period: si.period, color: si.color, label: si.label, series: [] };
+    const ind = { id: Date.now() + Math.random(), type: si.type, period: si.period, color: si.color, label: si.label, series: [], _hasColors: si._hasColors };
     if (si.type === 'custom') {
-      // Re-apply custom indicator
       const customSaved = CustomIndicator.loadAll().find(s => s.name === si.label);
       if (customSaved) {
         const result = CustomIndicator.execute(customSaved.code, allCandles);
         if (!result.error) {
-          const scaleId = 'custom_' + ind.id;
-          const s = chart.addLineSeries({ color: si.color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: si.label, priceScaleId: scaleId });
-          chart.priceScale(scaleId).applyOptions({ scaleMargins: customSaved.displayType === 'oscillator' ? { top: 0.75, bottom: 0 } : { top: 0.1, bottom: 0.1 } });
-          s.setData(result);
-          ind.series = [s];
+          if (result.multiLine) {
+            result.lines.forEach((line, i) => {
+              const lc = line.color || si.color || IND_COLORS[(indColorIdx + i) % IND_COLORS.length];
+              const lineStyle = line.style === 'dashed' ? 2 : line.style === 'dotted' ? 1 : 0;
+              const scaleId2 = customSaved.displayType === 'overlay' ? undefined : ('custom_' + ind.id + '_' + i);
+              const ls = chart.addLineSeries({ color: lc, lineWidth: line.width || 1, lineStyle, priceLineVisible: false, lastValueVisible: true, title: line.label || si.label, priceScaleId: scaleId2 });
+              ls.setData(line.data);
+              ind.series.push(ls);
+            });
+          } else {
+            const scaleId = 'custom_' + ind.id;
+            const s = chart.addLineSeries({ color: si.color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: si.label, priceScaleId: customSaved.displayType === 'overlay' ? undefined : scaleId });
+            if (customSaved.displayType === 'oscillator') chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+            s.setData(result);
+            ind.series = [s];
+          }
         }
       }
     } else if (si.type === 'macd') {
@@ -1728,29 +1838,52 @@ function closeCustomIndicator() {
 }
 function applyCustomIndicator() {
   const code = document.getElementById('ci-code').value;
-  const color = IND_COLORS[indColorIdx++ % IND_COLORS.length];
   const type = document.getElementById('ci-type').value;
   const name = document.getElementById('ci-name').value.trim() || 'Custom';
   const errEl = document.getElementById('ci-error');
   errEl.style.display = 'none';
   buildAllCandles();
   const result = CustomIndicator.execute(code, allCandles);
+  console.log('Custom indicator result:', result.multiLine ? 'multiLine, ' + result.lines.length + ' lines' : Array.isArray(result) ? result.length + ' points' : result);
   if (result.error) { errEl.textContent = result.error; errEl.style.display = ''; return; }
-  if (_customIndSeries) { try { chart.removeSeries(_customIndSeries); } catch(e) {} _customIndSeries = null; }
-  // Detect if result has per-point colors → use histogram, else line
-  const hasColors = result.length > 0 && result[0].color;
-  const scaleId = 'custom_' + Date.now();
-  if (hasColors) {
-    _customIndSeries = chart.addHistogramSeries({ priceScaleId: scaleId, priceLineVisible: false, lastValueVisible: true, title: name });
-    chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
-  } else if (type === 'oscillator') {
-    _customIndSeries = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
-    chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
-  } else {
-    _customIndSeries = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
-    chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.1, bottom: 0.1 } });
+
+  // Remove previous custom series
+  if (_customIndSeries) {
+    if (Array.isArray(_customIndSeries)) _customIndSeries.forEach(s => { try { chart.removeSeries(s); } catch(e) {} });
+    else { try { chart.removeSeries(_customIndSeries); } catch(e) {} }
+    _customIndSeries = null;
   }
-  _customIndSeries.setData(result);
+
+  const scaleId = 'custom_' + Date.now();
+
+  // Multi-line support
+  if (result.multiLine) {
+    _customIndSeries = [];
+    result.lines.forEach((line, i) => {
+      const lineStyle = line.style === 'dashed' ? 2 : line.style === 'dotted' ? 1 : 0;
+      const color = line.color || IND_COLORS[(indColorIdx + i) % IND_COLORS.length];
+      const s = chart.addLineSeries({ color, lineWidth: line.width || 1, lineStyle, priceLineVisible: false, lastValueVisible: true, title: line.label || name, priceScaleId: type === 'overlay' ? undefined : scaleId });
+      s.setData(line.data);
+      _customIndSeries.push(s);
+    });
+    if (type === 'oscillator') chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+    indColorIdx += result.lines.length;
+  } else {
+    // Single line or histogram
+    const color = IND_COLORS[indColorIdx++ % IND_COLORS.length];
+    const hasColors = result.length > 0 && result[0].color;
+    if (hasColors) {
+      _customIndSeries = chart.addHistogramSeries({ priceScaleId: scaleId, priceLineVisible: false, lastValueVisible: true, title: name });
+      chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+      _customIndHasColors = true;
+    } else if (type === 'oscillator') {
+      _customIndSeries = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
+      chart.priceScale(scaleId).applyOptions({ scaleMargins: { top: 0.75, bottom: 0 } });
+    } else {
+      _customIndSeries = chart.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: name, priceScaleId: scaleId });
+    }
+    _customIndSeries.setData(result);
+  }
 }
 function saveCustomIndicator() {
   const name = document.getElementById('ci-name').value.trim();
@@ -1758,6 +1891,10 @@ function saveCustomIndicator() {
   CustomIndicator.save(name, document.getElementById('ci-code').value, document.getElementById('ci-type').value, '');
   refreshSavedIndicatorList();
   populateCustomIndicatorDropdown();
+  // Flash feedback
+  const btn = event.target;
+  btn.style.background = '#f97316'; btn.style.color = '#000';
+  setTimeout(() => { btn.style.background = ''; btn.style.color = ''; }, 400);
 }
 function deleteCustomIndicator() {
   const name = document.getElementById('ci-saved').value;
@@ -1780,8 +1917,25 @@ function loadSavedIndicator() {
   document.getElementById('ci-name').value = saved.name;
   document.getElementById('ci-code').value = saved.code;
   document.getElementById('ci-type').value = saved.displayType || 'overlay';
-  document.getElementById('ci-color').value = saved.color || '#f0c040';
+  highlightCode();
 }
+
+function highlightCode() {
+  const code = document.getElementById('ci-code').value;
+  let h = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Process line by line: if line is a comment, color whole line; else color tokens
+  h = h.split('\n').map(line => {
+    if (line.trimStart().startsWith('//')) return '<span style="color:#4caf8288">' + line + '</span>';
+    let l = line;
+    l = l.replace(/(["'`])(?:(?!\1).)*\1/g, '<span style="color:#f0c040">$&</span>');
+    l = l.replace(/\b(const|let|var|return|if|else|for|function|true|false|null|undefined)\b/g, '<span style="color:#a78bfa">$1</span>');
+    l = l.replace(/\b(sma|ema|rsi|atr|stdev|highest|lowest|crossover|crossunder|Math)\b/g, '<span style="color:#4caf82">$1</span>');
+    l = l.replace(/\b(\d+\.?\d*)\b/g, '<span style="color:#fb923c">$1</span>');
+    return l;
+  }).join('\n');
+  document.getElementById('ci-highlight').innerHTML = h + '\n';
+}
+setTimeout(highlightCode, 100);
 </script>
 </body>
 </html>

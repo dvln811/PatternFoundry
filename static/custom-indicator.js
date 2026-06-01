@@ -124,6 +124,15 @@ const CustomIndicator = {
       }
       return out;
     },
+
+    // Align two indicator arrays by timestamp, return matched pairs
+    align(a, b) {
+      const bMap = {};
+      b.forEach(p => bMap[p.time] = p.value);
+      return a.filter(p => bMap[p.time] !== undefined).map(p => ({
+        time: p.time, a: p.value, b: bMap[p.time]
+      }));
+    },
   },
 
   /**
@@ -134,17 +143,12 @@ const CustomIndicator = {
    */
   execute(code, candles) {
     try {
-      // Build sandbox: only candles + helper functions available
       const helperNames = Object.keys(this.helpers);
-      const helperValues = Object.values(this.helpers).map(fn => fn.bind(null, candles));
-
-      // Also provide raw helpers that take their own candle array (for flexibility)
       const rawHelpers = {};
       for (const [name, fn] of Object.entries(this.helpers)) {
         rawHelpers[name] = fn;
       }
 
-      // The user function receives: candles, and all helpers as globals
       const fnBody = `
         "use strict";
         const {${helperNames.join(',')}} = __helpers__;
@@ -159,8 +163,12 @@ const CustomIndicator = {
       const fn = new Function('candles', '__helpers__', fnBody);
       const result = fn(candles, rawHelpers);
 
+      // Support multi-line: { lines: [{data, label, color, style}] }
+      if (result && result.lines && Array.isArray(result.lines)) {
+        return { multiLine: true, lines: result.lines };
+      }
       if (!Array.isArray(result)) {
-        return { error: 'Indicator must return an array of {time, value} objects' };
+        return { error: 'Return an array of {time, value} or {lines: [...]}' };
       }
       return result;
     } catch (e) {
