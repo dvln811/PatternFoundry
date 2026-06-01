@@ -1,4 +1,4 @@
-app = "patternfoundry"
+app = "strategy-screener"
 primary_region = "dfw"
 
 [build]
