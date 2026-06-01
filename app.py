@@ -89,7 +89,10 @@ def register():
 def logout():
     logout_user()
     session.clear()
-    return redirect(url_for('login'))
+    resp = redirect('/')
+    resp.delete_cookie('remember_token')
+    resp.delete_cookie('session')
+    return resp
 
 @app.route('/admin/users')
 def admin_users():
