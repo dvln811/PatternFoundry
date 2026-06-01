@@ -318,6 +318,24 @@ def character_list():
 
 # ── /api/session — simple candle generation (used by chart.html) ─────────────
 
+@app.route('/api/news')
+def api_news():
+    import requests as req
+    import xml.etree.ElementTree as ET
+    try:
+        resp = req.get('https://finance.yahoo.com/news/rssindex', timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
+        root = ET.fromstring(resp.content)
+        items = []
+        for item in root.findall('.//item')[:8]:
+            title = item.findtext('title', '')
+            link = item.findtext('link', '')
+            pub = item.findtext('pubDate', '')
+            items.append({'title': title, 'link': link, 'pubDate': pub})
+        return jsonify(items)
+    except Exception:
+        return jsonify([])
+
+
 # ── Yahoo Finance endpoints ────────────────────────────────────────────────────
 
 @app.route('/api/quotes')
