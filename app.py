@@ -355,7 +355,8 @@ def api_chart():
         for i, t in enumerate(timestamps):
             o, h, l, c = quote.get('open', [None])[i], quote.get('high', [None])[i], quote.get('low', [None])[i], quote.get('close', [None])[i]
             if o is None: continue
-            candles.append({'time': t, 'open': round(o, 2), 'high': round(h, 2), 'low': round(l, 2), 'close': round(c, 2)})
+            v = (quote.get('volume', [0])[i] or 0)
+            candles.append({'time': t, 'open': round(o, 2), 'high': round(h, 2), 'low': round(l, 2), 'close': round(c, 2), 'volume': int(v)})
         return jsonify(candles)
     except Exception:
         return jsonify([])
