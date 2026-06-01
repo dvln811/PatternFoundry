@@ -367,6 +367,19 @@ def character_list():
 
 # ── /api/session — simple candle generation (used by chart.html) ─────────────
 
+@app.route('/api/upload-screenshot', methods=['POST'])
+def upload_screenshot():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return jsonify({'error': 'unauthorized'}), 403
+    file = request.files.get('file')
+    slot = request.form.get('slot', 'simulator')
+    if not file or slot not in ('simulator', 'designer'):
+        return jsonify({'error': 'invalid'}), 400
+    path = os.path.join('static', 'screenshots', f'{slot}.png')
+    file.save(path)
+    return jsonify({'ok': True, 'url': f'/static/screenshots/{slot}.png'})
+
+
 @app.route('/api/news')
 def api_news():
     import requests as req

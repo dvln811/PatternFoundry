@@ -171,6 +171,49 @@ h1,h2,h3,h4{text-transform:uppercase}
   </div>
 </section>
 
+
+<section style="max-width:900px;margin:0 auto;padding:60px 40px">
+  <h2 style="text-align:center;font-size:1.4rem;font-weight:700;margin-bottom:32px;text-transform:uppercase;letter-spacing:.05em">How We Compare</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+    <thead><tr style="border-bottom:2px solid #2a2a2a">
+      <th style="padding:10px;text-align:left;color:#888"></th>
+      <th style="padding:10px;text-align:center;color:#f97316;font-weight:700">PatternFoundry</th>
+      <th style="padding:10px;text-align:center;color:#888">TradingSim</th>
+      <th style="padding:10px;text-align:center;color:#888">Paper Trading</th>
+    </tr></thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Fresh tape every session</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td><td style="text-align:center;color:#4caf82">&#10003;</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Available 24/7</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">No brokerage required</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Realistic order book / DOM</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Custom instrument design</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td><td style="text-align:center;color:#e05c5c">&#10007;</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Custom indicator scripting</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td><td style="text-align:center;color:#888">Varies</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Adjustable playback speed</td><td style="text-align:center;color:#4caf82">0.25x-200x</td><td style="text-align:center;color:#4caf82">1x-60x</td><td style="text-align:center;color:#e05c5c">Real-time only</td></tr>
+      <tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px;color:#bbb">Free tier</td><td style="text-align:center;color:#4caf82">&#10003;</td><td style="text-align:center;color:#e05c5c">&#10007;</td><td style="text-align:center;color:#4caf82">&#10003;</td></tr>
+      <tr><td style="padding:8px;color:#bbb">Starting price</td><td style="text-align:center;color:#4caf82;font-weight:600">$0</td><td style="text-align:center;color:#888">$29/mo</td><td style="text-align:center;color:#4caf82">$0</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section style="max-width:1000px;margin:0 auto;padding:60px 40px">
+  <h2 style="text-align:center;font-size:1.4rem;font-weight:700;margin-bottom:32px;text-transform:uppercase;letter-spacing:.05em">See It In Action</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div>
+      <div id="drop-sim" class="drop-zone" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
+        <img src="/static/screenshots/simulator.png" onerror="this.style.display='none';this.nextElementSibling.style.display=''" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
+        <span style="color:#555;font-size:.8rem;display:none">Drop simulator screenshot here</span>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em">Live Simulator</div>
+    </div>
+    <div>
+      <div id="drop-designer" class="drop-zone" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
+        <img src="/static/screenshots/designer.png" onerror="this.style.display='none';this.nextElementSibling.style.display=''" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
+        <span style="color:#555;font-size:.8rem;display:none">Drop chart designer screenshot here</span>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em">Chart Designer</div>
+    </div>
+  </div>
+</section>
 <section class="pricing" id="pricing">
   <h2>Pricing</h2>
   <div class="pricing-grid">
@@ -254,6 +297,25 @@ chart.addLineSeries({color:'#38bdf866',lineWidth:1,priceLineVisible:false,lastVa
 chart.timeScale().fitContent();
 new ResizeObserver(function(){chart.applyOptions({width:el.clientWidth,height:el.clientHeight})}).observe(el);
 })();
+</script>
+
+<script>
+document.querySelectorAll('.drop-zone').forEach(zone => {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#f97316'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = '#2a2a2a'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.style.borderColor = '#2a2a2a';
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const slot = zone.id === 'drop-sim' ? 'simulator' : 'designer';
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('slot', slot);
+    fetch('/api/upload-screenshot', { method: 'POST', body: formData }).then(r => r.json()).then(d => {
+      if (d.ok) { const img = zone.querySelector('img'); img.src = d.url + '?t=' + Date.now(); img.style.display = ''; }
+    });
+  });
+});
 </script>
 </body>
 </html>
