@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — PatternFoundry</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d0d;color:#ddd;font-family:'Inter',sans-serif;min-height:100vh}
+a{color:#f97316;text-decoration:none}a:hover{text-decoration:underline}
+header{display:flex;align-items:center;padding:1rem 2rem;border-bottom:1px solid #222}
+header img{height:36px;margin-right:.75rem}header .brand{font-size:1.25rem;font-weight:700;color:#f97316;margin-right:2rem}
+header nav a{margin-right:1.25rem;color:#ddd;font-size:.9rem}header nav a.active{color:#f97316;font-weight:600}
+.ticker-strip{display:flex;gap:1rem;padding:1rem 2rem;overflow-x:auto;border-bottom:1px solid #222}
+.tick-card{background:#181818;border:1px solid #222;border-radius:6px;padding:.6rem 1rem;min-width:120px;text-align:center}
+.tick-card .symbol{font-weight:700;font-size:.85rem;color:#aaa}.tick-card .price{font-size:1.1rem;margin:.2rem 0}
+.tick-card .change.up{color:#4caf82}.tick-card .change.down{color:#f44}
+.main{display:grid;grid-template-columns:1fr 260px;gap:1.5rem;padding:1.5rem 2rem}
+#chart{background:#181818;border:1px solid #222;border-radius:8px;min-height:400px}
+.sidebar{display:flex;flex-direction:column;gap:1rem}
+.card{background:#181818;border:1px solid #222;border-radius:8px;padding:1rem}
+.card h3{font-size:.8rem;color:#aaa;text-transform:uppercase;margin-bottom:.75rem}
+.card a{display:block;padding:.4rem 0;font-size:.9rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.stat{background:#111;border-radius:6px;padding:.75rem;text-align:center}
+.stat .val{font-size:1.3rem;font-weight:700;color:#f97316}.stat .lbl{font-size:.7rem;color:#aaa;margin-top:.2rem}
+</style>
+</head>
+<body>
+<header>
+<img src="/static/patternFoundryLogo.png" alt="PatternFoundry">
+<span class="brand">PatternFoundry</span>
+<nav>
+<a href="/dashboard" class="active">Dashboard</a>
+<a href="/simulator">Simulator</a>
+<a href="/chartdesigner">Chart Designer</a>
+{% if is_admin %}<a href="/admin/users">Users</a>{% endif %}
+</nav>
+</header>
+<div class="ticker-strip" id="tickers"></div>
+<div class="main">
+<div id="chart"></div>
+<div class="sidebar">
+<div class="card">
+<h3>Quick Actions</h3>
+<a href="/simulator">🎯 Simulator</a>
+<a href="/chartdesigner">📐 Chart Designer</a>
+</div>
+<div class="card">
+<h3>Stats</h3>
+<div class="stats">
+<div class="stat"><div class="val">{{ stats.patterns if stats else 0 }}</div><div class="lbl">Patterns</div></div>
+<div class="stat"><div class="val">{{ stats.sim_hours if stats else 0 }}</div><div class="lbl">Sim Hours</div></div>
+<div class="stat"><div class="val">{{ stats.best_wr if stats else '—' }}</div><div class="lbl">Best WR</div></div>
+<div class="stat"><div class="val">{{ stats.trades if stats else 0 }}</div><div class="lbl">Trades</div></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+(function(){
+const tickers=[{s:'ES',base:5450},{s:'NQ',base:19800},{s:'GC',base:2350},{s:'CL',base:78},{s:'SPY',base:545},{s:'QQQ',base:480}];
+const strip=document.getElementById('tickers');
+tickers.forEach(t=>{
+const change=((Math.random()-.5)*t.base*.02).toFixed(2);
+const price=(t.base+parseFloat(change)).toFixed(2);
+const up=change>=0;
+strip.innerHTML+=`<div class="tick-card"><div class="symbol">${t.s}</div><div class="price">${price}</div><div class="change ${up?'up':'down'}">${up?'+':''}${change}</div></div>`;
+});
+// LWC chart
+const container=document.getElementById('chart');
+const chart=LightweightCharts.createChart(container,{width:container.clientWidth,height:400,layout:{background:{color:'#181818'},textColor:'#ddd'},grid:{vertLines:{color:'#222'},horzLines:{color:'#222'}}});
+const series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#f44',borderVisible:false,wickUpColor:'#4caf82',wickDownColor:'#f44'});
+let data=[],t=Math.floor(Date.now()/1000)-86400,p=5450;
+for(let i=0;i<100;i++){
+const o=p,h=o+Math.random()*20,l=o-Math.random()*20,c=l+Math.random()*(h-l);
+data.push({time:t,open:o,high:h,low:l,close:c});p=c;t+=900;
+}
+series.setData(data);
+new ResizeObserver(()=>chart.applyOptions({width:container.clientWidth})).observe(container);
+})();
+</script>
+</body>
+</html>

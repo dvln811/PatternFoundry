@@ -2,17 +2,120 @@ import random
 import copy
 import os
 import json
+import secrets
 import pandas as pd
 from datetime import date, datetime
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 import data_generator as dg
 from generators import (CHARACTERS, CharacterSpec, RegimeSpec, DriftSpec,
                         VolatilitySpec, WickSpec, VolumeSpec, GapSpec, EventSpec,
                         generate_v2, apply_session_structure,
                         extract_gap_cfg, disable_internal_gaps)
+from models import User, init_db
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('PF_SECRET', secrets.token_hex(32))
+app.permanent_session_lifetime = __import__('datetime').timedelta(days=30)
+
+# Flask-Login setup
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get_by_id(int(user_id))
+
+# Local dev: auto-login as admin (skip auth)
+_IS_LOCAL = os.environ.get('PF_LOCAL', '1') == '1'
+
+@app.before_request
+def check_auth():
+    # Public paths
+    public = ['/login', '/register', '/static', '/api/']
+    path = request.path
+    if any(path.startswith(p) for p in public):
+        return
+    if _IS_LOCAL:
+        return  # skip auth in local dev
+    if not current_user.is_authenticated:
+        if path != '/':
+            return redirect(url_for('login'))
+
+@app.context_processor
+def inject_user():
+    if _IS_LOCAL:
+        return {'user': 'dev@local', 'is_admin': True, 'user_name': 'Developer', 'initials': 'DV'}
+    if current_user.is_authenticated:
+        initials = ''.join(w[0].upper() for w in current_user.name.split()[:2]) if current_user.name else 'U'
+        return {'user': current_user.email, 'is_admin': current_user.is_admin, 'user_name': current_user.name, 'initials': initials}
+    return {'user': None, 'is_admin': False, 'user_name': '', 'initials': ''}
+
+
+# ── Auth routes ───────────────────────────────────────────────────────────────
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email', '')
+        password = request.form.get('password', '')
+        user = User.verify_password(email, password)
+        if user:
+            login_user(user, remember=True)
+            User.record_login(user.id, request.remote_addr)
+            session.permanent = True
+            return redirect(url_for('dashboard'))
+        return render_template('auth_login.html', error='Invalid email or password', email=email)
+    return render_template('auth_login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        if len(password) < 8:
+            return render_template('auth_register.html', error='Password must be at least 8 characters', name=name, email=email)
+        user = User.create(email, password, name)
+        if not user:
+            return render_template('auth_register.html', error='Email already registered', name=name, email=email)
+        login_user(user, remember=True)
+        session.permanent = True
+        return redirect(url_for('dashboard'))
+    return render_template('auth_register.html')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/admin/users')
+def admin_users():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    users = User.get_all()
+    return render_template('admin_users.html', users=users, current_user_id=current_user.id if current_user.is_authenticated else 0)
+
+@app.route('/admin/users/action', methods=['POST'])
+def admin_users_action():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    uid = int(request.form.get('user_id', 0))
+    action = request.form.get('action', '')
+    if action == 'ban': User.set_banned(uid, True)
+    elif action == 'unban': User.set_banned(uid, False)
+    elif action == 'promote': User.set_role(uid, 'admin')
+    elif action == 'demote': User.set_role(uid, 'user')
+    return redirect(url_for('admin_users'))
+
+
+# ── Pages ─────────────────────────────────────────────────────────────────────
+
+@app.route('/')
+def dashboard():
+    return render_template('dashboard.html')
 
 _SESSIONS_DIR = os.path.join(os.path.dirname(__file__), 'sessions')
 os.makedirs(_SESSIONS_DIR, exist_ok=True)
@@ -44,8 +147,8 @@ def _resolve_spec(instrument: str):
     return dg.INSTRUMENT_PROFILES.get(instrument, dg.DEFAULT_PROFILE)
 
 
-@app.route('/')
-def index():
+@app.route('/simulator')
+def simulator():
     return render_template('chart.html')
 
 

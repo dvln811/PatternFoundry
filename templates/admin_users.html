@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Users — PatternFoundry</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d0d;color:#ddd;font-family:'Inter',sans-serif;min-height:100vh}
+a{color:#f97316;text-decoration:none}a:hover{text-decoration:underline}
+header{display:flex;align-items:center;padding:1rem 2rem;border-bottom:1px solid #222}
+header img{height:36px;margin-right:.75rem}header .brand{font-size:1.25rem;font-weight:700;color:#f97316;margin-right:2rem}
+header nav a{margin-right:1.25rem;color:#ddd;font-size:.9rem}header nav a:hover{color:#f97316}
+.wrap{padding:2rem}
+h2{margin-bottom:1.5rem;color:#f97316}
+table{width:100%;border-collapse:collapse;background:#181818;border-radius:8px;overflow:hidden}
+th,td{padding:.75rem 1rem;text-align:left;border-bottom:1px solid #222;font-size:.85rem}
+th{background:#111;color:#aaa;font-weight:600;text-transform:uppercase;font-size:.75rem}
+.badge{padding:.2rem .5rem;border-radius:3px;font-size:.75rem;font-weight:600}
+.badge-admin{background:#f97316;color:#fff}.badge-user{background:#333;color:#aaa}
+.status-active{color:#4caf82}.status-banned{color:#f44}
+.btn{padding:.3rem .6rem;border:none;border-radius:3px;font-size:.75rem;cursor:pointer;font-weight:600}
+.btn-danger{background:#c0392b;color:#fff}.btn-success{background:#4caf82;color:#fff}
+.btn-warn{background:#f97316;color:#fff}.btn-secondary{background:#333;color:#ddd}
+form{display:inline}
+</style>
+</head>
+<body>
+<header>
+<img src="/static/patternFoundryLogo.png" alt="PatternFoundry">
+<span class="brand">PatternFoundry</span>
+<nav>
+<a href="/dashboard">Dashboard</a>
+<a href="/simulator">Simulator</a>
+<a href="/chartdesigner">Chart Designer</a>
+<a href="/admin/users" style="color:#f97316">Users</a>
+</nav>
+</header>
+<div class="wrap">
+<h2>Manage Users</h2>
+<table>
+<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+<tbody>
+{% for u in users %}
+<tr>
+<td>{{ u.name }}</td>
+<td>{{ u.email }}</td>
+<td><span class="badge badge-{{ u.role }}">{{ u.role }}</span></td>
+<td>{% if u.banned %}<span class="status-banned">Banned</span>{% else %}<span class="status-active">Active</span>{% endif %}</td>
+<td>{{ u.last_login or '—' }}</td>
+<td>
+{% if u.banned %}
+<form method="POST" action="/admin/users/action"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="hidden" name="action" value="unban"><button class="btn btn-success">Unban</button></form>
+{% else %}
+<form method="POST" action="/admin/users/action"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="hidden" name="action" value="ban"><button class="btn btn-danger">Ban</button></form>
+{% endif %}
+{% if u.role == 'user' %}
+<form method="POST" action="/admin/users/action"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="hidden" name="action" value="promote"><button class="btn btn-warn">Promote</button></form>
+{% else %}
+<form method="POST" action="/admin/users/action"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="hidden" name="action" value="demote"><button class="btn btn-secondary">Demote</button></form>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</body>
+</html>
