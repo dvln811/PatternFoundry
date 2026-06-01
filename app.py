@@ -318,6 +318,51 @@ def character_list():
 
 # ── /api/session — simple candle generation (used by chart.html) ─────────────
 
+# ── Yahoo Finance endpoints ────────────────────────────────────────────────────
+
+@app.route('/api/quotes')
+def api_quotes():
+    import requests as req
+    symbols = request.args.get('symbols', 'ES=F,NQ=F,GC=F,CL=F,SPY,QQQ').split(',')
+    results = []
+    for sym in symbols:
+        try:
+            url = f'https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=2d'
+            resp = req.get(url, timeout=3, headers={'User-Agent': 'Mozilla/5.0'})
+            if resp.status_code != 200: continue
+            meta = resp.json().get('chart', {}).get('result', [{}])[0].get('meta', {})
+            price = meta.get('regularMarketPrice', 0)
+            prev = meta.get('chartPreviousClose', meta.get('previousClose', price))
+            pct = ((price - prev) / prev * 100) if prev else 0
+            results.append({'symbol': sym, 'name': meta.get('shortName', sym), 'price': price, 'changePct': round(pct, 2)})
+        except Exception:
+            continue
+    return jsonify(results)
+
+@app.route('/api/chart')
+def api_chart():
+    import requests as req
+    symbol = request.args.get('symbol', 'ES=F')
+    interval = request.args.get('interval', '1d')
+    range_ = request.args.get('range', '6mo')
+    try:
+        url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval={interval}&range={range_}'
+        resp = req.get(url, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
+        result = resp.json().get('chart', {}).get('result', [{}])[0]
+        timestamps = result.get('timestamp', [])
+        quote = result.get('indicators', {}).get('quote', [{}])[0]
+        candles = []
+        for i, t in enumerate(timestamps):
+            o, h, l, c = quote.get('open', [None])[i], quote.get('high', [None])[i], quote.get('low', [None])[i], quote.get('close', [None])[i]
+            if o is None: continue
+            candles.append({'time': t, 'open': round(o, 2), 'high': round(h, 2), 'low': round(l, 2), 'close': round(c, 2)})
+        return jsonify(candles)
+    except Exception:
+        return jsonify([])
+
+
+# ── /api/session — simple candle generation (used by chart.html) ─────────────
+
 @app.route('/api/session')
 def api_session():
     seed       = request.args.get('seed', type=int, default=random.randint(0, 2**31))

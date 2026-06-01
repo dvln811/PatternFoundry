@@ -120,44 +120,58 @@ var ALL_TICKERS=[
 {sym:'SPY',label:'SPY',name:'S&P 500 ETF',base:550},
 {sym:'QQQ',label:'QQQ',name:'Nasdaq ETF',base:470},
 ];
-var DEFAULT_SYMS=['ES','NQ','GC','CL','SPY','QQQ'];
+var DEFAULT_SYMS=['ES=F','NQ=F','GC=F','CL=F','SPY','QQQ'];
 var userSyms=JSON.parse(localStorage.getItem('pf_dash_tickers')||'null')||DEFAULT_SYMS;
-var TICKERS=userSyms.map(function(s){return ALL_TICKERS.find(function(t){return t.sym===s})||{sym:s,label:s,base:100}});
+var TICKERS=userSyms.map(function(s){return ALL_TICKERS.find(function(t){return t.sym===s})||{sym:s,label:s.replace('=F',''),base:100}});
 var activeSym=TICKERS[0].sym,cache={};
 function saveTickers(){localStorage.setItem('pf_dash_tickers',JSON.stringify(TICKERS.map(function(t){return t.sym})))}
-
-function gen(sym){
-  if(cache[sym])return cache[sym];
-  var t=TICKERS.find(function(x){return x.sym===sym})||TICKERS[0];
-  var data=[],bt=Math.floor(Date.now()/1000)-86400*5,price=t.base;
-  for(var d=0;d<5;d++){var ds=bt+d*86400+34200;
-    for(var b=0;b<78;b++){var time=ds+b*300;
-      var vol=(b<10||b>70)?1.8:1.0;
-      var drift=(Math.random()-0.49)*price*0.001*vol;
-      var o=price,c=o+drift,spread=Math.abs(drift)+Math.random()*price*0.0008*vol;
-      var h=Math.max(o,c)+Math.random()*spread*0.6,l=Math.min(o,c)-Math.random()*spread*0.6;
-      data.push({time:time,open:+o.toFixed(2),high:+h.toFixed(2),low:+l.toFixed(2),close:+c.toFixed(2)});
-      price=c;
-  }}
-  cache[sym]=data;return data;
-}
 
 var strip=document.getElementById('tickerStrip');
 var chart,series;
 
+function fetchQuotes(){
+  fetch('/api/quotes?symbols='+TICKERS.map(function(t){return t.sym}).join(',')).then(function(r){return r.json()}).then(function(quotes){
+    quotes.forEach(function(q){
+      var t=TICKERS.find(function(x){return x.sym===q.symbol});
+      if(t){t.livePrice=q.price;t.changePct=q.changePct;t.liveName=q.name}
+    });
+    buildCards();
+    updateHeader();
+  }).catch(function(){});
+}
+
+function fetchChart(sym){
+  fetch('/api/chart?symbol='+sym+'&interval=5m&range=5d').then(function(r){return r.json()}).then(function(candles){
+    if(candles.length){series.setData(candles);chart.timeScale().fitContent()}
+  }).catch(function(){});
+}
+
+function updateHeader(){
+  var t=TICKERS.find(function(x){return x.sym===activeSym});
+  if(!t)return;
+  document.getElementById('dashTicker').textContent=t.label;
+  var price=t.livePrice||t.base;
+  var pct=t.changePct||0;
+  var bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
+  document.getElementById('dashPrice').textContent=price.toLocaleString(undefined,{minimumFractionDigits:2});
+  document.getElementById('dashPrice').style.color=col;
+  document.getElementById('dashChange').textContent=(bull?'+':'')+pct.toFixed(2)+'%';
+  document.getElementById('dashChange').style.color=col;
+}
+
 function buildCards(){
   strip.innerHTML='';
   TICKERS.forEach(function(t){
-    var d=gen(t.sym),last=d[d.length-1],first=d[0];
-    var pct=((last.close-first.open)/first.open*100);
+    var price=t.livePrice||t.base;
+    var pct=t.changePct||0;
     var bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
     var card=document.createElement('div');
     card.className='ticker-card '+(bull?'bull':'bear')+(t.sym===activeSym?' active':'');
     card.dataset.sym=t.sym;
     card.innerHTML='<button class="tc-remove" title="Remove">✕</button><div class="tc-name">'+t.label+'</div>'
-      +'<div class="tc-price" style="color:'+col+'">'+last.close.toFixed(2)+'</div>'
+      +'<div class="tc-price" style="color:'+col+'">'+price.toLocaleString(undefined,{minimumFractionDigits:2})+'</div>'
       +'<div class="tc-change" style="color:'+col+'">'+(bull?'+':'')+pct.toFixed(2)+'%</div>';
-    card.addEventListener('click',function(e){if(e.target.classList.contains('tc-remove')){removeTicker(t.sym);return}selectTicker(t.sym)});
+    card.addEventListener('click',function(e){if(e.target.classList.contains('tc-remove'))return;selectTicker(t.sym)});
     card.querySelector('.tc-remove').addEventListener('click',function(e){e.stopPropagation();removeTicker(t.sym)});
     strip.appendChild(card);
   });
@@ -168,21 +182,14 @@ function buildCards(){
 function selectTicker(sym){
   activeSym=sym;
   document.querySelectorAll('.ticker-card').forEach(function(c){c.classList.toggle('active',c.dataset.sym===sym)});
-  var t=TICKERS.find(function(x){return x.sym===sym});
-  document.getElementById('dashTicker').textContent=t?t.label:sym;
-  var d=gen(sym),last=d[d.length-1],first=d[0];
-  var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
-  document.getElementById('dashPrice').textContent=last.close.toFixed(2);
-  document.getElementById('dashPrice').style.color=col;
-  document.getElementById('dashChange').textContent=(bull?'+':'')+pct.toFixed(2)+'%';
-  document.getElementById('dashChange').style.color=col;
-  series.setData(d);chart.timeScale().fitContent();
+  updateHeader();
+  fetchChart(sym);
 }
 
 function removeTicker(sym){
   TICKERS=TICKERS.filter(function(t){return t.sym!==sym});saveTickers();
   if(activeSym===sym&&TICKERS.length)activeSym=TICKERS[0].sym;
-  buildCards();
+fetchQuotes();fetchChart(activeSym);setInterval(fetchQuotes,5000);
 setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);selectTicker(activeSym);
 }
 
@@ -192,7 +199,7 @@ function addTicker(){
   if(TICKERS.find(function(t){return t.sym===sym}))return;
   var known=ALL_TICKERS.find(function(t){return t.sym===sym});
   TICKERS.push(known||{sym:sym,label:sym,base:100+Math.random()*200});
-  saveTickers();buildCards();
+  saveTickers();fetchQuotes();
 setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);selectTicker(sym);
 }
 
