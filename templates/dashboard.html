@@ -90,10 +90,10 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 <div class="dash-news">
   <div class="dash-news-header"><h3>Market Pulse</h3></div>
   <div class="dash-news-body" id="newsFeed">
-    <div class="news-item"><div class="headline">Markets await Fed decision on rates</div><div class="meta">2h ago</div></div>
-    <div class="news-item"><div class="headline">Tech earnings beat expectations across the board</div><div class="meta">4h ago</div></div>
-    <div class="news-item"><div class="headline">Oil prices surge on supply concerns</div><div class="meta">6h ago</div></div>
-    <div class="news-item"><div class="headline">Bitcoin holds above key support level</div><div class="meta">8h ago</div></div>
+    <a class="news-item" href="https://news.google.com/search?q=Fed+rates+decision" target="_blank"><div class="headline">Markets await Fed decision on rates</div><div class="meta">2h ago</div></a>
+    <a class="news-item" href="https://news.google.com/search?q=tech+earnings" target="_blank"><div class="headline">Tech earnings beat expectations across the board</div><div class="meta">4h ago</div></a>
+    <a class="news-item" href="https://news.google.com/search?q=oil+prices+supply" target="_blank"><div class="headline">Oil prices surge on supply concerns</div><div class="meta">6h ago</div></a>
+    <a class="news-item" href="https://news.google.com/search?q=bitcoin+support+level" target="_blank"><div class="headline">Bitcoin holds above key support level</div><div class="meta">8h ago</div></a>
   </div>
 </div>
 </div>
@@ -182,7 +182,8 @@ function selectTicker(sym){
 function removeTicker(sym){
   TICKERS=TICKERS.filter(function(t){return t.sym!==sym});saveTickers();
   if(activeSym===sym&&TICKERS.length)activeSym=TICKERS[0].sym;
-  buildCards();selectTicker(activeSym);
+  buildCards();
+setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);selectTicker(activeSym);
 }
 
 function addTicker(){
@@ -191,7 +192,8 @@ function addTicker(){
   if(TICKERS.find(function(t){return t.sym===sym}))return;
   var known=ALL_TICKERS.find(function(t){return t.sym===sym});
   TICKERS.push(known||{sym:sym,label:sym,base:100+Math.random()*200});
-  saveTickers();buildCards();selectTicker(sym);
+  saveTickers();buildCards();
+setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);selectTicker(sym);
 }
 
 // Init chart
@@ -204,6 +206,7 @@ series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#e05c5c',borderU
 new ResizeObserver(function(){chart.applyOptions({width:el.clientWidth,height:el.clientHeight})}).observe(el);
 
 buildCards();
+setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);
 selectTicker(activeSym);
 })();
 </script>
