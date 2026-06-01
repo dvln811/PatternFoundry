@@ -199,14 +199,14 @@ h1,h2,h3,h4{text-transform:uppercase}
   <h2 style="text-align:center;font-size:1.4rem;font-weight:700;margin-bottom:32px;text-transform:uppercase;letter-spacing:.05em">See It In Action</h2>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
     <div>
-      <div id="drop-sim" class="drop-zone" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
+      <div id="drop-sim" class="drop-zone" onclick="if(!event.dataTransfer)openLightbox(0)" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
         <img src="/static/screenshots/simulator.png" onerror="this.style.display='none';this.nextElementSibling.style.display=''" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
         <span style="color:#555;font-size:.8rem;display:none">Drop simulator screenshot here</span>
       </div>
       <div style="text-align:center;margin-top:8px;font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em">Live Simulator</div>
     </div>
     <div>
-      <div id="drop-designer" class="drop-zone" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
+      <div id="drop-designer" class="drop-zone" onclick="if(!event.dataTransfer)openLightbox(1)" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
         <img src="/static/screenshots/designer.png" onerror="this.style.display='none';this.nextElementSibling.style.display=''" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
         <span style="color:#555;font-size:.8rem;display:none">Drop chart designer screenshot here</span>
       </div>
@@ -316,6 +316,22 @@ document.querySelectorAll('.drop-zone').forEach(zone => {
     });
   });
 });
+</script>
+
+<div id="lightbox" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;cursor:zoom-out" onclick="if(event.target===this)closeLightbox()">
+  <button onclick="lbPrev()" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);border:none;color:#fff;font-size:2rem;width:48px;height:48px;border-radius:50%;cursor:pointer;z-index:2">&lsaquo;</button>
+  <img id="lb-img" style="max-width:92vw;max-height:90vh;object-fit:contain;border-radius:6px">
+  <button onclick="lbNext()" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);border:none;color:#fff;font-size:2rem;width:48px;height:48px;border-radius:50%;cursor:pointer;z-index:2">&rsaquo;</button>
+  <button onclick="closeLightbox()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer">&times;</button>
+</div>
+<script>
+const lbImages=['/static/screenshots/simulator.png','/static/screenshots/designer.png'];
+let lbIdx=0;
+function openLightbox(idx){lbIdx=idx;document.getElementById('lb-img').src=lbImages[lbIdx]+'?t='+Date.now();document.getElementById('lightbox').style.display='flex'}
+function closeLightbox(){document.getElementById('lightbox').style.display='none'}
+function lbPrev(){lbIdx=(lbIdx-1+lbImages.length)%lbImages.length;document.getElementById('lb-img').src=lbImages[lbIdx]+'?t='+Date.now()}
+function lbNext(){lbIdx=(lbIdx+1)%lbImages.length;document.getElementById('lb-img').src=lbImages[lbIdx]+'?t='+Date.now()}
+document.addEventListener('keydown',e=>{if(document.getElementById('lightbox').style.display==='flex'){if(e.key==='Escape')closeLightbox();if(e.key==='ArrowLeft')lbPrev();if(e.key==='ArrowRight')lbNext()}});
 </script>
 </body>
 </html>
