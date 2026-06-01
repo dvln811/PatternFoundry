@@ -25,6 +25,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-he
 .card:hover{background:#151515;border-color:#444;border-left-color:#f97316}
 .card h3{color:#f97316;font-size:.85rem;font-weight:700;text-transform:uppercase;margin-bottom:8px}
 .card p{color:#999;font-size:.78rem;line-height:1.5;margin:0}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
 </style>
 </head>
 <body>
@@ -36,6 +37,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-he
     <a href="/chartdesigner">Chart Designer</a>
     <a href="/docs" class="active">Docs</a>
     <a href="/admin/users">Users</a>
+  <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
   </nav>
 </header>
 
