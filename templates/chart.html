@@ -211,7 +211,7 @@
 
     /* Themed tooltips */
     [data-tip]{position:relative}
-    [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;background:#0e1217;border:1px solid #f97316;color:#ddd;font-size:.65rem;padding:4px 8px;border-radius:4px;white-space:nowrap;z-index:9999;pointer-events:none}
+    [data-tip]:hover::after{z-index:99999;content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;background:#0e1217;border:1px solid #f97316;color:#ddd;font-size:.65rem;padding:4px 8px;border-radius:4px;white-space:nowrap;z-index:99999;pointer-events:none}
 
     /* ── Indicator toolbar ── */
     .ind-toolbar {
@@ -1358,6 +1358,7 @@ function saveSession() {
     account: { ...account },
     position: position ? { ...position } : null,
     pendingOrder: pendingOrder ? { ...pendingOrder } : null,
+    drawings: drawMgr ? drawMgr.toJSON() : [],
     savedAt: new Date().toISOString(),
   };
   const saved = JSON.parse(localStorage.getItem('pf_sessions') || '[]');
@@ -1460,6 +1461,8 @@ async function loadSavedSession(idx) {
   chart.timeScale().fitContent();
   document.getElementById('pb-info').textContent = `Restored - Bar ${tickIdx}/${allTicks.length}`;
   document.getElementById('chart-overlay').classList.add('hidden');
+  // Restore drawings
+  if (drawMgr && s.drawings) drawMgr.fromJSON(s.drawings);
 }
 
 function deleteSavedSession(idx) {

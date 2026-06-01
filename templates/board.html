@@ -160,6 +160,16 @@ function makeCard(card,col,idx){
   const notesPreview=card.notes?`<div class="card-notes-preview">${esc(card.notes.split('\n')[0].slice(0,60))}</div>`:'';
   el.innerHTML=`<span class="drag-handle">⠿</span><button class="card-del" onclick="event.stopPropagation();delCard('${col}',${idx})">✕</button><div class="card-title">${esc(card.title)}</div>${notesPreview}<div class="card-footer"><span class="badge badge-${card.type}">${card.type}</span></div>`;
   el.addEventListener('click',e=>{if(e.target.classList.contains('card-del'))return;openModal(col,idx)});
+  el.addEventListener('mouseenter',function(ev){
+    const card=data[col][idx];if(!card)return;
+    let tip=card.title;
+    if(card.notes)tip+='\n'+card.notes.slice(0,120);
+    if(card.comments&&card.comments.length)tip+='\n---\n'+card.comments.map(c=>c.text).slice(-2).join('\n');
+    const tt=document.getElementById('board-tooltip');
+    tt.textContent=tip;tt.style.display='block';
+    tt.style.left=(ev.clientX+12)+'px';tt.style.top=(ev.clientY+12)+'px';
+  });
+  el.addEventListener('mouseleave',()=>{document.getElementById('board-tooltip').style.display='none'});
   el.addEventListener('dragstart',e=>{dragSrc={col,idx};el.classList.add('dragging');e.dataTransfer.effectAllowed='move'});
   el.addEventListener('dragend',()=>el.classList.remove('dragging'));
   return el;
@@ -238,5 +248,6 @@ document.getElementById('m-new-comment').addEventListener('keydown',e=>{if(e.key
 
 render();
 </script>
+<div id="board-tooltip" style="display:none;position:fixed;z-index:9999;background:#0e1217;border:1px solid #f97316;border-radius:6px;padding:10px 12px;max-width:300px;font-size:.72rem;color:#ddd;white-space:pre-wrap;line-height:1.4;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.5)"></div>
 </body>
 </html>

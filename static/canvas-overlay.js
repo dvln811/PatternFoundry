@@ -956,8 +956,9 @@ class CanvasOverlay {
     document.addEventListener('dblclick', function(e) {
         if (!window.drawMgr) return;
         const chartEl = window.drawMgr.chartEl;
-        if (!chartEl || !chartEl.contains(e.target)) return;
+        if (!chartEl) return;
         const rect = chartEl.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         for (const d of window.drawMgr.drawings) {
