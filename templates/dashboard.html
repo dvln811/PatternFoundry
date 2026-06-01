@@ -126,7 +126,7 @@ var DEFAULT_SYMS=['ES=F','NQ=F','GC=F','CL=F','SPY','QQQ'];
 var userSyms=JSON.parse(localStorage.getItem('pf_dash_tickers')||'null')||DEFAULT_SYMS;
 var TICKERS=userSyms.map(function(sym){var k=ALL_TICKERS.find(function(t){return t.sym===sym});return k||{sym:sym,label:sym.replace('=F','').replace('-USD',''),name:sym,base:100}});
 function saveTickers(){localStorage.setItem('pf_dash_tickers',JSON.stringify(TICKERS.map(function(t){return t.sym})))}
-var activeSym=TICKERS[0].sym,cache={};
+if(!TICKERS.length)TICKERS=DEFAULT_SYMS.map(function(sym){return ALL_TICKERS.find(function(t){return t.sym===sym})});var activeSym=TICKERS[0].sym,cache={};
 var strip=document.getElementById('tickerStrip');
 function gen(sym){if(cache[sym])return cache[sym];var t=TICKERS.find(function(x){return x.sym===sym})||TICKERS[0];var data=[],price=t.livePrice||t.base,bt=Math.floor(Date.now()/1000)-86400*7;for(var d=0;d<5;d++){var ds=bt+d*86400+34200;for(var b=0;b<78;b++){var time=ds+b*300,vol=(b<10||b>70)?1.8:1.0,drift=(Math.random()-.49)*price*.001*vol,o=price,c=o+drift,sp=Math.abs(drift)+Math.random()*price*.0008*vol;data.push({time:time,open:+o.toFixed(2),high:+Math.max(o,c)+Math.random()*sp*.6,low:+Math.min(o,c)-Math.random()*sp*.6,close:+c.toFixed(2)});price=c}}cache[sym]=data;return data}
 fetch('/api/quotes?symbols='+TICKERS.map(function(t){return t.sym}).join(',')).then(function(r){return r.json()}).then(function(q){q.forEach(function(x){var t=TICKERS.find(function(v){return v.sym===x.symbol});if(t){t.livePrice=x.price;t.liveChange=x.changePct;t.liveName=x.name}})}).catch(function(){}).finally(function(){buildCards();switchTicker(activeSym)});
