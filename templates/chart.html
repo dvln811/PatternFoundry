@@ -742,7 +742,7 @@ async function loadSession() {
 // ── Tick processing ──────────────────────────────────────────────────────
 function processTick(tick) {
   currentPrice = tick.price;
-  updateDOM(tick.price, tick.bid && tick.ask ? tick.ask - tick.bid : tickSize);
+  updateDOM(tick.price, tick.bid && tick.ask ? tick.ask - tick.bid : tickSize, tick);
   const ct = getCandleTime(tick.time);
   if (!currentCandle || currentCandle.time !== ct) {
     currentCandle = { time: ct, open: tick.price, high: tick.price, low: tick.price, close: tick.price, volume: tick.volume };
@@ -1555,14 +1555,14 @@ function toggleDOM() {
   panel.style.borderLeft = _domVisible ? '1px solid #2a2a2a' : 'none';
 }
 
-function updateDOM(price, spread) {
+function updateDOM(price, spread, tick) {
   const ladder = document.getElementById('dom-ladder');
   if (!ladder || !_domVisible) return;
-  const tick = tickSize || 0.25;
-  const snap = p => Math.round(p / tick) * tick;
-  const bid = snap(price - spread / 2);
-  const ask = snap(price + spread / 2);
+  const ts = tickSize || 0.25;
   const levels = 5;
+
+  const hasBids = tick && tick.book_bids && tick.book_bids.length;
+  const hasAsks = tick && tick.book_asks && tick.book_asks.length;
 
   let html = '<div style="display:flex;padding:3px 6px;border-bottom:1px solid #333;font-size:0.68rem">'
     + '<div style="flex:1;text-align:center;color:#4caf82;font-weight:700">BID</div>'
@@ -1570,21 +1570,21 @@ function updateDOM(price, spread) {
   html += `<div style="text-align:center;padding:2px;background:#1a1a1a;border-bottom:1px solid #333;font-size:0.68rem;color:#f0c040">Spread: ${spread.toFixed(2)}</div>`;
   html += '<div style="display:flex">';
 
-  // Bid side - volume decays away from best bid
+  // Bid side
   html += '<div style="flex:1;border-right:1px solid #2a2a2a">';
   for (let i = 0; i < levels; i++) {
-    const p = snap(bid - i * tick);
-    const baseVol = Math.max(5, Math.floor(50 * Math.pow(0.7, i) + Math.random() * 15));
-    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(76,175,130,${0.12 - i * 0.02})"><span style="color:#4caf82">${baseVol}</span><span style="color:#ddd">${p.toFixed(2)}</span></div>`;
+    const p = hasBids && i < tick.book_bids.length ? tick.book_bids[i][0] : (price - (i+1) * ts);
+    const vol = hasBids && i < tick.book_bids.length ? tick.book_bids[i][1] : Math.max(5, Math.floor(50 * Math.pow(0.7, i)));
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(76,175,130,${0.12 - i * 0.02})"><span style="color:#4caf82">${vol}</span><span style="color:#ddd">${p.toFixed(2)}</span></div>`;
   }
   html += '</div>';
 
-  // Ask side - volume decays away from best ask
+  // Ask side
   html += '<div style="flex:1">';
   for (let i = 0; i < levels; i++) {
-    const p = snap(ask + i * tick);
-    const baseVol = Math.max(5, Math.floor(50 * Math.pow(0.7, i) + Math.random() * 15));
-    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(224,92,92,${0.12 - i * 0.02})"><span style="color:#ddd">${p.toFixed(2)}</span><span style="color:#e05c5c">${baseVol}</span></div>`;
+    const p = hasAsks && i < tick.book_asks.length ? tick.book_asks[i][0] : (price + (i+1) * ts);
+    const vol = hasAsks && i < tick.book_asks.length ? tick.book_asks[i][1] : Math.max(5, Math.floor(50 * Math.pow(0.7, i)));
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(224,92,92,${0.12 - i * 0.02})"><span style="color:#ddd">${p.toFixed(2)}</span><span style="color:#e05c5c">${vol}</span></div>`;
   }
   html += '</div></div>';
 

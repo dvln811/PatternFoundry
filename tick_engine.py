@@ -113,6 +113,10 @@ def generate_microstructure_ticks(candles: list, config: MicroConfig = None) -> 
 
     tick = config.tick_size
     spc = config.seconds_per_candle
+
+    # Initialize order book
+    from order_book import OrderBook
+    book = OrderBook(tick_size=tick, levels=config.lob_levels, base_size=config.lob_base_size)
     snap = lambda p: round(round(p / tick) * tick, 6)
 
     all_ticks = []
@@ -144,6 +148,7 @@ def generate_microstructure_ticks(candles: list, config: MicroConfig = None) -> 
         # We simulate freely but constrain endpoints
         price = o
         candle_ticks = []
+        book.seed_around(o)
 
         # Determine when H and L are hit
         bullish = c >= o
@@ -253,9 +258,11 @@ def generate_microstructure_ticks(candles: list, config: MicroConfig = None) -> 
             # Clamp to candle range
             price = max(l, min(h, price))
 
-            # Update LOB
-            bid = snap(price - spread / 2)
-            ask = snap(price + spread / 2)
+            # Update order book and get real bid/ask
+            book.on_tick(price, order_imbalance, inst_direction, inst_remaining, hawkes_intensity)
+            book_state = book.get_state()
+            bid = book_state['best_bid'] if book_state['bids'] else snap(price - spread / 2)
+            ask = book_state['best_ask'] if book_state['asks'] else snap(price + spread / 2)
 
             # Volume for this tick
             vol_mult = 1.0 + hawkes_intensity
@@ -280,6 +287,8 @@ def generate_microstructure_ticks(candles: list, config: MicroConfig = None) -> 
                 'hawkes': round(float(hawkes_intensity), 3),
                 'inst_remaining': int(inst_remaining),
                 'inst_dir': int(inst_direction),
+                'book_bids': book_state['bids'],
+                'book_asks': book_state['asks'],
             })
 
         # Force last tick to close price
@@ -316,4 +325,4 @@ def generate_tick_path_v2(ohlc_df, tick_size=0.25, seconds_per_candle=60, config
     raw_ticks = generate_microstructure_ticks(candles, config)
 
     # Return simplified format for frontend compatibility
-    return [{'time': t['time'], 'price': t['price'], 'volume': t['volume'], 'bid': t['bid'], 'ask': t['ask']} for t in raw_ticks]
+    return [{'time': t['time'], 'price': t['price'], 'volume': t['volume'], 'bid': t['bid'], 'ask': t['ask'], 'book_bids': t.get('book_bids', []), 'book_asks': t.get('book_asks', [])} for t in raw_ticks]
