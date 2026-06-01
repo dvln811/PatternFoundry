@@ -949,6 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ctrl+scroll = zoom price axis
   document.getElementById('sim-chart').addEventListener('wheel', (e) => {
     if (!e.ctrlKey || !chart) return;
+    e.stopPropagation();
     e.preventDefault();
     const scale = chart.priceScale('right');
     const opts = scale.options();
@@ -961,7 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newTop = Math.min(0.45, Math.max(0, margins.top + (e.deltaY > 0 ? 0.02 : -0.02)));
     const newBot = Math.min(0.45, Math.max(0, margins.bottom + (e.deltaY > 0 ? 0.02 : -0.02)));
     scale.applyOptions({ scaleMargins: { top: newTop, bottom: newBot } });
-  }, { passive: false });
+  }, { passive: false, capture: true });
   // Populate instrument dropdown from character list
   fetch('/api/character/list').then(r => r.json()).then(list => {
     const sel = document.getElementById('sim-instrument');
