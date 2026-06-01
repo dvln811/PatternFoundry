@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PatternFoundry — Forge Your Trading Edge</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0a0a0a;color:#e0e0e0;font-family:Inter,system-ui,sans-serif;overflow-x:hidden}
+nav{display:flex;justify-content:space-between;align-items:center;padding:16px 40px;position:sticky;top:0;z-index:50;background:rgba(10,10,10,0.9);backdrop-filter:blur(8px);border-bottom:1px solid #1a1a1a}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{height:28px}.brand-name{color:#f97316;font-size:1.05rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.nav-links{display:flex;gap:16px;font-size:.82rem;align-items:center}
+.nav-links a{color:#888;text-decoration:none}.nav-links a:hover{color:#e0e0e0}
+.btn-signin{color:#4caf82;border:1px solid #4caf82;padding:5px 14px;border-radius:5px;font-weight:600}
+.btn-signin:hover{background:#4caf82;color:#0a0a0a}
+.hero{max-width:900px;margin:0 auto;padding:120px 40px 80px;text-align:center}
+.hero h1{font-size:3.2rem;font-weight:800;line-height:1.05;margin:0 0 20px;letter-spacing:-.02em}
+.hero h1 .accent{color:#f97316}
+.hero .tagline{font-size:1.1rem;color:#888;max-width:600px;margin:0 auto 36px;line-height:1.5}
+.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{padding:12px 28px;background:#4caf82;color:#0a0a0a;border:none;border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit}
+.btn-primary:hover{background:#5cc992}
+.btn-secondary{padding:12px 28px;background:transparent;color:#e0e0e0;border:1px solid #2a2a2a;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit}
+.btn-secondary:hover{border-color:#4caf82;color:#4caf82}
+.features{max-width:1000px;margin:0 auto;padding:60px 40px}
+.features h2{text-align:center;font-size:1.8rem;font-weight:700;margin:0 0 40px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feature-card{background:#0e0e0e;border:1px solid #1a1a1a;border-radius:8px;padding:24px}
+.feature-card h3{color:#f97316;font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin:0 0 8px}
+.feature-card p{color:#888;font-size:.85rem;line-height:1.5;margin:0}
+.how{max-width:800px;margin:0 auto;padding:60px 40px}
+.how h2{text-align:center;font-size:1.8rem;font-weight:700;margin:0 0 40px}
+.steps{display:flex;flex-direction:column;gap:24px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step-num{width:36px;height:36px;border-radius:50%;background:#1a1a1a;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#f97316;flex-shrink:0}
+.step-text h4{margin:0 0 4px;font-size:.95rem;color:#e0e0e0}.step-text p{margin:0;font-size:.85rem;color:#888;line-height:1.4}
+.cta-section{text-align:center;padding:80px 40px;border-top:1px solid #1a1a1a;margin-top:60px}
+.cta-section h2{font-size:1.6rem;font-weight:700;margin:0 0 12px}
+.cta-section p{color:#888;margin:0 0 24px;font-size:.95rem}
+@media(max-width:700px){.feature-grid{grid-template-columns:1fr}.hero h1{font-size:2.2rem}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt=""><span class="brand-name">PatternFoundry</span></a>
+  <div class="nav-links">
+    <a href="/login" class="btn-signin">Sign In</a>
+  </div>
+</nav>
+<div class="hero">
+  <h1>Forge Your <span class="accent">Trading Edge</span></h1>
+  <p class="tagline">Practice live trading sessions on demand. Fresh synthetic markets every time — never memorize the tape. Available 24/7.</p>
+  <div class="cta-row">
+    <a href="/register" class="btn-primary">Start Free</a>
+    <a href="#features" class="btn-secondary">Learn More</a>
+  </div>
+</div>
+<div class="features" id="features">
+  <h2>Why PatternFoundry?</h2>
+  <div class="feature-grid">
+    <div class="feature-card"><h3>Fresh Every Time</h3><p>Procedurally generated sessions mean you never trade the same tape twice. No memorization, pure skill development.</p></div>
+    <div class="feature-card"><h3>Practice Anytime</h3><p>No market hours required. Run sessions at 2am on a Tuesday. Speed up, slow down, or pause at will.</p></div>
+    <div class="feature-card"><h3>Realistic Microstructure</h3><p>Agent-based order book simulation with institutional flow, retail noise, and Hawkes clustering. Feels like the real thing.</p></div>
+    <div class="feature-card"><h3>Multiple Instruments</h3><p>ES, NQ, SPY, TSLA, GME, CL — each with distinct personality. Design your own with the Chart Designer.</p></div>
+    <div class="feature-card"><h3>Full Trading Tools</h3><p>Drawing tools, indicators (SMA, EMA, VWAP, RSI, MACD, BBands, ATR), DOM, and multi-timeframe analysis.</p></div>
+    <div class="feature-card"><h3>Track Your Progress</h3><p>P&L tracking, win rate, trade log. Save and resume sessions. See yourself improve over time.</p></div>
+  </div>
+</div>
+<div class="how">
+  <h2>How It Works</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-text"><h4>Choose an Instrument</h4><p>Pick from built-in characters or design your own with custom volatility, drift, and microstructure parameters.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><h4>Generate a Session</h4><p>A fresh RTH session is generated with realistic pre-market, opening drive, lunch chop, and power hour dynamics.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><h4>Trade It Live</h4><p>Price ticks forward in real time. Place entries, manage stops and targets, watch the DOM. Execute your strategy.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><h4>Review & Repeat</h4><p>Check your P&L, analyze your trades, then generate a new session and do it again. Deliberate practice, on demand.</p></div></div>
+  </div>
+</div>
+<div class="cta-section">
+  <h2>Ready to practice?</h2>
+  <p>Free to start. No credit card required.</p>
+  <a href="/register" class="btn-primary">Create Account</a>
+</div>
+</body>
+</html>

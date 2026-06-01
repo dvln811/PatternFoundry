@@ -115,6 +115,8 @@ def admin_users_action():
 
 @app.route('/')
 def dashboard():
+    if not _IS_LOCAL and not current_user.is_authenticated:
+        return render_template('landing.html')
     return render_template('dashboard.html')
 
 _SESSIONS_DIR = os.path.join(os.path.dirname(__file__), 'sessions')
