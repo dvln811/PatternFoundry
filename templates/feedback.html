@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Feedback - PatternFoundry</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px}
+.container{max-width:560px;margin:60px auto;padding:32px;background:#111;border-radius:8px;border:1px solid #2a2a2a}
+h2{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.subtitle{color:#888;font-size:.82rem;margin-bottom:24px}
+label{display:block;margin-bottom:4px;font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.04em}
+input,textarea,select{width:100%;padding:8px 10px;margin-bottom:16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;color:#ddd;font-size:.85rem;font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#4caf82}
+textarea{min-height:140px;resize:vertical}
+button{width:100%;padding:12px;background:#4caf82;color:#0a0a0a;border:none;border-radius:5px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.03em}
+button:hover{background:#5cc992}
+.success{background:#0f1a14;border:1px solid #4caf8244;color:#4caf82;padding:16px;border-radius:6px;text-align:center;display:none}
+.success h3{margin-bottom:6px;font-size:1rem}
+.success p{color:#888;font-size:.82rem}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+</header>
+<div class="container">
+  <div id="form-view">
+    <h2>Send Feedback</h2>
+    <p class="subtitle">Help us improve PatternFoundry. Bug reports, feature requests, or general thoughts - all welcome.</p>
+    <form id="feedback-form" onsubmit="submitFeedback(event)">
+      <label>Category</label>
+      <select name="category">
+        <option value="general">General Feedback</option>
+        <option value="bug">Bug Report</option>
+        <option value="feature">Feature Request</option>
+        <option value="ux">UX / Design</option>
+        <option value="other">Other</option>
+      </select>
+      <label>Subject</label>
+      <input type="text" name="subject" required placeholder="Brief summary">
+      <label>Details</label>
+      <textarea name="message" required placeholder="Describe in detail..."></textarea>
+      <label>Email (optional - for follow-up)</label>
+      <input type="email" name="email" placeholder="your@email.com">
+      <button type="submit">Submit Feedback</button>
+    </form>
+  </div>
+  <div class="success" id="success-view">
+    <h3>Thank you!</h3>
+    <p>Your feedback has been received. We read every submission.</p>
+  </div>
+</div>
+<script>
+function submitFeedback(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = Object.fromEntries(new FormData(form));
+  fetch('/api/feedback', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r => r.json()).then(d => {
+      if (d.ok) { document.getElementById('form-view').style.display='none'; document.getElementById('success-view').style.display='block'; }
+      else alert('Error: ' + (d.error || 'unknown'));
+    }).catch(() => alert('Failed to submit'));
+}
+</script>
+</body>
+</html>

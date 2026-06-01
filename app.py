@@ -367,6 +367,28 @@ def character_list():
 
 # ── /api/session - simple candle generation (used by chart.html) ─────────────
 
+@app.route('/feedback')
+def feedback_page():
+    return render_template('feedback.html')
+
+@app.route('/api/feedback', methods=['POST'])
+def api_feedback():
+    import smtplib
+    from email.mime.text import MIMEText
+    data = request.get_json()
+    category = data.get('category', 'general')
+    subject = data.get('subject', 'No subject')
+    message = data.get('message', '')
+    email = data.get('email', 'anonymous')
+    # Store locally as JSON
+    fb_dir = os.path.join(os.path.dirname(__file__), 'data', 'feedback')
+    os.makedirs(fb_dir, exist_ok=True)
+    import time
+    fb_file = os.path.join(fb_dir, f'{int(time.time())}_{category}.json')
+    with open(fb_file, 'w') as f:
+        json.dump({'category': category, 'subject': subject, 'message': message, 'email': email, 'time': time.time()}, f)
+    return jsonify({'ok': True})
+
 @app.route('/api/upload-screenshot', methods=['POST'])
 def upload_screenshot():
     if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
