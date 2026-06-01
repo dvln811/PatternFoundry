@@ -62,7 +62,16 @@ const TYPES=['feature','bug','improvement'];
 const LS_KEY='pf_board';
 
 function load(){try{return JSON.parse(localStorage.getItem(LS_KEY))||defaultData()}catch(e){return defaultData()}}
-function defaultData(){return COLS.reduce((o,c)=>(o[c]=[],o),{})}
+function defaultData(){return {
+  'Backlog':[
+    {id:Date.now(),title:'Account Tracking Metrics',notes:'Discuss: what metrics to show (max drawdown, profit factor, Sharpe). Per-session or cumulative? Separate Performance page?',priority:'med',type:'feature'},
+    {id:Date.now()+1,title:'Tick Chart / Sub-minute TFs',notes:'Premium-only feature. Add tick chart and sub-1m timeframes for Edge tier subscribers.',priority:'low',type:'feature'},
+    {id:Date.now()+2,title:'Off-hours background shading',notes:'LWC timeToCoordinate limitation. Need alternative approach for shading non-RTH periods.',priority:'med',type:'bug'},
+  ],
+  'In Progress':[],
+  'Review':[],
+  'Done':[]
+}}
 function save(data){localStorage.setItem(LS_KEY,JSON.stringify(data))}
 
 let data=load();

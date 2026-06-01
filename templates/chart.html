@@ -259,7 +259,7 @@
       <a href="/simulator" class="active">Simulator</a>
       <a href="/chartdesigner">Chart Designer</a>
       <a href="/docs">Docs</a>
-      {% if is_admin %}<a href="/admin/users">Users</a>{% endif %}
+      {% if is_admin %}<a href="/board">Board</a> <a href="/admin/users">Users</a>{% endif %}
     </nav>
   </header>
 
@@ -468,6 +468,8 @@
         <button class="ind-add-btn" data-draw-tool="ellipse" onclick="setDrawTool('ellipse')" data-tip="Ellipse">⬭</button>
         <button class="ind-add-btn" data-draw-tool="fib" onclick="setDrawTool('fib')" data-tip="Fib Retracement">Fib</button>
         <button class="ind-add-btn" data-draw-tool="gannbox" onclick="setDrawTool('gannbox')" data-tip="Gann Box">Gann</button>
+        <button class="ind-add-btn" data-draw-tool="gannfan" onclick="setDrawTool('gannfan')" data-tip="Gann Fan">Fan</button>
+        <button class="ind-add-btn" data-draw-tool="text" onclick="setDrawTool('text')" data-tip="Text">T</button>
         <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" data-tip="Long Position" style="color:#4caf8288">▲ Long</button>
         <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" data-tip="Short Position" style="color:#e05c5c88">▼ Short</button>
         <input type="color" id="draw-color" value="#f0c040" onchange="if(drawMgr)drawMgr.setColor(this.value)" style="width:24px;height:24px;border:1px solid #2a2a2a;border-radius:4px;background:#1a1a1a;cursor:pointer;padding:0">
@@ -1837,7 +1839,7 @@ function updateDOM(price, spread, tick) {
     const p = hasBids && i < tick.book_bids.length ? tick.book_bids[i][0] : (price - (i+1) * ts);
     const vol = hasBids && i < tick.book_bids.length ? tick.book_bids[i][1] : Math.max(5, Math.floor(50 * Math.pow(0.7, i)));
     const barW = Math.round(vol / maxVol * 100);
-    html += `<div style="position:relative;padding:3px 6px;display:flex;justify-content:space-between"><div style="position:absolute;right:0;top:0;bottom:0;width:${barW}%;background:rgba(76,175,130,${0.15 - i*0.02});border-radius:2px 0 0 2px"></div><span style="position:relative;color:#4caf82;font-weight:500">${vol}</span><span style="position:relative;color:#ddd">${p.toFixed(2)}</span></div>`;
+    html += `<div style="position:relative;padding:3px 6px;display:flex;justify-content:space-between"><div style="position:absolute;right:0;top:0;bottom:0;width:${barW}%;background:rgba(76,175,130,${0.35 - i*0.04});border-radius:2px 0 0 2px"></div><span style="position:relative;color:#4caf82;font-weight:500">${vol}</span><span style="position:relative;color:#ddd">${p.toFixed(2)}</span></div>`;
   }
   html += '</div>';
 
@@ -1847,7 +1849,7 @@ function updateDOM(price, spread, tick) {
     const p = hasAsks && i < tick.book_asks.length ? tick.book_asks[i][0] : (price + (i+1) * ts);
     const vol = hasAsks && i < tick.book_asks.length ? tick.book_asks[i][1] : Math.max(5, Math.floor(50 * Math.pow(0.7, i)));
     const barW = Math.round(vol / maxVol * 100);
-    html += `<div style="position:relative;padding:3px 6px;display:flex;justify-content:space-between"><div style="position:absolute;left:0;top:0;bottom:0;width:${barW}%;background:rgba(224,92,92,${0.15 - i*0.02});border-radius:0 2px 2px 0"></div><span style="position:relative;color:#ddd">${p.toFixed(2)}</span><span style="position:relative;color:#e05c5c;font-weight:500">${vol}</span></div>`;
+    html += `<div style="position:relative;padding:3px 6px;display:flex;justify-content:space-between"><div style="position:absolute;left:0;top:0;bottom:0;width:${barW}%;background:rgba(224,92,92,${0.35 - i*0.04});border-radius:0 2px 2px 0"></div><span style="position:relative;color:#ddd">${p.toFixed(2)}</span><span style="position:relative;color:#e05c5c;font-weight:500">${vol}</span></div>`;
   }
   html += '</div></div>';
 

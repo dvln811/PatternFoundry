@@ -88,55 +88,55 @@ table tr:hover td{background:#151515}
 <h3>Helper Functions</h3>
 <p>The following helper functions are available in the indicator environment:</p>
 
-<h4><code class="fn">sma(candles, period)</code> — Simple Moving Average</h4>
+<h4><code class="fn">sma(candles, period)</code> Simple Moving Average</h4>
 <p>Computes the arithmetic mean of closing prices over the specified period.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> ma20 = <span class="fn">sma</span>(candles, <span class="num">20</span>);
 <span class="cm">// Each value = (sum of last 20 closes) / 20</span></pre>
 
-<h4><code class="fn">ema(candles, period)</code> — Exponential Moving Average</h4>
+<h4><code class="fn">ema(candles, period)</code> Exponential Moving Average</h4>
 <p>Computes an exponentially weighted moving average. More responsive to recent price changes than SMA. Uses smoothing factor <code>k = 2 / (period + 1)</code>.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> fast = <span class="fn">ema</span>(candles, <span class="num">9</span>);
 <span class="kw">const</span> slow = <span class="fn">ema</span>(candles, <span class="num">21</span>);</pre>
 
-<h4><code class="fn">rsi(candles, period)</code> — Relative Strength Index</h4>
+<h4><code class="fn">rsi(candles, period)</code> Relative Strength Index</h4>
 <p>Computes the RSI oscillator (0–100). Measures the ratio of average gains to average losses over the period. Values above 70 indicate overbought; below 30 indicate oversold.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...] where value is 0-100</span>
 <span class="kw">const</span> rsiData = <span class="fn">rsi</span>(candles, <span class="num">14</span>);</pre>
 
-<h4><code class="fn">atr(candles, period)</code> — Average True Range</h4>
+<h4><code class="fn">atr(candles, period)</code> Average True Range</h4>
 <p>Computes the average true range — a volatility measure. True range is the greatest of: current high minus low, absolute value of high minus previous close, absolute value of low minus previous close.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> atrData = <span class="fn">atr</span>(candles, <span class="num">14</span>);</pre>
 
-<h4><code class="fn">stdev(candles, period)</code> — Standard Deviation</h4>
+<h4><code class="fn">stdev(candles, period)</code> Standard Deviation</h4>
 <p>Computes the rolling standard deviation of closing prices over the period. Useful for Bollinger Bands and volatility analysis.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> sd = <span class="fn">stdev</span>(candles, <span class="num">20</span>);</pre>
 
-<h4><code class="fn">highest(candles, period)</code> — Highest Value</h4>
+<h4><code class="fn">highest(candles, period)</code> Highest Value</h4>
 <p>Returns the highest closing price over the lookback period at each point. Useful for Donchian channels and breakout detection.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> hh = <span class="fn">highest</span>(candles, <span class="num">20</span>);</pre>
 
-<h4><code class="fn">lowest(candles, period)</code> — Lowest Value</h4>
+<h4><code class="fn">lowest(candles, period)</code> Lowest Value</h4>
 <p>Returns the lowest closing price over the lookback period at each point.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> ll = <span class="fn">lowest</span>(candles, <span class="num">20</span>);</pre>
 
-<h4><code class="fn">crossover(a, b)</code> — Cross Above Detection</h4>
+<h4><code class="fn">crossover(a, b)</code> Cross Above Detection</h4>
 <p>Returns an array of <code>{time, value}</code> where value is <code>1</code> when array <code>a</code> crosses above array <code>b</code>, and <code>0</code> otherwise. Both arrays must have <code>{time, value}</code> format.</p>
 <pre><span class="kw">const</span> fast = <span class="fn">ema</span>(candles, <span class="num">9</span>);
 <span class="kw">const</span> slow = <span class="fn">ema</span>(candles, <span class="num">21</span>);
 <span class="kw">const</span> bullCross = <span class="fn">crossover</span>(fast, slow);
 <span class="cm">// bullCross[i].value === 1 when fast crosses above slow</span></pre>
 
-<h4><code class="fn">crossunder(a, b)</code> — Cross Below Detection</h4>
+<h4><code class="fn">crossunder(a, b)</code> Cross Below Detection</h4>
 <p>Returns an array of <code>{time, value}</code> where value is <code>1</code> when array <code>a</code> crosses below array <code>b</code>, and <code>0</code> otherwise.</p>
 <pre><span class="kw">const</span> bearCross = <span class="fn">crossunder</span>(fast, slow);</pre>
 
-<h4><code class="fn">align(a, b)</code> — Timestamp Alignment</h4>
+<h4><code class="fn">align(a, b)</code> Timestamp Alignment</h4>
 <p>Aligns two arrays by their timestamps, returning only points where both arrays have data. Useful when combining indicators with different start points (due to different lookback periods).</p>
 <pre><span class="cm">// Returns: [{time, a: valueA, b: valueB}, ...]</span>
 <span class="kw">const</span> aligned = <span class="fn">align</span>(fast, slow);
@@ -172,12 +172,12 @@ table tr:hover td{background:#151515}
 <p>Available line styles: <code>'solid'</code>, <code>'dashed'</code>, <code>'dotted'</code>. Width is in pixels (1–4).</p>
 
 <h4>Display Types</h4>
-<p>Set the display type by adding a <code>type</code> property to your return value:</p>
+<p>Set the display type using the <strong>dropdown</strong> in the editor toolbar (next to the indicator name). Choose:</p>
 <ul>
-  <li><code>"overlay"</code> — Renders on the main price chart (default for single-line returns that are in the price range)</li>
-  <li><code>"oscillator"</code> — Renders in a separate panel below the chart (default for values outside price range)</li>
+  <li><strong>Overlay</strong> — Renders on the main price chart (use for indicators in the price range, like moving averages or Bollinger Bands)</li>
+  <li><strong>Oscillator</strong> — Renders in a separate panel below the chart (use for bounded indicators like RSI, or difference-based indicators like MACD histogram)</li>
 </ul>
-<pre><span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: rsiData };</pre>
+<p>The display type is NOT set in your code — it's selected from the dropdown before clicking Apply.</p>
 
 <h3>Examples</h3>
 

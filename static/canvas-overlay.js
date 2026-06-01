@@ -911,3 +911,48 @@ class CanvasOverlay {
     toJSON() { return this.drawings; }
     fromJSON(arr) { this.drawings = arr || []; this._scheduleRedraw(); }
 }
+
+// Text tool extension
+(function() {
+    const orig_onMouseDown = CanvasOverlay.prototype._onMouseDown;
+    const orig_renderDrawing = CanvasOverlay.prototype._renderDrawing;
+    const orig_hitTest = CanvasOverlay.prototype._hitTest;
+
+    const origRender = CanvasOverlay.prototype._renderDrawing;
+    CanvasOverlay.prototype._renderDrawing = function(d, hovered) {
+        if (d.type === 'text') {
+            const ctx = this.ctx;
+            const x = this._timeToX(d.p1.time);
+            const y = this._priceToY(d.p1.price);
+            if (x == null || y == null) return;
+            ctx.save();
+            ctx.font = (d.fontSize || 12) + 'px Inter, sans-serif';
+            ctx.fillStyle = d.color || '#f0c040';
+            ctx.fillText(d.text || 'Text', x, y);
+            if (hovered) this._drawHandle(ctx, x, y, d.color || '#f0c040');
+            ctx.restore();
+            return;
+        }
+        origRender.call(this, d, hovered);
+    };
+
+    const origMouseDown = CanvasOverlay.prototype._onMouseDown;
+    CanvasOverlay.prototype._onMouseDown = function(e) {
+        if (this.activeTool === 'text') {
+            const rect = this.chartEl.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const time = this._xToTime(x);
+            const price = this._yToPrice(y);
+            if (time == null || price == null) return;
+            const text = prompt('Enter text:');
+            if (!text) return;
+            this.drawings.push({ type: 'text', p1: { time, price }, text, color: this.activeColor, fontSize: 12, lineStyle: 'solid', lineWidth: 1, id: Date.now() });
+            this.activeTool = null;
+            this._interactEl.style.pointerEvents = 'none';
+            this._requestRedraw();
+            return;
+        }
+        origMouseDown.call(this, e);
+    };
+})();
