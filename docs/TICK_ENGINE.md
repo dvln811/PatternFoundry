@@ -1,4 +1,4 @@
-# Tick Engine v2 — Market Microstructure Simulation
+# Tick Engine v2 - Market Microstructure Simulation
 
 ## Overview
 
@@ -8,7 +8,7 @@
 
 **Input:** List of 1-min candle dicts `{time, open, high, low, close, volume}` (from `simulate_session_candles`)
 
-**Output:** List of tick dicts `{time, price, volume}` — one per second (390 candles × 60 = 23,400 ticks for full RTH)
+**Output:** List of tick dicts `{time, price, volume}` - one per second (390 candles × 60 = 23,400 ticks for full RTH)
 
 ## Architecture
 
@@ -51,11 +51,11 @@ intensity(t) = base + (intensity - base) × e^(-beta/spc)
 
 ### Price Formation (per second)
 Price change = sum of forces:
-- **Target pull (15%)** — pulls toward the candle's expected path (ensures OHLC constraint)
-- **Order flow impact** — imbalance × tick × 0.05
-- **Liquidity pool attraction** — price pulled toward nearby S/R levels
-- **VWAP mean-reversion** — micro pull toward session VWAP
-- **Noise** — N(0, tick × 0.3)
+- **Target pull (15%)** - pulls toward the candle's expected path (ensures OHLC constraint)
+- **Order flow impact** - imbalance × tick × 0.05
+- **Liquidity pool attraction** - price pulled toward nearby S/R levels
+- **VWAP mean-reversion** - micro pull toward session VWAP
+- **Noise** - N(0, tick × 0.3)
 
 ### Liquidity Pools
 3 S/R levels generated per session within the price range. Price is attracted toward these levels (simulates real order clustering). Strength configurable via `pool_strength`.

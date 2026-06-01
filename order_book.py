@@ -1,5 +1,5 @@
 """
-order_book.py — Simulated Limit Order Book.
+order_book.py - Simulated Limit Order Book.
 
 Maintains bid/ask levels with resting order sizes. Agents add/cancel/fill orders.
 The tick engine calls into this each tick to get the current book state.

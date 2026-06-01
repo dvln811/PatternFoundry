@@ -1,4 +1,4 @@
-# Account Tracking — Discussion Needed
+# Account Tracking - Discussion Needed
 
 ## Context
 The simulator docs reference account tracking metrics that are not currently visible in the actual Account panel sidebar.
@@ -13,4 +13,4 @@ The Account panel shows: Balance, Open P/L, Session P/L, Trades count, Win Rate.
 - How does this tie into the tier system? (Free = basic stats, Premium = full analytics?)
 
 ## Priority
-Medium — the current panel works, but more detailed tracking would add value for serious practice.
+Medium - the current panel works, but more detailed tracking would add value for serious practice.

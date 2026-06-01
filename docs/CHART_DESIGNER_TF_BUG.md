@@ -1,10 +1,10 @@
-# Chart Designer — Tick Engine Preview: Timeframe Aggregation Bug
+# Chart Designer - Tick Engine Preview: Timeframe Aggregation Bug
 
 ## Context
 
 PatternFoundry's Chart Designer (`/chartdesigner`) has two modes:
-1. **Generate** — produces historical 1-min candles via the v2 pipeline, displays them on a LightweightCharts candlestick chart
-2. **Tick Engine Preview (TEP)** — plays back second-by-second ticks from the microstructure engine, building candles live on the same chart
+1. **Generate** - produces historical 1-min candles via the v2 pipeline, displays them on a LightweightCharts candlestick chart
+2. **Tick Engine Preview (TEP)** - plays back second-by-second ticks from the microstructure engine, building candles live on the same chart
 
 The user can switch timeframes (1m, 5m, 15m, 1H, 4H, 1D, 1W, 1M) at any time, including during TEP playback.
 
@@ -33,7 +33,7 @@ function rebucket(candles, tf) {
 }
 ```
 
-This works because historical candles are sequential 1-min bars — every 5 bars = one 5m bar, etc. The timestamp of the first bar in each chunk becomes the bucket's timestamp.
+This works because historical candles are sequential 1-min bars - every 5 bars = one 5m bar, etc. The timestamp of the first bar in each chunk becomes the bucket's timestamp.
 
 ### 2. Tick data: Timestamp-based bucketing
 
@@ -57,10 +57,10 @@ When `renderCandles()` is called on TF change:
 
 ## What LightweightCharts Requires
 
-- `setData([...])` — array of bars with strictly increasing `.time` values
-- `update({time, open, high, low, close})` — time must be >= the last bar's time
-- `timeToCoordinate(time)` — only works for timestamps that exist in the series data
-- No built-in aggregation — the client must pre-aggregate before setting data
+- `setData([...])` - array of bars with strictly increasing `.time` values
+- `update({time, open, high, low, close})` - time must be >= the last bar's time
+- `timeToCoordinate(time)` - only works for timestamps that exist in the series data
+- No built-in aggregation - the client must pre-aggregate before setting data
 
 ## What Needs to Happen
 
@@ -86,20 +86,20 @@ A single, consistent bucketing approach must be used for BOTH historical and tic
 
 ## Current File Locations
 
-- `templates/chartdesigner.html` — all frontend JS (rebucket, renderCandles, tick playback loop, onTfChange)
-- `tick_engine.py` — generates tick objects `{time, price, volume, bid, ask, imbalance, hawkes, inst_remaining, inst_dir}`
-- `app.py` — `/api/character/tick-preview` endpoint generates ticks and returns them
+- `templates/chartdesigner.html` - all frontend JS (rebucket, renderCandles, tick playback loop, onTfChange)
+- `tick_engine.py` - generates tick objects `{time, price, volume, bid, ask, imbalance, hawkes, inst_remaining, inst_dir}`
+- `app.py` - `/api/character/tick-preview` endpoint generates ticks and returns them
 
 ## Current State of the Code
 
-- `allCandles` — array of 1-min candle objects from Generate (historical)
-- `_playedTicks` — array of raw tick objects played so far
-- `_tickPreviewCandle` — the in-progress candle being built from ticks
-- `window._chartData` — the array currently set on `candleSeries`
-- `rebucket(candles, tf)` — factor-based aggregation function
-- `renderCandles()` — rebuckets historical + tick data and calls `candleSeries.setData()`
-- `onTfChange()` — calls `renderCandles()`
-- Tick playback loop — uses `Math.floor(t.time / tf) * tf` for bucketing, calls `candleSeries.update()`
+- `allCandles` - array of 1-min candle objects from Generate (historical)
+- `_playedTicks` - array of raw tick objects played so far
+- `_tickPreviewCandle` - the in-progress candle being built from ticks
+- `window._chartData` - the array currently set on `candleSeries`
+- `rebucket(candles, tf)` - factor-based aggregation function
+- `renderCandles()` - rebuckets historical + tick data and calls `candleSeries.setData()`
+- `onTfChange()` - calls `renderCandles()`
+- Tick playback loop - uses `Math.floor(t.time / tf) * tf` for bucketing, calls `candleSeries.update()`
 
 ## Constraints
 

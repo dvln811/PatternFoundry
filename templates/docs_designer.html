@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PatternFoundry — Chart Designer</title>
+<title>PatternFoundry - Chart Designer</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -56,7 +56,7 @@ table tr:hover td{background:#151515}
 <h1>Chart Designer</h1>
 
 <h3>Overview &amp; Purpose</h3>
-<p>The Chart Designer lets you create custom <strong>Chart Characters</strong> — parameterized profiles that define how synthetic price action behaves. Each character controls everything from macro regime behavior (trending vs. choppy) down to individual tick-level microstructure (spread dynamics, agent behavior, order clustering).</p>
+<p>The Chart Designer lets you create custom <strong>Chart Characters</strong> - parameterized profiles that define how synthetic price action behaves. Each character controls everything from macro regime behavior (trending vs. choppy) down to individual tick-level microstructure (spread dynamics, agent behavior, order clustering).</p>
 <p>Use the Chart Designer to:</p>
 <ul>
   <li>Create market conditions that match specific instruments or scenarios</li>
@@ -71,7 +71,7 @@ table tr:hover td{background:#151515}
 <table>
   <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
   <tr><td><strong>Chop Volatility</strong></td><td>0.1 – 3.0</td><td>0.8</td><td>Standard deviation of returns during choppy/ranging periods. Higher values create wider ranges with more noise. Realistic: 0.5–1.2 for most instruments.</td></tr>
-  <tr><td><strong>Trend Volatility</strong></td><td>0.5 – 5.0</td><td>1.5</td><td>Standard deviation during trending periods. Controls how "noisy" the trend is — lower values create cleaner trends, higher values create volatile trends with deeper pullbacks.</td></tr>
+  <tr><td><strong>Trend Volatility</strong></td><td>0.5 – 5.0</td><td>1.5</td><td>Standard deviation during trending periods. Controls how "noisy" the trend is - lower values create cleaner trends, higher values create volatile trends with deeper pullbacks.</td></tr>
   <tr><td><strong>Impulse Volatility</strong></td><td>2.0 – 15.0</td><td>5.0</td><td>Standard deviation during impulse/spike moves. These are sudden, violent price moves (news events, stop cascades). Realistic: 3.0–8.0.</td></tr>
   <tr><td><strong>Gap Hold Volatility</strong></td><td>0.1 – 2.0</td><td>0.4</td><td>Volatility during the consolidation period after a gap. Low values create tight post-gap ranges; higher values allow the gap to partially fill.</td></tr>
 </table>
@@ -95,7 +95,7 @@ table tr:hover td{background:#151515}
 <p>Wick parameters control the <strong>wick-to-body ratio</strong> of generated candles. They determine how much price explores beyond the open/close range within each candle.</p>
 <table>
   <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
-  <tr><td><strong>Chop Wick Ratio</strong></td><td>0.5 – 4.0</td><td>1.8</td><td>Wick length relative to body during chop. Higher values create doji-like candles with long wicks — typical of indecisive, ranging markets.</td></tr>
+  <tr><td><strong>Chop Wick Ratio</strong></td><td>0.5 – 4.0</td><td>1.8</td><td>Wick length relative to body during chop. Higher values create doji-like candles with long wicks - typical of indecisive, ranging markets.</td></tr>
   <tr><td><strong>Trend Wick Ratio</strong></td><td>0.2 – 2.0</td><td>0.6</td><td>Wick ratio during trends. Lower values create "clean" trend candles with small wicks in the trend direction. Higher values add more rejection wicks.</td></tr>
   <tr><td><strong>Impulse Wick Ratio</strong></td><td>0.1 – 1.5</td><td>0.3</td><td>Wick ratio during impulses. Low values create strong marubozu-style candles (all body, no wick). Higher values add V-shaped rejection after the impulse.</td></tr>
   <tr><td><strong>Gap Hold Wick Ratio</strong></td><td>0.5 – 3.0</td><td>1.5</td><td>Wick ratio during post-gap consolidation. Higher values create candles that probe toward gap fill but close back in the new range.</td></tr>
@@ -109,7 +109,7 @@ table tr:hover td{background:#151515}
   <tr><td><strong>Chop Duration</strong></td><td>10 – 200</td><td>50</td><td>Expected number of candles spent in choppy/ranging state before transitioning. Longer durations create extended consolidation periods.</td></tr>
   <tr><td><strong>Trend Up Duration</strong></td><td>10 – 150</td><td>30</td><td>Expected candles in an uptrend before regime change. Longer = more sustained rallies.</td></tr>
   <tr><td><strong>Trend Down Duration</strong></td><td>10 – 150</td><td>25</td><td>Expected candles in a downtrend. Often slightly shorter than up-trends to model the "stairs up, elevator down" phenomenon.</td></tr>
-  <tr><td><strong>Impulse Duration</strong></td><td>1 – 10</td><td>3</td><td>Expected candles in an impulse state. Impulses are brief by nature — typically 1–5 candles of extreme movement.</td></tr>
+  <tr><td><strong>Impulse Duration</strong></td><td>1 – 10</td><td>3</td><td>Expected candles in an impulse state. Impulses are brief by nature - typically 1–5 candles of extreme movement.</td></tr>
 </table>
 <div class="note">
   <div class="note-title">How the Markov Chain Works</div>
@@ -128,25 +128,25 @@ table tr:hover td{background:#151515}
 </table>
 
 <h3>Gap Parameters</h3>
-<p>Gaps model price discontinuities — jumps between sessions or intraday gaps from news events.</p>
+<p>Gaps model price discontinuities - jumps between sessions or intraday gaps from news events.</p>
 <table>
   <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
   <tr><td><strong>Session Gap Probability</strong></td><td>0.0 – 1.0</td><td>0.7</td><td>Probability of a gap at session open (overnight gap). Most instruments gap daily; set lower for 24-hour markets like forex.</td></tr>
   <tr><td><strong>Min Gap Size</strong></td><td>0.5 – 5.0</td><td>1.0</td><td>Minimum gap size in ATR multiples. Ensures gaps are meaningful when they occur.</td></tr>
   <tr><td><strong>Max Gap Size</strong></td><td>1.0 – 20.0</td><td>5.0</td><td>Maximum gap size in ATR multiples. Caps extreme gaps for realism.</td></tr>
-  <tr><td><strong>Intraday Gap Probability</strong></td><td>0.0 – 0.1</td><td>0.005</td><td>Probability per candle of an intraday gap (news event, circuit breaker). Very rare in reality — keep this low.</td></tr>
+  <tr><td><strong>Intraday Gap Probability</strong></td><td>0.0 – 0.1</td><td>0.005</td><td>Probability per candle of an intraday gap (news event, circuit breaker). Very rare in reality - keep this low.</td></tr>
 </table>
 
 <h3>Event Parameters</h3>
 <p>Events model specific price action patterns that occur within candles.</p>
 <table>
   <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
-  <tr><td><strong>Wick Stab Probability</strong></td><td>0.0 – 0.3</td><td>0.08</td><td>Probability per candle of a "wick stab" — a sudden spike that immediately reverses (stop hunt / liquidity grab). Creates long-wick candles at key levels.</td></tr>
+  <tr><td><strong>Wick Stab Probability</strong></td><td>0.0 – 0.3</td><td>0.08</td><td>Probability per candle of a "wick stab" - a sudden spike that immediately reverses (stop hunt / liquidity grab). Creates long-wick candles at key levels.</td></tr>
   <tr><td><strong>Wick Stab Magnitude</strong></td><td>1.0 – 10.0</td><td>3.0</td><td>Size of wick stabs in ATR multiples. Higher values create more dramatic stop hunts.</td></tr>
 </table>
 
 <h3>Microstructure (Tick Engine) Parameters</h3>
-<p>The Microstructure section controls the <strong>tick engine</strong> — the real-time order book simulation that generates individual ticks during live playback. These parameters define how the simulated market participants behave.</p>
+<p>The Microstructure section controls the <strong>tick engine</strong> - the real-time order book simulation that generates individual ticks during live playback. These parameters define how the simulated market participants behave.</p>
 
 <h4>Spread</h4>
 <table>
@@ -177,7 +177,7 @@ table tr:hover td{background:#151515}
 </table>
 
 <h4>Hawkes Process</h4>
-<p>The Hawkes process models <strong>self-exciting order flow</strong> — the tendency for trades to cluster in time (one trade triggers more trades).</p>
+<p>The Hawkes process models <strong>self-exciting order flow</strong> - the tendency for trades to cluster in time (one trade triggers more trades).</p>
 <table>
   <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
   <tr><td><strong>Base Intensity (λ₀)</strong></td><td>0.1 – 5.0</td><td>1.0</td><td>Background rate of order arrivals when no excitation is present. The "quiet" baseline activity level.</td></tr>
@@ -205,9 +205,9 @@ table tr:hover td{background:#151515}
 <h3>Generating &amp; Previewing</h3>
 <p>After configuring parameters, use the preview tools to evaluate your character:</p>
 <ul>
-  <li><strong>Generate Preview</strong> — Creates a sample chart with your current parameters. The preview shows ~200 candles of historical data so you can visually assess the character's behavior.</li>
-  <li><strong>Tick Engine Preview</strong> — Click the <strong>Play</strong> button to watch the tick engine generate real-time price action. A debug panel shows live statistics: current spread, order rate, agent activity, and regime state.</li>
-  <li><strong>Regenerate</strong> — Generate a new random sample with the same parameters to see the range of possible outcomes.</li>
+  <li><strong>Generate Preview</strong> - Creates a sample chart with your current parameters. The preview shows ~200 candles of historical data so you can visually assess the character's behavior.</li>
+  <li><strong>Tick Engine Preview</strong> - Click the <strong>Play</strong> button to watch the tick engine generate real-time price action. A debug panel shows live statistics: current spread, order rate, agent activity, and regime state.</li>
+  <li><strong>Regenerate</strong> - Generate a new random sample with the same parameters to see the range of possible outcomes.</li>
 </ul>
 <div class="tip">
   <div class="tip-title">Tip</div>

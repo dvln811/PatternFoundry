@@ -1,4 +1,4 @@
-// canvas-overlay.js — Drawing overlay for lightweight-charts
+// canvas-overlay.js - Drawing overlay for lightweight-charts
 
 class CanvasOverlay {
     constructor(chart, series, chartEl) {
@@ -794,7 +794,7 @@ class CanvasOverlay {
         ctx.strokeStyle = '#f0c040'; ctx.setLineDash([4, 2]); ctx.beginPath(); ctx.moveTo(left, entryY); ctx.lineTo(right, entryY); ctx.stroke();
         // Labels
         const risk = Math.abs(d.p3.price - d.p1.price), reward = Math.abs(d.p2.price - d.p1.price);
-        const rr = risk > 0 ? (reward / risk).toFixed(1) : '—';
+        const rr = risk > 0 ? (reward / risk).toFixed(1) : '-';
         ctx.setLineDash([]); ctx.font = '10px Inter,sans-serif';
         ctx.fillStyle = '#4caf82'; ctx.fillText('TP ' + d.p2.price.toFixed(2), left + 3, tpY < entryY ? Math.min(entryY, tpY) - 3 : Math.max(entryY, tpY) + 12);
         ctx.fillStyle = '#e05c5c'; ctx.fillText('SL ' + d.p3.price.toFixed(2), left + 3, slY > entryY ? Math.max(entryY, slY) + 12 : Math.min(entryY, slY) - 3);

@@ -365,7 +365,7 @@ def character_list():
     return jsonify(items)
 
 
-# ── /api/session — simple candle generation (used by chart.html) ─────────────
+# ── /api/session - simple candle generation (used by chart.html) ─────────────
 
 @app.route('/api/upload-screenshot', methods=['POST'])
 def upload_screenshot():
@@ -442,7 +442,7 @@ def api_chart():
         return jsonify([])
 
 
-# ── /api/session — simple candle generation (used by chart.html) ─────────────
+# ── /api/session - simple candle generation (used by chart.html) ─────────────
 
 @app.route('/api/session')
 def api_session():
@@ -477,7 +477,7 @@ def api_session():
     })
 
 
-# ── /api/sim-session — full simulator session with history + ticks ────────────
+# ── /api/sim-session - full simulator session with history + ticks ────────────
 
 @app.route('/api/sim-session')
 def sim_session():

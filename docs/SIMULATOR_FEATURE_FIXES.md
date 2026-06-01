@@ -1,4 +1,4 @@
-# Simulator Feature Fixes — TODO
+# Simulator Feature Fixes - TODO
 
 ## Remaining Items (from docs review)
 
@@ -6,7 +6,7 @@
 - Add visual size bars (proportional width) to DOM bid/ask levels
 - Add a "last trade" marker showing where the most recent fill occurred
 
-### 6. Tooltip popups — use themed dark popups
+### 6. Tooltip popups - use themed dark popups
 - All title/tooltip attributes currently show browser default yellow popups
 - Replace with custom dark-themed tooltip (position:absolute, dark bg, orange border)
 
@@ -15,7 +15,7 @@
 - Should draw radiating lines from anchor point at Gann angles (1x1, 2x1, 3x1, 4x1, 1x2, 1x3, 1x4)
 - Needs proper angle calculation based on price/time ratio
 
-### 8. Channel tool — independent skewing
+### 8. Channel tool - independent skewing
 - Currently only horizontal
 - Should allow dragging each endpoint independently to create angled/skewed channels
 - Two parallel lines where each can be tilted

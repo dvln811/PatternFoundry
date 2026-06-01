@@ -1,4 +1,4 @@
-# Kiro Handoff — PatternFoundry Rebuild
+# Kiro Handoff - PatternFoundry Rebuild
 
 ## What This Is
 
@@ -6,12 +6,12 @@ PatternFoundry is a **clean-room rebuild** of a trading simulator concept.
 It is being built from scratch, on personal time and resources, by Devlyn Napoli.
 
 **Do not copy code from the reference repo.** Use it only to understand
-what was built before — architecture, UI patterns, feature behavior — then
+what was built before - architecture, UI patterns, feature behavior - then
 rewrite everything from scratch in this repo.
 
 ---
 
-## Reference Repo (READ ONLY — do not copy code)
+## Reference Repo (READ ONLY - do not copy code)
 
 ```
 /media/devlyn/Leviathan/Projects/StrategyScreener
@@ -39,11 +39,11 @@ This is the prior implementation. You may read it to understand:
 
 Read `PRODUCT_SPEC.md` in this directory. The MVP is:
 
-1. **Candle generator** — procedural OHLCV, RTH session structure, seed-deterministic
-2. **Chart designer** — LightweightCharts, drawing tools, indicators
-3. **Live simulator** — tick playback, entry/exit management, P&L tracking
-4. **Auth** — Flask-Login, email/password, bcrypt, SQLite
-5. **Landing page** — simple, honest, no green screenshots
+1. **Candle generator** - procedural OHLCV, RTH session structure, seed-deterministic
+2. **Chart designer** - LightweightCharts, drawing tools, indicators
+3. **Live simulator** - tick playback, entry/exit management, P&L tracking
+4. **Auth** - Flask-Login, email/password, bcrypt, SQLite
+5. **Landing page** - simple, honest, no green screenshots
 
 Start with the candle generator and Flask skeleton. Get a chart rendering
 before touching the simulator.
@@ -53,8 +53,8 @@ before touching the simulator.
 ## Key Decisions Already Made
 
 - **Stack:** Python/Flask backend, vanilla JS frontend, LightweightCharts
-- **No pattern scanner in v1** — simulator only
-- **Synthetic data only** — no live market feeds, no API keys needed
+- **No pattern scanner in v1** - simulator only
+- **Synthetic data only** - no live market feeds, no API keys needed
 - **Deploy target:** Fly.io (same as reference repo)
 - **Pricing:** Free (5 sessions/day) / Practice $9/mo / Edge $19/mo
 
@@ -71,7 +71,7 @@ before touching the simulator.
 The reference repo has the actual logo at:
 `/media/devlyn/Leviathan/Projects/StrategyScreener/static/patternFoundryLogo.png`
 
-You may use this logo — it was created for this product concept.
+You may use this logo - it was created for this product concept.
 
 ---
 

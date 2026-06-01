@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PatternFoundry — Dashboard</title>
+<title>PatternFoundry - Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
@@ -86,7 +86,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
   <div class="chart-header">
     <span class="ticker" id="dashTicker">ES</span>
     <span style="color:#666;font-size:11px" id="dashTickerName">S&P 500 E-Mini</span>
-    <span class="price" id="dashPrice">—</span>
+    <span class="price" id="dashPrice">-</span>
     <span class="change" id="dashChange"></span>
   </div>
   <div id="dashChart"><div id="dashReadout" style="position:absolute;top:4px;left:8px;z-index:9;pointer-events:none;font-family:monospace;font-size:.72rem;color:#ddd;background:rgba(14,18,23,.75);border:1px solid #222;border-radius:4px;padding:4px 8px;display:none;line-height:1.5"></div></div>
@@ -104,10 +104,10 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 <a href="/chartdesigner">Chart Designer<div class="desc">Configure instruments</div></a>
 <div style="margin-top:8px"><h3>Your Stats</h3></div>
 <div class="dash-stats">
-<div class="stat-card"><div class="label">Sim Hours</div><div class="value">—</div></div>
-<div class="stat-card"><div class="label">Trades</div><div class="value">—</div></div>
-<div class="stat-card"><div class="label">Best WR</div><div class="value">—</div></div>
-<div class="stat-card"><div class="label">Patterns</div><div class="value">—</div></div>
+<div class="stat-card"><div class="label">Sim Hours</div><div class="value">-</div></div>
+<div class="stat-card"><div class="label">Trades</div><div class="value">-</div></div>
+<div class="stat-card"><div class="label">Best WR</div><div class="value">-</div></div>
+<div class="stat-card"><div class="label">Patterns</div><div class="value">-</div></div>
 </div>
 </div>
 </div>
@@ -141,7 +141,7 @@ var chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clien
 var series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#e05c5c',borderUpColor:'#4caf82',borderDownColor:'#e05c5c',wickUpColor:'#4caf82',wickDownColor:'#e05c5c'});
 var volSeries=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'vol',color:'#4caf8266'});chart.priceScale('vol').applyOptions({scaleMargins:{top:0.85,bottom:0}});
 new ResizeObserver(function(){chart.applyOptions({width:el.clientWidth,height:el.clientHeight})}).observe(el);
-chart.subscribeCrosshairMove(function(param){var ro=document.getElementById('dashReadout');if(!ro||!param||!param.time||!param.seriesData){if(ro)ro.style.display='none';return}var bar=param.seriesData.get(series);if(!bar){ro.style.display='none';return}var vb=param.seriesData.get(volSeries);var d=new Date(param.time*1000);var ts=(d.getUTCMonth()+1)+'/'+d.getUTCDate()+' '+String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');var chg=bar.close-bar.open;var col=chg>=0?'#4caf82':'#e05c5c';var volStr=vb&&typeof vb.value==='number'?vb.value.toLocaleString():'—';ro.innerHTML='<span style="color:#888">'+ts+'</span>  O <b style="color:'+col+'">'+bar.open.toFixed(2)+'</b>  H <b style="color:'+col+'">'+bar.high.toFixed(2)+'</b>  L <b style="color:'+col+'">'+bar.low.toFixed(2)+'</b>  C <b style="color:'+col+'">'+bar.close.toFixed(2)+'</b>  <span style="color:#888">Vol <b style="color:'+col+'">'+volStr+'</b></span>';ro.style.display=''});
+chart.subscribeCrosshairMove(function(param){var ro=document.getElementById('dashReadout');if(!ro||!param||!param.time||!param.seriesData){if(ro)ro.style.display='none';return}var bar=param.seriesData.get(series);if(!bar){ro.style.display='none';return}var vb=param.seriesData.get(volSeries);var d=new Date(param.time*1000);var ts=(d.getUTCMonth()+1)+'/'+d.getUTCDate()+' '+String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');var chg=bar.close-bar.open;var col=chg>=0?'#4caf82':'#e05c5c';var volStr=vb&&typeof vb.value==='number'?vb.value.toLocaleString():'-';ro.innerHTML='<span style="color:#888">'+ts+'</span>  O <b style="color:'+col+'">'+bar.open.toFixed(2)+'</b>  H <b style="color:'+col+'">'+bar.high.toFixed(2)+'</b>  L <b style="color:'+col+'">'+bar.low.toFixed(2)+'</b>  C <b style="color:'+col+'">'+bar.close.toFixed(2)+'</b>  <span style="color:#888">Vol <b style="color:'+col+'">'+volStr+'</b></span>';ro.style.display=''});
 function switchTicker(sym){activeSym=sym;var t=TICKERS.find(function(x){return x.sym===sym})||TICKERS[0];document.getElementById('dashTicker').textContent=t.label;document.getElementById('dashTickerName').textContent=t.liveName||t.name||'';fetch('/api/chart?symbol='+encodeURIComponent(sym)+'&interval=1d&range=6mo').then(function(r){return r.json()}).then(function(candles){if(candles.length>5){cache[sym]=candles;series.setData(candles);volSeries.setData(candles.filter(function(c){return c.volume}).map(function(c){return{time:c.time,value:c.volume,color:c.close>=c.open?'#4caf8244':'#e05c5c44'}}))}else{series.setData(gen(sym))}chart.timeScale().setVisibleLogicalRange({from:(cache[activeSym]||[]).length-60,to:(cache[activeSym]||[]).length+30});chart.priceScale("right").applyOptions({autoScale:true})}).catch(function(){series.setData(gen(sym));chart.timeScale().setVisibleLogicalRange({from:(cache[activeSym]||[]).length-60,to:(cache[activeSym]||[]).length+30});chart.priceScale("right").applyOptions({autoScale:true})});var price=t.livePrice||t.base,pct=t.liveChange||0,bull=pct>=0,col=bull?'#4caf82':'#e05c5c';document.getElementById('dashPrice').textContent=price.toLocaleString(undefined,{minimumFractionDigits:2});document.getElementById('dashPrice').style.color=col;document.getElementById('dashChange').textContent=(bull?'+':'')+pct.toFixed(2)+'%';document.getElementById('dashChange').style.color=col;strip.querySelectorAll('.ticker-card').forEach(function(c){c.classList.toggle('active',c.dataset.sym===sym)})}
 fetch('/api/news').then(function(r){return r.json()}).then(function(items){var feed=document.getElementById('newsFeed');if(!items.length)return;feed.innerHTML=items.map(function(n){return'<a class="news-item" href="'+n.link+'" target="_blank"><div class="headline">'+n.title+'</div><div class="meta">'+n.pubDate.replace(/\+0000/,'UTC')+'</div></a>'}).join('')}).catch(function(){});
 })();

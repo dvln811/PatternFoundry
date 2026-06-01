@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PatternFoundry — Custom Indicators</title>
+<title>PatternFoundry - Custom Indicators</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -61,7 +61,7 @@ table tr:hover td{background:#151515}
 
 <h3>Overview</h3>
 <p>PatternFoundry includes a powerful custom indicator system that lets you write your own technical indicators using JavaScript. Custom indicators can be displayed as overlays on the price chart or as separate oscillator panels below the chart.</p>
-<p>The indicator engine provides access to all candle data and a library of helper functions for common calculations. You write a function that receives candle data and returns computed values — PatternFoundry handles the rendering.</p>
+<p>The indicator engine provides access to all candle data and a library of helper functions for common calculations. You write a function that receives candle data and returns computed values - PatternFoundry handles the rendering.</p>
 
 <h3>Opening the Editor</h3>
 <p>To open the custom indicator editor in the Simulator:</p>
@@ -106,7 +106,7 @@ table tr:hover td{background:#151515}
 <span class="kw">const</span> rsiData = <span class="fn">rsi</span>(candles, <span class="num">14</span>);</pre>
 
 <h4><code class="fn">atr(candles, period)</code> Average True Range</h4>
-<p>Computes the average true range — a volatility measure. True range is the greatest of: current high minus low, absolute value of high minus previous close, absolute value of low minus previous close.</p>
+<p>Computes the average true range - a volatility measure. True range is the greatest of: current high minus low, absolute value of high minus previous close, absolute value of low minus previous close.</p>
 <pre><span class="cm">// Returns: [{time, value}, ...]</span>
 <span class="kw">const</span> atrData = <span class="fn">atr</span>(candles, <span class="num">14</span>);</pre>
 
@@ -174,10 +174,10 @@ table tr:hover td{background:#151515}
 <h4>Display Types</h4>
 <p>Set the display type using the <strong>dropdown</strong> in the editor toolbar (next to the indicator name). Choose:</p>
 <ul>
-  <li><strong>Overlay</strong> — Renders on the main price chart (use for indicators in the price range, like moving averages or Bollinger Bands)</li>
-  <li><strong>Oscillator</strong> — Renders in a separate panel below the chart (use for bounded indicators like RSI, or difference-based indicators like MACD histogram)</li>
+  <li><strong>Overlay</strong> - Renders on the main price chart (use for indicators in the price range, like moving averages or Bollinger Bands)</li>
+  <li><strong>Oscillator</strong> - Renders in a separate panel below the chart (use for bounded indicators like RSI, or difference-based indicators like MACD histogram)</li>
 </ul>
-<p>The display type is NOT set in your code — it's selected from the dropdown before clicking Apply.</p>
+<p>The display type is NOT set in your code - it's selected from the dropdown before clicking Apply.</p>
 
 <h3>Examples</h3>
 
@@ -268,13 +268,13 @@ table tr:hover td{background:#151515}
 <ol>
   <li>Click the <strong>indicator dropdown</strong> in the chart toolbar</li>
   <li>Your saved indicators appear under the "Custom" section</li>
-  <li>Click to add it to the chart — it renders immediately</li>
+  <li>Click to add it to the chart - it renders immediately</li>
 </ol>
 <p>The <strong>indicator legend</strong> (top-left of chart or oscillator panel) shows all active indicators. For each indicator you can:</p>
 <ul>
-  <li><strong>Eye icon</strong> — Toggle visibility (hide/show without removing)</li>
-  <li><strong>Gear icon</strong> — Edit parameters (period, colors) without opening the full editor</li>
-  <li><strong>&times; button</strong> — Remove the indicator from the chart</li>
+  <li><strong>Eye icon</strong> - Toggle visibility (hide/show without removing)</li>
+  <li><strong>Gear icon</strong> - Edit parameters (period, colors) without opening the full editor</li>
+  <li><strong>&times; button</strong> - Remove the indicator from the chart</li>
 </ul>
 </main>
 </body>

@@ -1,5 +1,5 @@
 /**
- * custom-indicator.js — Sandboxed execution engine for user-defined indicators.
+ * custom-indicator.js - Sandboxed execution engine for user-defined indicators.
  *
  * Users write JS that receives `candles` (array of {time, open, high, low, close, volume})
  * and helper functions. They return an array of {time, value} or {time, value, color}.

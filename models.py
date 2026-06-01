@@ -1,4 +1,4 @@
-"""User model — SQLite + bcrypt + Flask-Login."""
+"""User model - SQLite + bcrypt + Flask-Login."""
 import os
 import sqlite3
 import bcrypt

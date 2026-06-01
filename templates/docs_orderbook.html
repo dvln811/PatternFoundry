@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PatternFoundry — Order Book &amp; Microstructure</title>
+<title>PatternFoundry - Order Book &amp; Microstructure</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -57,14 +57,14 @@ table tr:hover td{background:#151515}
 <h1>Order Book &amp; Microstructure</h1>
 
 <h3>How the Simulated Order Book Works</h3>
-<p>PatternFoundry's order book is a <strong>full limit order book simulation</strong> — not a simple random walk. Multiple autonomous agents submit, cancel, and modify orders in real-time, creating emergent price behavior that mirrors real market microstructure.</p>
+<p>PatternFoundry's order book is a <strong>full limit order book simulation</strong> - not a simple random walk. Multiple autonomous agents submit, cancel, and modify orders in real-time, creating emergent price behavior that mirrors real market microstructure.</p>
 <p>The order book maintains:</p>
 <ul>
-  <li><strong>Bid side</strong> — All resting buy orders, sorted by price (highest first)</li>
-  <li><strong>Ask side</strong> — All resting sell orders, sorted by price (lowest first)</li>
-  <li><strong>Trade tape</strong> — Record of all executed trades with time, price, size, and aggressor side</li>
+  <li><strong>Bid side</strong> - All resting buy orders, sorted by price (highest first)</li>
+  <li><strong>Ask side</strong> - All resting sell orders, sorted by price (lowest first)</li>
+  <li><strong>Trade tape</strong> - Record of all executed trades with time, price, size, and aggressor side</li>
 </ul>
-<p>When an aggressive order (market order or limit order that crosses the spread) arrives, it matches against resting orders at the best available price. If the aggressive order is larger than the resting liquidity at the best price, it "walks the book" — filling at progressively worse prices until fully filled. This creates realistic <strong>slippage</strong>.</p>
+<p>When an aggressive order (market order or limit order that crosses the spread) arrives, it matches against resting orders at the best available price. If the aggressive order is larger than the resting liquidity at the best price, it "walks the book" - filling at progressively worse prices until fully filled. This creates realistic <strong>slippage</strong>.</p>
 
 <h3>Agent Types</h3>
 <p>Four types of simulated agents interact in the order book:</p>
@@ -83,7 +83,7 @@ table tr:hover td{background:#151515}
 <p>Institutional agents represent large directional traders (hedge funds, asset managers). They:</p>
 <ul>
   <li>Submit large orders that move price</li>
-  <li>Trade with <strong>persistence</strong> — once they start buying/selling, they continue in the same direction (modeling TWAP/VWAP execution)</li>
+  <li>Trade with <strong>persistence</strong> - once they start buying/selling, they continue in the same direction (modeling TWAP/VWAP execution)</li>
   <li>Create sustained directional pressure that drives trends</li>
   <li>May use limit orders to minimize market impact (iceberg behavior)</li>
 </ul>
@@ -93,7 +93,7 @@ table tr:hover td{background:#151515}
 <ul>
   <li>Submit small, randomly-directed orders</li>
   <li>Add noise and background liquidity</li>
-  <li>Have no persistence — each order is independent</li>
+  <li>Have no persistence - each order is independent</li>
   <li>Primarily use market orders (aggressive)</li>
 </ul>
 
@@ -107,25 +107,25 @@ table tr:hover td{background:#151515}
 </ul>
 
 <h3>Hawkes Self-Excitation (Trade Clustering)</h3>
-<p>Real markets exhibit <strong>trade clustering</strong> — trades tend to arrive in bursts rather than uniformly. PatternFoundry models this using a <strong>Hawkes process</strong>, a self-exciting point process where each event increases the probability of subsequent events.</p>
+<p>Real markets exhibit <strong>trade clustering</strong> - trades tend to arrive in bursts rather than uniformly. PatternFoundry models this using a <strong>Hawkes process</strong>, a self-exciting point process where each event increases the probability of subsequent events.</p>
 <p>The intensity (rate of order arrivals) at time <em>t</em> is:</p>
 <pre>λ(t) = λ₀ + Σ α · e^(-β(t - tᵢ))</pre>
 <p>Where:</p>
 <ul>
-  <li><strong>λ₀</strong> (Base Intensity) — Background arrival rate when no excitation is present</li>
-  <li><strong>α</strong> (Alpha) — Jump in intensity caused by each trade</li>
-  <li><strong>β</strong> (Beta) — Exponential decay rate of excitation</li>
-  <li><strong>tᵢ</strong> — Times of previous trades</li>
+  <li><strong>λ₀</strong> (Base Intensity) - Background arrival rate when no excitation is present</li>
+  <li><strong>α</strong> (Alpha) - Jump in intensity caused by each trade</li>
+  <li><strong>β</strong> (Beta) - Exponential decay rate of excitation</li>
+  <li><strong>tᵢ</strong> - Times of previous trades</li>
 </ul>
 <p>This creates realistic bursts of activity: a single trade triggers more trades, which trigger even more, creating cascading activity that naturally decays back to baseline. This is visible in the tape as clusters of rapid trades followed by quiet periods.</p>
 
 <h3>Price Impact from Order Flow</h3>
 <p>Price impact in PatternFoundry follows realistic market microstructure principles:</p>
 <ul>
-  <li><strong>Temporary impact</strong> — Large aggressive orders push price away from equilibrium. The impact is proportional to order size relative to available liquidity.</li>
-  <li><strong>Permanent impact</strong> — Sustained directional flow (institutional persistence) shifts the equilibrium price permanently.</li>
-  <li><strong>Book depletion</strong> — When one side of the book is consumed faster than it's replenished, price moves rapidly in that direction (vacuum/air pocket).</li>
-  <li><strong>Spread dynamics</strong> — After a large trade depletes liquidity, the spread widens temporarily until market makers replenish quotes.</li>
+  <li><strong>Temporary impact</strong> - Large aggressive orders push price away from equilibrium. The impact is proportional to order size relative to available liquidity.</li>
+  <li><strong>Permanent impact</strong> - Sustained directional flow (institutional persistence) shifts the equilibrium price permanently.</li>
+  <li><strong>Book depletion</strong> - When one side of the book is consumed faster than it's replenished, price moves rapidly in that direction (vacuum/air pocket).</li>
+  <li><strong>Spread dynamics</strong> - After a large trade depletes liquidity, the spread widens temporarily until market makers replenish quotes.</li>
 </ul>
 <div class="note">
   <div class="note-title">Note</div>
@@ -136,7 +136,7 @@ table tr:hover td{background:#151515}
 <p>Liquidity pools model the tendency for orders to accumulate at specific price levels, creating support and resistance:</p>
 <ul>
   <li>Pools are placed at psychologically significant levels (round numbers, previous highs/lows)</li>
-  <li>They attract price via the <strong>Strength</strong> parameter — higher strength means price is more likely to gravitate toward pool levels</li>
+  <li>They attract price via the <strong>Strength</strong> parameter - higher strength means price is more likely to gravitate toward pool levels</li>
   <li>When price reaches a pool, the concentrated liquidity can either absorb the move (support/resistance holds) or, if overwhelmed, create a breakout with acceleration (stop cascade)</li>
   <li>The <strong>Count</strong> parameter determines how many pools exist in the visible range</li>
 </ul>
@@ -146,17 +146,17 @@ table tr:hover td{background:#151515}
 <p>Reading the DOM (Depth of Market) panel effectively:</p>
 <table>
   <tr><th>Signal</th><th>Interpretation</th></tr>
-  <tr><td>Large resting bid</td><td>Potential support level — but may be spoofed (pulled before fill)</td></tr>
+  <tr><td>Large resting bid</td><td>Potential support level - but may be spoofed (pulled before fill)</td></tr>
   <tr><td>Large resting ask</td><td>Potential resistance level</td></tr>
-  <tr><td>Thin book (low size)</td><td>Price can move quickly through these levels — low liquidity zone</td></tr>
-  <tr><td>Aggressive buying (trades hitting ask)</td><td>Bullish pressure — buyers willing to pay the spread</td></tr>
-  <tr><td>Aggressive selling (trades hitting bid)</td><td>Bearish pressure — sellers willing to cross the spread</td></tr>
-  <tr><td>Spread widening</td><td>Uncertainty — market makers pulling back, expect volatility</td></tr>
-  <tr><td>Rapid book replenishment</td><td>Strong market maker presence — price likely to mean-revert</td></tr>
+  <tr><td>Thin book (low size)</td><td>Price can move quickly through these levels - low liquidity zone</td></tr>
+  <tr><td>Aggressive buying (trades hitting ask)</td><td>Bullish pressure - buyers willing to pay the spread</td></tr>
+  <tr><td>Aggressive selling (trades hitting bid)</td><td>Bearish pressure - sellers willing to cross the spread</td></tr>
+  <tr><td>Spread widening</td><td>Uncertainty - market makers pulling back, expect volatility</td></tr>
+  <tr><td>Rapid book replenishment</td><td>Strong market maker presence - price likely to mean-revert</td></tr>
 </table>
 <div class="tip">
   <div class="tip-title">Tip</div>
-  <p>Watch for "iceberg" behavior — a price level that keeps getting refilled after being consumed. This indicates a large institutional order being worked at that level and is a strong directional signal.</p>
+  <p>Watch for "iceberg" behavior - a price level that keeps getting refilled after being consumed. This indicates a large institutional order being worked at that level and is a strong directional signal.</p>
 </div>
 </main>
 </body>

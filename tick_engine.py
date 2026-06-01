@@ -1,5 +1,5 @@
 """
-tick_engine.py — Agent-based market microstructure tick generator (v2).
+tick_engine.py - Agent-based market microstructure tick generator (v2).
 
 Simulates realistic intraday price action via:
 - Simulated limit order book with bid/ask depth

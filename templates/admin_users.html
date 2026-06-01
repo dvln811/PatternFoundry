@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Users — PatternFoundry</title>
+<title>Admin Users - PatternFoundry</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -52,7 +52,7 @@ tr:hover{background:#1a1a1a}
   <td><strong>{{ u.name }}</strong><br><span style="color:#888;font-size:.72rem">{{ u.email }}</span></td>
   <td><span class="badge {% if u.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">{{ u.role }}</span></td>
   <td><span class="badge {% if u.banned %}badge-banned{% else %}badge-active{% endif %}">{% if u.banned %}Banned{% else %}Active{% endif %}</span></td>
-  <td style="color:#888;font-size:.72rem">{{ u.last_login_at or '—' }}</td>
+  <td style="color:#888;font-size:.72rem">{{ u.last_login_at or '-' }}</td>
   <td>
     {% if u.id != current_user_id %}
     <form method="POST" action="/admin/users/action" style="display:inline">

@@ -1,4 +1,4 @@
-# PatternFoundry — Product Spec v1.0
+# PatternFoundry - Product Spec v1.0
 
 > *Forge your trading edge. Practice live sessions on demand.*
 
@@ -8,7 +8,7 @@
 
 Retail traders can't practice the way athletes practice.
 
-- **Replay tools** (TradingSim, Multicharts) replay the same historical tape — you memorize it.
+- **Replay tools** (TradingSim, Multicharts) replay the same historical tape - you memorize it.
 - **Paper trading** is gated to market hours. You can't practice at 9pm.
 - **Backtesting** tells you what happened, not how you'd have reacted in the moment.
 
@@ -20,12 +20,12 @@ The result: traders fund live accounts before they're ready, and pay expensive t
 
 **PatternFoundry is a live trading simulator that generates fresh, realistic market sessions on demand.**
 
-Every session is synthetic — procedurally generated to feel like a real RTH session — so you never memorize the tape. You can practice at 2am on a Tuesday. You can run the same setup 50 times in an afternoon.
+Every session is synthetic - procedurally generated to feel like a real RTH session - so you never memorize the tape. You can practice at 2am on a Tuesday. You can run the same setup 50 times in an afternoon.
 
 ### Core loop
 
-1. **Generate** a fresh session (ES, NQ, GC, CL — configurable)
-2. **Trade it live** — price ticks forward in real time, you manage entries/exits
+1. **Generate** a fresh session (ES, NQ, GC, CL - configurable)
+2. **Trade it live** - price ticks forward in real time, you manage entries/exits
 3. **Review** your trades on the completed chart
 4. **Repeat** with a new session
 

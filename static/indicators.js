@@ -1,4 +1,4 @@
-// indicators.js — PatternFoundry client-side indicator math
+// indicators.js - PatternFoundry client-side indicator math
 // Input: [{time, open, high, low, close, volume}]
 // Output: [{time, value}] or structured object for multi-line indicators
 

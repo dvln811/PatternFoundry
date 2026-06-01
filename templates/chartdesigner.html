@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PatternFoundry — Chart Designer</title>
+  <title>PatternFoundry - Chart Designer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -635,7 +635,7 @@ async function saveCharacter() {
   };
   const res = await fetch('/api/character/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   const d = await res.json();
-  document.getElementById('status').textContent = d.error ? 'Error: ' + d.error : `Saved "${d.name}" — available in Simulator`;
+  document.getElementById('status').textContent = d.error ? 'Error: ' + d.error : `Saved "${d.name}" - available in Simulator`;
 }
 
 initChart();
@@ -778,7 +778,7 @@ function startTickPlayback() {
     document.getElementById('td-inst').textContent = instRem > 0 ? 'ACTIVE' : 'quiet';
     document.getElementById('td-inst').style.color = instRem > 0 ? '#a78bfa' : '#555';
     document.getElementById('td-inst-rem').textContent = instRem;
-    document.getElementById('td-inst-dir').textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '—';
+    document.getElementById('td-inst-dir').textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '-';
     document.getElementById('td-inst-dir').style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
     document.getElementById('td-candle-num').textContent = Math.ceil(_tickPreviewIdx / 60);
   }, interval);
