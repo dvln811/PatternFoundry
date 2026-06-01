@@ -3,3 +3,4 @@ numpy==2.2.6
 pandas==2.2.3
 bcrypt==4.3.0
 flask-login==0.6.3
+requests==2.32.3
