@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry — Custom Indicators</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.docs-main{max-width:900px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main h4{color:#ccc;font-size:14px;font-weight:600;margin:20px 0 8px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul,.docs-main ol{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.docs-main code{background:#0a0a0a;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4caf82}
+.docs-main pre{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:16px;margin:12px 0 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:#ccc}
+.docs-main pre .fn{color:#4caf82}
+.docs-main pre .kw{color:#c792ea}
+.docs-main pre .str{color:#c3e88d}
+.docs-main pre .num{color:#f78c6c}
+.docs-main pre .cm{color:#546e7a}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12.5px}
+table th{text-align:left;padding:10px 12px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:9px 12px;border-bottom:1px solid #1a1a1a;color:#bbb}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+.kbd{display:inline-block;background:#1a1a1a;border:1px solid #333;border-radius:3px;padding:1px 6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#ddd}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/dashboard"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Custom Indicators</h1>
+
+<h3>Overview</h3>
+<p>PatternFoundry includes a powerful custom indicator system that lets you write your own technical indicators using JavaScript. Custom indicators can be displayed as overlays on the price chart or as separate oscillator panels below the chart.</p>
+<p>The indicator engine provides access to all candle data and a library of helper functions for common calculations. You write a function that receives candle data and returns computed values — PatternFoundry handles the rendering.</p>
+
+<h3>Opening the Editor</h3>
+<p>To open the custom indicator editor in the Simulator:</p>
+<ol>
+  <li>Click the <strong>{ }</strong> button in the indicator toolbar (top of chart)</li>
+  <li>The code editor panel opens on the right side of the chart</li>
+  <li>Write your indicator code in the editor</li>
+  <li>Click <strong>Apply</strong> (or press <span class="kbd">Ctrl+Enter</span>) to render the indicator</li>
+</ol>
+
+<h3>Writing Indicator Code</h3>
+<p>Your indicator code is a JavaScript function body that has access to the following <strong>data arrays</strong>:</p>
+<table>
+  <tr><th>Variable</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>candles</code></td><td>Array</td><td>Full array of candle objects: <code>{time, open, high, low, close, volume}</code></td></tr>
+  <tr><td><code>close</code></td><td>Array</td><td>Array of <code>{time, value}</code> pairs for closing prices</td></tr>
+  <tr><td><code>open</code></td><td>Array</td><td>Array of <code>{time, value}</code> pairs for opening prices</td></tr>
+  <tr><td><code>high</code></td><td>Array</td><td>Array of <code>{time, value}</code> pairs for high prices</td></tr>
+  <tr><td><code>low</code></td><td>Array</td><td>Array of <code>{time, value}</code> pairs for low prices</td></tr>
+  <tr><td><code>volume</code></td><td>Array</td><td>Array of <code>{time, value}</code> pairs for volume</td></tr>
+</table>
+<p>Your code must <code>return</code> a result in one of the supported formats (see Return Formats below).</p>
+
+<h3>Helper Functions</h3>
+<p>The following helper functions are available in the indicator environment:</p>
+
+<h4><code class="fn">sma(candles, period)</code> — Simple Moving Average</h4>
+<p>Computes the arithmetic mean of closing prices over the specified period.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...]</span>
+<span class="kw">const</span> ma20 = <span class="fn">sma</span>(candles, <span class="num">20</span>);
+<span class="cm">// Each value = (sum of last 20 closes) / 20</span></pre>
+
+<h4><code class="fn">ema(candles, period)</code> — Exponential Moving Average</h4>
+<p>Computes an exponentially weighted moving average. More responsive to recent price changes than SMA. Uses smoothing factor <code>k = 2 / (period + 1)</code>.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...]</span>
+<span class="kw">const</span> fast = <span class="fn">ema</span>(candles, <span class="num">9</span>);
+<span class="kw">const</span> slow = <span class="fn">ema</span>(candles, <span class="num">21</span>);</pre>
+
+<h4><code class="fn">rsi(candles, period)</code> — Relative Strength Index</h4>
+<p>Computes the RSI oscillator (0–100). Measures the ratio of average gains to average losses over the period. Values above 70 indicate overbought; below 30 indicate oversold.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...] where value is 0-100</span>
+<span class="kw">const</span> rsiData = <span class="fn">rsi</span>(candles, <span class="num">14</span>);</pre>
+
+<h4><code class="fn">atr(candles, period)</code> — Average True Range</h4>
+<p>Computes the average true range — a volatility measure. True range is the greatest of: current high minus low, absolute value of high minus previous close, absolute value of low minus previous close.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...]</span>
+<span class="kw">const</span> atrData = <span class="fn">atr</span>(candles, <span class="num">14</span>);</pre>
+
+<h4><code class="fn">stdev(candles, period)</code> — Standard Deviation</h4>
+<p>Computes the rolling standard deviation of closing prices over the period. Useful for Bollinger Bands and volatility analysis.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...]</span>
+<span class="kw">const</span> sd = <span class="fn">stdev</span>(candles, <span class="num">20</span>);</pre>
+
+<h4><code class="fn">highest(candles, period)</code> — Highest Value</h4>
+<p>Returns the highest closing price over the lookback period at each point. Useful for Donchian channels and breakout detection.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...]</span>
+<span class="kw">const</span> hh = <span class="fn">highest</span>(candles, <span class="num">20</span>);</pre>
+
+<h4><code class="fn">lowest(candles, period)</code> — Lowest Value</h4>
+<p>Returns the lowest closing price over the lookback period at each point.</p>
+<pre><span class="cm">// Returns: [{time, value}, ...]</span>
+<span class="kw">const</span> ll = <span class="fn">lowest</span>(candles, <span class="num">20</span>);</pre>
+
+<h4><code class="fn">crossover(a, b)</code> — Cross Above Detection</h4>
+<p>Returns an array of <code>{time, value}</code> where value is <code>1</code> when array <code>a</code> crosses above array <code>b</code>, and <code>0</code> otherwise. Both arrays must have <code>{time, value}</code> format.</p>
+<pre><span class="kw">const</span> fast = <span class="fn">ema</span>(candles, <span class="num">9</span>);
+<span class="kw">const</span> slow = <span class="fn">ema</span>(candles, <span class="num">21</span>);
+<span class="kw">const</span> bullCross = <span class="fn">crossover</span>(fast, slow);
+<span class="cm">// bullCross[i].value === 1 when fast crosses above slow</span></pre>
+
+<h4><code class="fn">crossunder(a, b)</code> — Cross Below Detection</h4>
+<p>Returns an array of <code>{time, value}</code> where value is <code>1</code> when array <code>a</code> crosses below array <code>b</code>, and <code>0</code> otherwise.</p>
+<pre><span class="kw">const</span> bearCross = <span class="fn">crossunder</span>(fast, slow);</pre>
+
+<h4><code class="fn">align(a, b)</code> — Timestamp Alignment</h4>
+<p>Aligns two arrays by their timestamps, returning only points where both arrays have data. Useful when combining indicators with different start points (due to different lookback periods).</p>
+<pre><span class="cm">// Returns: [{time, a: valueA, b: valueB}, ...]</span>
+<span class="kw">const</span> aligned = <span class="fn">align</span>(fast, slow);
+<span class="cm">// aligned[i] = {time: ..., a: fast_value, b: slow_value}</span></pre>
+
+<h3>Return Formats</h3>
+<p>Your indicator must return data in one of these formats:</p>
+
+<h4>Single Line</h4>
+<p>An array of <code>{time, value}</code> objects. Rendered as a single line on the chart.</p>
+<pre><span class="cm">// Simple SMA overlay</span>
+<span class="kw">return</span> <span class="fn">sma</span>(candles, <span class="num">20</span>);</pre>
+
+<h4>Colored Histogram</h4>
+<p>An array of <code>{time, value, color}</code> objects. Rendered as a histogram with per-bar coloring.</p>
+<pre><span class="cm">// Momentum histogram with color</span>
+<span class="kw">const</span> result = candles.<span class="fn">map</span>((c, i) =&gt; ({
+  time: c.time,
+  value: c.close - c.open,
+  color: c.close &gt; c.open ? <span class="str">'#4caf82'</span> : <span class="str">'#e05c5c'</span>
+}));
+<span class="kw">return</span> result;</pre>
+
+<h4>Multi-Line</h4>
+<p>An object with a <code>lines</code> array, where each line has its own data, label, color, style, and width.</p>
+<pre><span class="kw">return</span> {
+  lines: [
+    { data: upperBand, label: <span class="str">'Upper'</span>, color: <span class="str">'#f97316'</span>, style: <span class="str">'solid'</span>, width: <span class="num">1</span> },
+    { data: middle,    label: <span class="str">'Mid'</span>,   color: <span class="str">'#888'</span>,    style: <span class="str">'dashed'</span>, width: <span class="num">1</span> },
+    { data: lowerBand, label: <span class="str">'Lower'</span>, color: <span class="str">'#f97316'</span>, style: <span class="str">'solid'</span>, width: <span class="num">1</span> }
+  ]
+};</pre>
+<p>Available line styles: <code>'solid'</code>, <code>'dashed'</code>, <code>'dotted'</code>. Width is in pixels (1–4).</p>
+
+<h4>Display Types</h4>
+<p>Set the display type by adding a <code>type</code> property to your return value:</p>
+<ul>
+  <li><code>"overlay"</code> — Renders on the main price chart (default for single-line returns that are in the price range)</li>
+  <li><code>"oscillator"</code> — Renders in a separate panel below the chart (default for values outside price range)</li>
+</ul>
+<pre><span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: rsiData };</pre>
+
+<h3>Examples</h3>
+
+<h4>EMA Crossover Oscillator</h4>
+<p>Shows the difference between fast and slow EMA as a colored histogram:</p>
+<pre><span class="kw">const</span> fast = <span class="fn">ema</span>(candles, <span class="num">9</span>);
+<span class="kw">const</span> slow = <span class="fn">ema</span>(candles, <span class="num">21</span>);
+<span class="kw">const</span> aligned = <span class="fn">align</span>(fast, slow);
+
+<span class="kw">const</span> hist = aligned.<span class="fn">map</span>(p =&gt; ({
+  time: p.time,
+  value: p.a - p.b,
+  color: p.a &gt; p.b ? <span class="str">'#4caf82'</span> : <span class="str">'#e05c5c'</span>
+}));
+
+<span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: hist };</pre>
+
+<h4>Bollinger Bands (Multi-Line)</h4>
+<p>Classic Bollinger Bands with upper, middle, and lower bands:</p>
+<pre><span class="kw">const</span> period = <span class="num">20</span>;
+<span class="kw">const</span> mult = <span class="num">2</span>;
+<span class="kw">const</span> mid = <span class="fn">sma</span>(candles, period);
+<span class="kw">const</span> sd = <span class="fn">stdev</span>(candles, period);
+<span class="kw">const</span> aligned = <span class="fn">align</span>(mid, sd);
+
+<span class="kw">const</span> upper = aligned.<span class="fn">map</span>(p =&gt; ({ time: p.time, value: p.a + mult * p.b }));
+<span class="kw">const</span> lower = aligned.<span class="fn">map</span>(p =&gt; ({ time: p.time, value: p.a - mult * p.b }));
+<span class="kw">const</span> middle = aligned.<span class="fn">map</span>(p =&gt; ({ time: p.time, value: p.a }));
+
+<span class="kw">return</span> {
+  type: <span class="str">'overlay'</span>,
+  lines: [
+    { data: upper, label: <span class="str">'BB Upper'</span>, color: <span class="str">'#f97316'</span>, style: <span class="str">'solid'</span>, width: <span class="num">1</span> },
+    { data: middle, label: <span class="str">'BB Mid'</span>, color: <span class="str">'#666'</span>, style: <span class="str">'dashed'</span>, width: <span class="num">1</span> },
+    { data: lower, label: <span class="str">'BB Lower'</span>, color: <span class="str">'#f97316'</span>, style: <span class="str">'solid'</span>, width: <span class="num">1</span> }
+  ]
+};</pre>
+
+<h4>RSI with Overbought/Oversold Coloring</h4>
+<p>RSI histogram that changes color at extreme levels:</p>
+<pre><span class="kw">const</span> rsiData = <span class="fn">rsi</span>(candles, <span class="num">14</span>);
+
+<span class="kw">const</span> colored = rsiData.<span class="fn">map</span>(p =&gt; ({
+  time: p.time,
+  value: p.value,
+  color: p.value &gt; <span class="num">70</span> ? <span class="str">'#e05c5c'</span> :
+         p.value &lt; <span class="num">30</span> ? <span class="str">'#4caf82'</span> : <span class="str">'#888'</span>
+}));
+
+<span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: colored };</pre>
+
+<h4>Custom Momentum Indicator</h4>
+<p>Rate of change smoothed with an EMA, displayed as a zero-line oscillator:</p>
+<pre><span class="kw">const</span> period = <span class="num">10</span>;
+<span class="kw">const</span> smoothing = <span class="num">3</span>;
+
+<span class="cm">// Calculate rate of change</span>
+<span class="kw">const</span> roc = [];
+<span class="kw">for</span> (<span class="kw">let</span> i = period; i &lt; candles.length; i++) {
+  roc.<span class="fn">push</span>({
+    time: candles[i].time,
+    open: candles[i].open, high: candles[i].high,
+    low: candles[i].low, volume: candles[i].volume,
+    close: ((candles[i].close - candles[i - period].close) / candles[i - period].close) * <span class="num">100</span>
+  });
+}
+
+<span class="cm">// Smooth with EMA</span>
+<span class="kw">const</span> smoothed = <span class="fn">ema</span>(roc, smoothing);
+
+<span class="kw">const</span> result = smoothed.<span class="fn">map</span>(p =&gt; ({
+  time: p.time,
+  value: p.value,
+  color: p.value &gt; <span class="num">0</span> ? <span class="str">'#4caf82'</span> : <span class="str">'#e05c5c'</span>
+}));
+
+<span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: result };</pre>
+
+<h3>Saving &amp; Loading Indicators</h3>
+<p>To save a custom indicator for reuse:</p>
+<ol>
+  <li>Write and test your indicator in the editor</li>
+  <li>Click the <strong>Save</strong> button (floppy disk icon) in the editor toolbar</li>
+  <li>Enter a name for your indicator (e.g., "My Bollinger Bands", "Momentum Oscillator")</li>
+  <li>The indicator is saved to your account</li>
+</ol>
+<p>To load a saved indicator:</p>
+<ol>
+  <li>Click the <strong>indicator dropdown</strong> in the chart toolbar</li>
+  <li>Your saved indicators appear under the "Custom" section</li>
+  <li>Click to add it to the chart — it renders immediately</li>
+</ol>
+<p>The <strong>indicator legend</strong> (top-left of chart or oscillator panel) shows all active indicators. For each indicator you can:</p>
+<ul>
+  <li><strong>Eye icon</strong> — Toggle visibility (hide/show without removing)</li>
+  <li><strong>Gear icon</strong> — Edit parameters (period, colors) without opening the full editor</li>
+  <li><strong>&times; button</strong> — Remove the indicator from the chart</li>
+</ul>
+</main>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry — Getting Started</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.docs-main{max-width:900px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main h4{color:#ccc;font-size:14px;font-weight:600;margin:20px 0 8px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul,.docs-main ol{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.docs-main code{background:#0a0a0a;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4caf82}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12.5px}
+table th{text-align:left;padding:10px 12px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:9px 12px;border-bottom:1px solid #1a1a1a;color:#bbb}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/dashboard"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Getting Started</h1>
+
+<h3>Overview of PatternFoundry</h3>
+<p>PatternFoundry is a professional-grade trading simulation platform designed to help traders develop, test, and refine their skills without risking real capital. Unlike traditional paper trading that relies on live market data, PatternFoundry generates <strong>synthetic price action</strong> using advanced stochastic models and microstructure simulation.</p>
+<p>This approach offers several key advantages:</p>
+<ul>
+  <li><strong>Unlimited practice sessions</strong> — Generate as many unique market scenarios as you need</li>
+  <li><strong>Controlled environments</strong> — Dial in specific market conditions (choppy, trending, volatile) to practice targeted strategies</li>
+  <li><strong>Realistic microstructure</strong> — A full order book simulation with multiple agent types produces authentic price behavior including slippage, spread dynamics, and liquidity effects</li>
+  <li><strong>No hindsight bias</strong> — Every session is unique; you cannot accidentally memorize historical patterns</li>
+  <li><strong>Speed control</strong> — Practice at 0.25x for careful analysis or 200x for rapid pattern recognition training</li>
+</ul>
+
+<h3>Creating an Account</h3>
+<p>To get started with PatternFoundry:</p>
+<ol>
+  <li>Navigate to the registration page at <code>/register</code></li>
+  <li>Enter your email address and choose a secure password</li>
+  <li>Verify your email address via the confirmation link</li>
+  <li>Log in to access your dashboard</li>
+</ol>
+<p>New accounts start on the <strong>Free tier</strong>, which includes limited simulator sessions and basic chart characters. You can upgrade at any time from the dashboard.</p>
+<div class="tip">
+  <div class="tip-title">Tip</div>
+  <p>Your account data, saved sessions, and custom indicators are stored server-side and accessible from any device.</p>
+</div>
+
+<h3>Dashboard Overview</h3>
+<p>The dashboard is your home base in PatternFoundry. It provides a quick overview of market context and quick access to all platform features.</p>
+<h4>Ticker Strip</h4>
+<p>The top of the dashboard displays a horizontal strip of ticker cards showing real-time market data for your watched instruments. Each card shows the instrument name, current price, and percentage change. Click a ticker to load its chart. Use the <strong>+</strong> button to add new instruments to your watchlist.</p>
+<h4>Chart Panel</h4>
+<p>The main chart displays the currently selected instrument with candlestick data. This is a read-only overview chart — for interactive trading, use the Simulator.</p>
+<h4>News Feed</h4>
+<p>The news panel shows recent market headlines relevant to your watched instruments. Headlines are sourced from major financial news providers and update in real-time.</p>
+<h4>Quick Actions Sidebar</h4>
+<p>The right sidebar provides one-click access to:</p>
+<ul>
+  <li><strong>Launch Simulator</strong> — Start a new trading session</li>
+  <li><strong>Chart Designer</strong> — Create custom market characters</li>
+  <li><strong>Recent Sessions</strong> — Resume saved simulator sessions</li>
+  <li><strong>Performance Stats</strong> — View your aggregate trading statistics</li>
+</ul>
+
+<h3>Navigation Guide</h3>
+<p>The top navigation bar is present on every page and provides access to all major sections:</p>
+<table>
+  <tr><th>Link</th><th>Description</th></tr>
+  <tr><td><strong>Dashboard</strong></td><td>Home page with market overview, watchlist, and quick actions</td></tr>
+  <tr><td><strong>Simulator</strong></td><td>The core trading simulation environment</td></tr>
+  <tr><td><strong>Chart Designer</strong></td><td>Create and customize synthetic market characters</td></tr>
+  <tr><td><strong>Docs</strong></td><td>This documentation (you are here)</td></tr>
+  <tr><td><strong>Users</strong></td><td>Admin panel for user management (admin accounts only)</td></tr>
+</table>
+</main>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry — Chart Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.docs-main{max-width:900px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main h4{color:#ccc;font-size:14px;font-weight:600;margin:20px 0 8px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul,.docs-main ol{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.docs-main code{background:#0a0a0a;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4caf82}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+.note{background:#111;border-left:3px solid #4caf82;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.note .note-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#4caf82;margin-bottom:4px}
+.note p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12.5px}
+table th{text-align:left;padding:10px 12px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:9px 12px;border-bottom:1px solid #1a1a1a;color:#bbb}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/dashboard"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Chart Designer</h1>
+
+<h3>Overview &amp; Purpose</h3>
+<p>The Chart Designer lets you create custom <strong>Chart Characters</strong> — parameterized profiles that define how synthetic price action behaves. Each character controls everything from macro regime behavior (trending vs. choppy) down to individual tick-level microstructure (spread dynamics, agent behavior, order clustering).</p>
+<p>Use the Chart Designer to:</p>
+<ul>
+  <li>Create market conditions that match specific instruments or scenarios</li>
+  <li>Design challenging environments to stress-test your strategies</li>
+  <li>Reproduce specific market behaviors (e.g., low-liquidity gaps, news spikes, tight ranges)</li>
+  <li>Share characters with other traders for standardized practice</li>
+</ul>
+<p>The designer is split into two main sections: <strong>Chart Character</strong> (historical candle generation) and <strong>Microstructure</strong> (real-time tick engine parameters).</p>
+
+<h3>Volatility Parameters</h3>
+<p>Volatility parameters control the magnitude of price movement within each market regime. The system uses a <strong>regime-switching model</strong> where the market transitions between four states: Chop, Trend, Impulse, and Gap Hold.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Chop Volatility</strong></td><td>0.1 – 3.0</td><td>0.8</td><td>Standard deviation of returns during choppy/ranging periods. Higher values create wider ranges with more noise. Realistic: 0.5–1.2 for most instruments.</td></tr>
+  <tr><td><strong>Trend Volatility</strong></td><td>0.5 – 5.0</td><td>1.5</td><td>Standard deviation during trending periods. Controls how "noisy" the trend is — lower values create cleaner trends, higher values create volatile trends with deeper pullbacks.</td></tr>
+  <tr><td><strong>Impulse Volatility</strong></td><td>2.0 – 15.0</td><td>5.0</td><td>Standard deviation during impulse/spike moves. These are sudden, violent price moves (news events, stop cascades). Realistic: 3.0–8.0.</td></tr>
+  <tr><td><strong>Gap Hold Volatility</strong></td><td>0.1 – 2.0</td><td>0.4</td><td>Volatility during the consolidation period after a gap. Low values create tight post-gap ranges; higher values allow the gap to partially fill.</td></tr>
+</table>
+<div class="note">
+  <div class="note-title">Note</div>
+  <p>Volatility values are expressed as multiples of the instrument's base tick size. A volatility of 1.0 means the typical candle body is approximately 1 tick in size at the given timeframe.</p>
+</div>
+
+<h3>Drift Parameters</h3>
+<p>Drift parameters control the <strong>directional bias</strong> of price movement within each regime. They determine whether price tends to move up, down, or sideways.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Chop Sigma</strong></td><td>0.0 – 1.0</td><td>0.1</td><td>Random drift noise during chop. Near-zero creates perfectly flat ranges; higher values allow the range to slowly migrate up or down.</td></tr>
+  <tr><td><strong>Trend Sigma</strong></td><td>0.0 – 1.0</td><td>0.2</td><td>Noise added to the trend direction. Higher values make trends less linear and more "wobbly" with frequent minor reversals.</td></tr>
+  <tr><td><strong>Trend Magnitude</strong></td><td>0.5 – 5.0</td><td>2.0</td><td>Strength of the directional bias during trends. Higher values create steeper, more aggressive trends. This is the "slope" of the trend.</td></tr>
+  <tr><td><strong>Impulse Magnitude</strong></td><td>3.0 – 20.0</td><td>8.0</td><td>Strength of impulse moves. Controls how far price travels during a spike event. Higher values create larger news-style moves.</td></tr>
+  <tr><td><strong>Global Bias</strong></td><td>-2.0 – 2.0</td><td>0.0</td><td>Overall directional bias applied to all regimes. Positive = bullish tendency, negative = bearish. Zero = no bias. Subtle values (±0.1–0.3) create realistic drift without obvious direction.</td></tr>
+</table>
+
+<h3>Wick Parameters</h3>
+<p>Wick parameters control the <strong>wick-to-body ratio</strong> of generated candles. They determine how much price explores beyond the open/close range within each candle.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Chop Wick Ratio</strong></td><td>0.5 – 4.0</td><td>1.8</td><td>Wick length relative to body during chop. Higher values create doji-like candles with long wicks — typical of indecisive, ranging markets.</td></tr>
+  <tr><td><strong>Trend Wick Ratio</strong></td><td>0.2 – 2.0</td><td>0.6</td><td>Wick ratio during trends. Lower values create "clean" trend candles with small wicks in the trend direction. Higher values add more rejection wicks.</td></tr>
+  <tr><td><strong>Impulse Wick Ratio</strong></td><td>0.1 – 1.5</td><td>0.3</td><td>Wick ratio during impulses. Low values create strong marubozu-style candles (all body, no wick). Higher values add V-shaped rejection after the impulse.</td></tr>
+  <tr><td><strong>Gap Hold Wick Ratio</strong></td><td>0.5 – 3.0</td><td>1.5</td><td>Wick ratio during post-gap consolidation. Higher values create candles that probe toward gap fill but close back in the new range.</td></tr>
+  <tr><td><strong>Asymmetry</strong></td><td>-1.0 – 1.0</td><td>0.0</td><td>Wick direction bias. Positive values create longer upper wicks (selling pressure); negative values create longer lower wicks (buying pressure). Zero = symmetric.</td></tr>
+</table>
+
+<h3>Regime Durations (Markov Chain)</h3>
+<p>The market regime system uses a <strong>Markov chain</strong> to transition between states. Each regime has a configurable expected duration (in candles), and transitions between regimes are probabilistic.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Chop Duration</strong></td><td>10 – 200</td><td>50</td><td>Expected number of candles spent in choppy/ranging state before transitioning. Longer durations create extended consolidation periods.</td></tr>
+  <tr><td><strong>Trend Up Duration</strong></td><td>10 – 150</td><td>30</td><td>Expected candles in an uptrend before regime change. Longer = more sustained rallies.</td></tr>
+  <tr><td><strong>Trend Down Duration</strong></td><td>10 – 150</td><td>25</td><td>Expected candles in a downtrend. Often slightly shorter than up-trends to model the "stairs up, elevator down" phenomenon.</td></tr>
+  <tr><td><strong>Impulse Duration</strong></td><td>1 – 10</td><td>3</td><td>Expected candles in an impulse state. Impulses are brief by nature — typically 1–5 candles of extreme movement.</td></tr>
+</table>
+<div class="note">
+  <div class="note-title">How the Markov Chain Works</div>
+  <p>At each candle, the system checks whether to transition to a new regime. The probability of leaving the current regime is <code>1 / duration</code> per candle, creating a geometric distribution. When a transition occurs, the next regime is selected based on transition probabilities that favor realistic sequences (e.g., impulse → chop is more likely than impulse → impulse).</p>
+</div>
+
+<h3>Volume Parameters</h3>
+<p>Volume parameters shape the volume profile of generated candles, creating realistic intraday patterns.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Base Volume</strong></td><td>100 – 100000</td><td>5000</td><td>Average volume per candle during normal trading. Scaled by timeframe.</td></tr>
+  <tr><td><strong>Open Multiplier</strong></td><td>1.0 – 5.0</td><td>2.5</td><td>Volume boost during the first 30 minutes of the session. Models the opening auction and initial positioning.</td></tr>
+  <tr><td><strong>Midday Multiplier</strong></td><td>0.3 – 1.0</td><td>0.6</td><td>Volume reduction during midday lull. Lower values create more pronounced "lunch hour" dead zones.</td></tr>
+  <tr><td><strong>Close Multiplier</strong></td><td>1.0 – 4.0</td><td>2.0</td><td>Volume boost in the final 30 minutes. Models end-of-day positioning and MOC orders.</td></tr>
+  <tr><td><strong>Spike Probability</strong></td><td>0.0 – 0.3</td><td>0.05</td><td>Probability per candle of a random volume spike (3–10x normal). Models sudden institutional activity or news events.</td></tr>
+</table>
+
+<h3>Gap Parameters</h3>
+<p>Gaps model price discontinuities — jumps between sessions or intraday gaps from news events.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Session Gap Probability</strong></td><td>0.0 – 1.0</td><td>0.7</td><td>Probability of a gap at session open (overnight gap). Most instruments gap daily; set lower for 24-hour markets like forex.</td></tr>
+  <tr><td><strong>Min Gap Size</strong></td><td>0.5 – 5.0</td><td>1.0</td><td>Minimum gap size in ATR multiples. Ensures gaps are meaningful when they occur.</td></tr>
+  <tr><td><strong>Max Gap Size</strong></td><td>1.0 – 20.0</td><td>5.0</td><td>Maximum gap size in ATR multiples. Caps extreme gaps for realism.</td></tr>
+  <tr><td><strong>Intraday Gap Probability</strong></td><td>0.0 – 0.1</td><td>0.005</td><td>Probability per candle of an intraday gap (news event, circuit breaker). Very rare in reality — keep this low.</td></tr>
+</table>
+
+<h3>Event Parameters</h3>
+<p>Events model specific price action patterns that occur within candles.</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Wick Stab Probability</strong></td><td>0.0 – 0.3</td><td>0.08</td><td>Probability per candle of a "wick stab" — a sudden spike that immediately reverses (stop hunt / liquidity grab). Creates long-wick candles at key levels.</td></tr>
+  <tr><td><strong>Wick Stab Magnitude</strong></td><td>1.0 – 10.0</td><td>3.0</td><td>Size of wick stabs in ATR multiples. Higher values create more dramatic stop hunts.</td></tr>
+</table>
+
+<h3>Microstructure (Tick Engine) Parameters</h3>
+<p>The Microstructure section controls the <strong>tick engine</strong> — the real-time order book simulation that generates individual ticks during live playback. These parameters define how the simulated market participants behave.</p>
+
+<h4>Spread</h4>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Base Spread (ticks)</strong></td><td>1 – 20</td><td>2</td><td>Normal bid-ask spread in tick units. 1 tick = tightest possible spread (highly liquid). Higher values model less liquid instruments.</td></tr>
+  <tr><td><strong>Volatility Multiplier</strong></td><td>1.0 – 5.0</td><td>1.5</td><td>How much the spread widens during volatile periods. At 2.0, spread doubles when volatility spikes. Models real market maker behavior of widening quotes during uncertainty.</td></tr>
+</table>
+
+<h4>Institutional Orders</h4>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Rate</strong></td><td>0.0 – 5.0</td><td>0.8</td><td>Average institutional orders per second. These are large, persistent orders that move price directionally.</td></tr>
+  <tr><td><strong>Size Min</strong></td><td>10 – 500</td><td>50</td><td>Minimum size of institutional orders (contracts/lots).</td></tr>
+  <tr><td><strong>Size Max</strong></td><td>50 – 5000</td><td>500</td><td>Maximum size of institutional orders.</td></tr>
+  <tr><td><strong>Persistence</strong></td><td>0.0 – 1.0</td><td>0.7</td><td>How likely an institutional agent is to continue trading in the same direction on the next order. High persistence creates sustained directional pressure (iceberg orders, TWAP execution).</td></tr>
+</table>
+
+<h4>Retail Orders</h4>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Rate</strong></td><td>0.5 – 20.0</td><td>5.0</td><td>Average retail orders per second. These are small, random orders that add noise and liquidity. Higher rates create more active tape.</td></tr>
+</table>
+
+<h4>Momentum Orders</h4>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Rate</strong></td><td>0.0 – 10.0</td><td>2.0</td><td>Average momentum-chasing orders per second. These agents buy when price is rising and sell when falling, creating positive feedback loops and trend acceleration.</td></tr>
+</table>
+
+<h4>Hawkes Process</h4>
+<p>The Hawkes process models <strong>self-exciting order flow</strong> — the tendency for trades to cluster in time (one trade triggers more trades).</p>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Base Intensity (λ₀)</strong></td><td>0.1 – 5.0</td><td>1.0</td><td>Background rate of order arrivals when no excitation is present. The "quiet" baseline activity level.</td></tr>
+  <tr><td><strong>Alpha (Excitation)</strong></td><td>0.0 – 2.0</td><td>0.8</td><td>How much each trade increases the arrival rate of subsequent trades. Higher alpha = more clustering / burst behavior. Must be less than Beta for stability.</td></tr>
+  <tr><td><strong>Beta (Decay)</strong></td><td>0.5 – 5.0</td><td>1.2</td><td>How quickly the excitation decays after a trade. Higher beta = faster return to baseline. Lower beta = longer-lasting bursts of activity.</td></tr>
+</table>
+<div class="note">
+  <div class="note-title">Stability Condition</div>
+  <p>For a stable Hawkes process, <code>Alpha &lt; Beta</code> must hold. If Alpha ≥ Beta, the process becomes explosive (infinite intensity). The UI enforces this constraint.</p>
+</div>
+
+<h4>Liquidity Pools</h4>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Strength</strong></td><td>0.0 – 2.0</td><td>0.5</td><td>Attractive force of liquidity pools. Higher values make price more strongly attracted to pool levels, creating support/resistance behavior.</td></tr>
+  <tr><td><strong>Count</strong></td><td>0 – 20</td><td>5</td><td>Number of liquidity pools in the visible price range. These act as S/R levels where resting orders accumulate.</td></tr>
+</table>
+
+<h4>Mean Reversion</h4>
+<table>
+  <tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr>
+  <tr><td><strong>Strength</strong></td><td>0.0 – 1.0</td><td>0.3</td><td>Tendency for price to revert toward a moving average. Higher values create more mean-reverting behavior (good for range-bound characters). Lower values allow trends to develop more freely.</td></tr>
+</table>
+
+<h3>Generating &amp; Previewing</h3>
+<p>After configuring parameters, use the preview tools to evaluate your character:</p>
+<ul>
+  <li><strong>Generate Preview</strong> — Creates a sample chart with your current parameters. The preview shows ~200 candles of historical data so you can visually assess the character's behavior.</li>
+  <li><strong>Tick Engine Preview</strong> — Click the <strong>Play</strong> button to watch the tick engine generate real-time price action. A debug panel shows live statistics: current spread, order rate, agent activity, and regime state.</li>
+  <li><strong>Regenerate</strong> — Generate a new random sample with the same parameters to see the range of possible outcomes.</li>
+</ul>
+<div class="tip">
+  <div class="tip-title">Tip</div>
+  <p>Use the Tick Engine Preview to verify that your microstructure parameters produce realistic-looking tape. Watch for: natural spread behavior, realistic trade clustering, and appropriate price impact from large orders.</p>
+</div>
+
+<h3>Saving &amp; Using Custom Characters</h3>
+<p>Once satisfied with your character:</p>
+<ol>
+  <li>Click <strong>Save Character</strong> and give it a descriptive name (e.g., "ES Morning Chop", "NQ Trend Day", "Low Liquidity Gaps")</li>
+  <li>The character appears in your saved characters list</li>
+  <li>In the Simulator, select your custom character from the "Chart Character" dropdown when generating a new session</li>
+</ol>
+<p>Characters are saved to your account and available across devices. You can edit, duplicate, or delete saved characters from the Chart Designer.</p>
+</main>
+</body>
+</html>

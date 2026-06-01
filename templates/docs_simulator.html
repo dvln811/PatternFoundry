@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry — Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.docs-main{max-width:900px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main h4{color:#ccc;font-size:14px;font-weight:600;margin:20px 0 8px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul,.docs-main ol{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.docs-main code{background:#0a0a0a;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4caf82}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+.note{background:#111;border-left:3px solid #4caf82;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.note .note-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#4caf82;margin-bottom:4px}
+.note p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12.5px}
+table th{text-align:left;padding:10px 12px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:9px 12px;border-bottom:1px solid #1a1a1a;color:#bbb}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+.kbd{display:inline-block;background:#1a1a1a;border:1px solid #333;border-radius:3px;padding:1px 6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#ddd}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/dashboard"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Simulator</h1>
+
+<h3>Overview &amp; Purpose</h3>
+<p>The Simulator is the heart of PatternFoundry. It provides a full-featured trading environment where you can practice executing trades against realistic synthetic price action. The simulator includes:</p>
+<ul>
+  <li>A professional candlestick chart with drawing tools and indicators</li>
+  <li>A simulated order book with depth-of-market visualization</li>
+  <li>Full order management (market, limit, stop-limit orders)</li>
+  <li>Position tracking with drag-adjustable stop-loss and take-profit levels</li>
+  <li>Comprehensive account statistics (balance, P&amp;L, win rate, drawdown)</li>
+  <li>Playback speed control from 0.25x to 200x</li>
+</ul>
+
+<h3>Generating a Session</h3>
+<p>To start a new simulation session:</p>
+<ol>
+  <li><strong>Select an Instrument</strong> — Choose from available instruments (e.g., ES, NQ, CL, GC, EUR/USD). Each instrument has appropriate tick sizes, point values, and margin requirements.</li>
+  <li><strong>Choose a Chart Character</strong> — Select a preset character (e.g., "Choppy Range", "Strong Trend", "News Spike") or one of your custom characters from the Chart Designer.</li>
+  <li><strong>Set History Depth</strong> — Specify how many candles of historical data to generate before the live session begins (50–500 candles). More history gives you context for analysis.</li>
+  <li><strong>Seed (Optional)</strong> — Enter a numeric seed to reproduce a specific session. Leave blank for a random seed. Sharing seeds with other traders lets you compare performance on identical price action.</li>
+  <li>Click <strong>Generate</strong> to create the session.</li>
+</ol>
+<div class="note">
+  <div class="note-title">Note</div>
+  <p>Session generation typically takes 1–3 seconds. The system generates the full historical candle data and initializes the tick engine for real-time simulation.</p>
+</div>
+
+<h3>Playback Controls</h3>
+<p>The playback toolbar at the bottom of the chart controls the simulation timeline:</p>
+<table>
+  <tr><th>Control</th><th>Function</th></tr>
+  <tr><td><strong>Play / Pause</strong></td><td>Start or pause the real-time tick simulation</td></tr>
+  <tr><td><strong>Speed Selector</strong></td><td>Adjust playback speed: 0.25x, 0.5x, 1x, 2x, 5x, 10x, 25x, 50x, 100x, 200x</td></tr>
+  <tr><td><strong>Step Forward</strong></td><td>Advance exactly one candle (useful for candle-by-candle analysis)</td></tr>
+</table>
+<p>At <strong>1x speed</strong>, ticks arrive at realistic intervals matching the instrument's typical trading activity. Higher speeds compress time proportionally — at 10x, one minute of real time equals ten minutes of simulated market time.</p>
+<div class="tip">
+  <div class="tip-title">Tip</div>
+  <p>Use slower speeds (0.25x–1x) when learning to read order flow and tape. Use faster speeds (10x–50x) for swing trading practice or to quickly build up chart history.</p>
+</div>
+
+<h3>Placing Trades</h3>
+<p>PatternFoundry supports three order types:</p>
+<h4>Market Orders</h4>
+<p>Execute immediately at the current best available price. Click the <strong>Buy</strong> or <strong>Sell</strong> button in the order panel, or use keyboard shortcuts. Market orders experience realistic slippage based on available liquidity in the order book.</p>
+<h4>Limit Orders</h4>
+<p>Place an order to buy below or sell above the current price. The order rests in the book until price reaches your level. To place a limit order:</p>
+<ol>
+  <li>Click the price level on the chart where you want the order</li>
+  <li>Select "Limit" from the order type dropdown</li>
+  <li>Set your quantity and optional SL/TP</li>
+  <li>Confirm the order</li>
+</ol>
+<h4>Stop-Limit Orders</h4>
+<p>A two-price order: when price hits the <strong>stop price</strong>, a limit order is placed at the <strong>limit price</strong>. Useful for breakout entries with controlled slippage. The stop price triggers the order; the limit price defines the worst acceptable fill.</p>
+
+<h3>Managing Positions</h3>
+<p>Once a trade is filled, your position appears on the chart with visual markers:</p>
+<ul>
+  <li><strong>Entry line</strong> — Dashed line at your entry price (green for long, red for short)</li>
+  <li><strong>Stop-Loss (SL)</strong> — Red line below (long) or above (short) your entry. <strong>Drag this line</strong> to adjust your stop in real-time.</li>
+  <li><strong>Take-Profit (TP)</strong> — Green line above (long) or below (short) your entry. <strong>Drag this line</strong> to adjust your target.</li>
+  <li><strong>P&amp;L label</strong> — Floating label showing unrealized profit/loss in real-time</li>
+</ul>
+<p>To close a position, click the <strong>&times;</strong> on the position label or use the position panel's close button. Partial closes are supported — specify the number of contracts to close.</p>
+
+<h3>Account Tracking</h3>
+<p>The account panel displays real-time trading statistics:</p>
+<table>
+  <tr><th>Metric</th><th>Description</th></tr>
+  <tr><td><strong>Balance</strong></td><td>Starting capital plus/minus realized P&amp;L</td></tr>
+  <tr><td><strong>Equity</strong></td><td>Balance plus unrealized P&amp;L from open positions</td></tr>
+  <tr><td><strong>Realized P&amp;L</strong></td><td>Total profit/loss from closed trades</td></tr>
+  <tr><td><strong>Unrealized P&amp;L</strong></td><td>Current profit/loss on open positions</td></tr>
+  <tr><td><strong>Win Rate</strong></td><td>Percentage of closed trades that were profitable</td></tr>
+  <tr><td><strong>Profit Factor</strong></td><td>Gross profit divided by gross loss</td></tr>
+  <tr><td><strong>Max Drawdown</strong></td><td>Largest peak-to-trough decline in equity</td></tr>
+  <tr><td><strong>Trades</strong></td><td>Total number of completed round-trip trades</td></tr>
+</table>
+
+<h3>Timeframe Switching</h3>
+<p>Switch between multiple timeframes without losing your session state. Available timeframes:</p>
+<ul>
+  <li><strong>Tick chart</strong> — Every individual tick</li>
+  <li><strong>1s, 5s, 15s, 30s</strong> — Sub-minute candles</li>
+  <li><strong>1m, 3m, 5m, 15m, 30m</strong> — Minute candles</li>
+  <li><strong>1H, 4H</strong> — Hourly candles</li>
+  <li><strong>1D</strong> — Daily candles</li>
+</ul>
+<p>All timeframes are computed from the same underlying tick data, so switching is instant and consistent. Drawings and indicators persist across timeframe changes.</p>
+
+<h3>Session Management</h3>
+<p>Sessions can be saved, loaded, exported, and imported:</p>
+<table>
+  <tr><th>Action</th><th>Description</th></tr>
+  <tr><td><strong>Save</strong></td><td>Save current session state to your account (server-side). Includes all price data, positions, orders, drawings, and account state.</td></tr>
+  <tr><td><strong>Load</strong></td><td>Load a previously saved session and resume from where you left off.</td></tr>
+  <tr><td><strong>Export</strong></td><td>Download session as a JSON file to your local machine.</td></tr>
+  <tr><td><strong>Import</strong></td><td>Upload a previously exported JSON session file.</td></tr>
+</table>
+<div class="tip">
+  <div class="tip-title">Tip</div>
+  <p>Export sessions to share specific market scenarios with other traders for collaborative learning. Include the seed number so they can also generate the same session independently.</p>
+</div>
+
+<h3>DOM (Depth of Market) Panel</h3>
+<p>The DOM panel shows the simulated order book in a vertical ladder format:</p>
+<ul>
+  <li><strong>Ask levels</strong> (red) — Sell orders resting above the current price</li>
+  <li><strong>Bid levels</strong> (green) — Buy orders resting below the current price</li>
+  <li><strong>Size bars</strong> — Horizontal bars showing relative volume at each price level</li>
+  <li><strong>Last trade</strong> — Highlighted row showing the most recent fill price</li>
+</ul>
+<p>The DOM updates in real-time as the tick engine processes orders. You can click price levels in the DOM to quickly place limit orders at that price.</p>
+
+<h3>Drawing Tools</h3>
+<p>Access drawing tools from the toolbar on the left side of the chart. Available tools:</p>
+<table>
+  <tr><th>Tool</th><th>Description</th><th>Usage</th></tr>
+  <tr><td><strong>Line</strong></td><td>Trend line between two points</td><td>Click start point, drag to end point</td></tr>
+  <tr><td><strong>Horizontal Line</strong></td><td>Infinite horizontal line at a price level</td><td>Click at desired price</td></tr>
+  <tr><td><strong>Vertical Line</strong></td><td>Infinite vertical line at a time point</td><td>Click at desired time</td></tr>
+  <tr><td><strong>Arrow</strong></td><td>Directional arrow between two points</td><td>Click start, drag to end</td></tr>
+  <tr><td><strong>Channel</strong></td><td>Parallel channel (two parallel lines)</td><td>Draw first line, then set channel width</td></tr>
+  <tr><td><strong>Rectangle</strong></td><td>Price/time zone highlight</td><td>Click corner, drag to opposite corner</td></tr>
+  <tr><td><strong>Ellipse</strong></td><td>Circular/elliptical highlight</td><td>Click center, drag to set radius</td></tr>
+  <tr><td><strong>Fibonacci Retracement</strong></td><td>Fib levels between swing high/low</td><td>Click swing start, drag to swing end</td></tr>
+  <tr><td><strong>Gann Fan</strong></td><td>Gann angle lines from a pivot point</td><td>Click pivot point, drag to set angle</td></tr>
+  <tr><td><strong>Long Position</strong></td><td>Visual long trade with entry, SL, TP</td><td>Click entry, set SL and TP levels</td></tr>
+  <tr><td><strong>Short Position</strong></td><td>Visual short trade with entry, SL, TP</td><td>Click entry, set SL and TP levels</td></tr>
+</table>
+<p>All drawings can be selected, moved, resized, and deleted. Right-click a drawing to access its properties (color, style, line width).</p>
+
+<h3>Indicators</h3>
+<p>Built-in technical indicators available from the indicators menu:</p>
+<table>
+  <tr><th>Indicator</th><th>Type</th><th>Default Period</th><th>Description</th></tr>
+  <tr><td><strong>SMA</strong></td><td>Overlay</td><td>20</td><td>Simple Moving Average — arithmetic mean of closing prices over N periods</td></tr>
+  <tr><td><strong>EMA</strong></td><td>Overlay</td><td>20</td><td>Exponential Moving Average — weighted average giving more weight to recent prices</td></tr>
+  <tr><td><strong>VWAP</strong></td><td>Overlay</td><td>Session</td><td>Volume Weighted Average Price — average price weighted by volume, resets each session</td></tr>
+  <tr><td><strong>RSI</strong></td><td>Oscillator</td><td>14</td><td>Relative Strength Index — momentum oscillator measuring speed of price changes (0–100)</td></tr>
+  <tr><td><strong>MACD</strong></td><td>Oscillator</td><td>12/26/9</td><td>Moving Average Convergence Divergence — trend-following momentum indicator</td></tr>
+  <tr><td><strong>Bollinger Bands</strong></td><td>Overlay</td><td>20, 2σ</td><td>Price envelope based on standard deviation around an SMA</td></tr>
+  <tr><td><strong>ATR</strong></td><td>Oscillator</td><td>14</td><td>Average True Range — volatility indicator measuring the average range of candles</td></tr>
+</table>
+<p>Click the indicator name in the legend to toggle visibility. Click the gear icon to edit parameters. Click &times; to remove.</p>
+
+<h3>Keyboard Shortcuts &amp; Tips</h3>
+<table>
+  <tr><th>Shortcut</th><th>Action</th></tr>
+  <tr><td><span class="kbd">Space</span></td><td>Play / Pause simulation</td></tr>
+  <tr><td><span class="kbd">&rarr;</span></td><td>Step forward one candle</td></tr>
+  <tr><td><span class="kbd">+</span> / <span class="kbd">-</span></td><td>Increase / decrease playback speed</td></tr>
+  <tr><td><span class="kbd">B</span></td><td>Place market buy order</td></tr>
+  <tr><td><span class="kbd">S</span></td><td>Place market sell order</td></tr>
+  <tr><td><span class="kbd">Esc</span></td><td>Cancel current drawing / deselect tool</td></tr>
+  <tr><td><span class="kbd">Delete</span></td><td>Remove selected drawing</td></tr>
+  <tr><td><span class="kbd">Ctrl+Z</span></td><td>Undo last action</td></tr>
+  <tr><td><span class="kbd">Ctrl+S</span></td><td>Save session</td></tr>
+  <tr><td><span class="kbd">1</span>–<span class="kbd">9</span></td><td>Switch timeframes (1=1m, 2=5m, 3=15m, etc.)</td></tr>
+  <tr><td><span class="kbd">D</span></td><td>Toggle DOM panel</td></tr>
+  <tr><td><span class="kbd">F</span></td><td>Fit chart to screen</td></tr>
+</table>
+<div class="tip">
+  <div class="tip-title">Pro Tips</div>
+  <p>&bull; Use the scroll wheel to zoom in/out on the time axis. Hold <span class="kbd">Ctrl</span> + scroll to zoom the price axis.<br>
+  &bull; Double-click a candle to center the chart on that point in time.<br>
+  &bull; Right-click the chart background for a context menu with quick actions.<br>
+  &bull; The session auto-saves every 60 seconds if you have a saved session loaded.</p>
+</div>
+</main>
+</body>
+</html>

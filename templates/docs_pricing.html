@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry — Pricing</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.docs-main{max-width:900px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12.5px}
+table th{text-align:left;padding:10px 12px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:9px 12px;border-bottom:1px solid #1a1a1a;color:#bbb}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+.pricing-card{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:20px;text-align:center}
+.pricing-card.featured{border-color:#f97316}
+.pricing-card h4{color:#f97316;margin:0 0 4px;font-size:16px}
+.pricing-card .price{font-size:24px;font-weight:700;color:#e0e0e0;margin:8px 0}
+.pricing-card .price span{font-size:13px;color:#888;font-weight:400}
+.pricing-card ul{list-style:none;margin:12px 0 0;padding:0;text-align:left}
+.pricing-card ul li{padding:4px 0;font-size:12px;color:#bbb}
+.pricing-card ul li::before{content:"✓ ";color:#4caf82}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/dashboard"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/docs" class="active">Docs</a>
+    <a href="/admin/users">Users</a>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Pricing</h1>
+
+<h3>Free Tier</h3>
+<p>Get started with PatternFoundry at no cost. The Free tier includes:</p>
+<ul>
+  <li>3 simulator sessions per day</li>
+  <li>5 preset chart characters</li>
+  <li>Basic indicators (SMA, EMA, RSI)</li>
+  <li>1 saved session slot</li>
+  <li>No custom indicators</li>
+  <li>No Chart Designer access</li>
+</ul>
+
+<h3>Practice Tier — $9.99/month</h3>
+<p>For serious practice and skill development:</p>
+<ul>
+  <li>Unlimited simulator sessions</li>
+  <li>All preset chart characters</li>
+  <li>All built-in indicators</li>
+  <li>10 saved session slots</li>
+  <li>Custom indicator editor</li>
+  <li>5 saved custom indicators</li>
+  <li>Chart Designer with 5 custom character slots</li>
+  <li>Session export/import</li>
+  <li>All drawing tools</li>
+</ul>
+
+<h3>Edge Tier — $19.99/month</h3>
+<p>The complete PatternFoundry experience for professional development:</p>
+<ul>
+  <li>Everything in Practice, plus:</li>
+  <li>Unlimited saved sessions</li>
+  <li>Unlimited custom indicators</li>
+  <li>Unlimited custom characters</li>
+  <li>Advanced microstructure controls</li>
+  <li>Tick Engine Preview &amp; debug panel</li>
+  <li>DOM (Depth of Market) panel</li>
+  <li>Priority session generation</li>
+  <li>Early access to new features</li>
+</ul>
+
+<h3>Feature Comparison</h3>
+<div style="overflow-x:auto">
+<table>
+  <tr>
+    <th>Feature</th>
+    <th>Free</th>
+    <th>Practice ($9.99)</th>
+    <th>Edge ($19.99)</th>
+  </tr>
+  <tr><td>Daily Sessions</td><td>3</td><td>Unlimited</td><td>Unlimited</td></tr>
+  <tr><td>Saved Sessions</td><td>1</td><td>10</td><td>Unlimited</td></tr>
+  <tr><td>Preset Characters</td><td>5</td><td>All</td><td>All</td></tr>
+  <tr><td>Custom Characters</td><td>—</td><td>5</td><td>Unlimited</td></tr>
+  <tr><td>Chart Designer</td><td>—</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Built-in Indicators</td><td>SMA, EMA, RSI</td><td>All</td><td>All</td></tr>
+  <tr><td>Custom Indicators</td><td>—</td><td>5 saved</td><td>Unlimited</td></tr>
+  <tr><td>Drawing Tools</td><td>Line, HLine</td><td>All</td><td>All</td></tr>
+  <tr><td>DOM Panel</td><td>—</td><td>—</td><td>✓</td></tr>
+  <tr><td>Tick Engine Preview</td><td>—</td><td>—</td><td>✓</td></tr>
+  <tr><td>Microstructure Controls</td><td>—</td><td>Basic</td><td>Full</td></tr>
+  <tr><td>Export/Import</td><td>—</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Playback Speeds</td><td>1x–10x</td><td>0.25x–100x</td><td>0.25x–200x</td></tr>
+  <tr><td>Timeframes</td><td>1m, 5m, 15m</td><td>All</td><td>All + Tick</td></tr>
+</table>
+</div>
+
+<div class="tip">
+  <div class="tip-title">Tip</div>
+  <p>All paid plans include a 7-day free trial. Cancel anytime — no long-term commitment required.</p>
+</div>
+</main>
+</body>
+</html>

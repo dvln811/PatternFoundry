@@ -161,6 +161,30 @@ def landing_preview():
 def docs():
     return render_template('docs.html')
 
+@app.route('/docs/getting-started')
+def docs_getting_started():
+    return render_template('docs_getting_started.html')
+
+@app.route('/docs/simulator')
+def docs_simulator():
+    return render_template('docs_simulator.html')
+
+@app.route('/docs/designer')
+def docs_designer():
+    return render_template('docs_designer.html')
+
+@app.route('/docs/indicators')
+def docs_indicators():
+    return render_template('docs_indicators.html')
+
+@app.route('/docs/orderbook')
+def docs_orderbook():
+    return render_template('docs_orderbook.html')
+
+@app.route('/docs/pricing')
+def docs_pricing():
+    return render_template('docs_pricing.html')
+
 @app.route('/board')
 def board():
     if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
