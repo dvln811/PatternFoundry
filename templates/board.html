@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Board — PatternFoundry</title>
+<title>PatternFoundry — Board</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{color-scheme:dark}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
 body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0;z-index:100}
 .pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
@@ -15,32 +16,66 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 .pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
 .pf-header nav a:hover{border-color:#4caf82;color:#ddd}
 .pf-header nav a.active{color:#4caf82;border-color:#4caf82}
-.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 16px;flex:1;overflow-x:auto;min-height:0}
-.column{background:#111;border:1px solid #2a2a2a;border-radius:6px;display:flex;flex-direction:column;min-height:0}
-.column-header{padding:10px 12px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between}
-.column-header h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:#888}
-.column-header .count{font-size:.7rem;color:#555;margin-left:6px}
-.add-btn{background:none;border:1px solid #2a2a2a;color:#888;font-size:16px;width:24px;height:24px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.add-btn:hover{border-color:#4caf82;color:#4caf82}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 16px;flex:1;overflow:hidden;min-height:0}
+.column{background:#111;border:1px solid #2a2a2a;border-radius:6px;display:flex;flex-direction:column;min-height:0;transition:border-color .15s}
+.column.drag-over{border-color:#4caf82;box-shadow:0 0 8px rgba(76,175,130,.2)}
+.col-header{padding:10px 12px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between}
+.col-header h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#888;font-weight:600}
+.col-header .count{font-size:.65rem;color:#555;margin-left:6px}
+.col-add{background:none;border:1px solid #2a2a2a;color:#888;font-size:16px;width:22px;height:22px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.col-add:hover{border-color:#4caf82;color:#4caf82}
 .cards{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:10px;cursor:grab;border-left:3px solid #555;position:relative}
-.card.dragging{opacity:.4}
-.card.drag-over{border-top:2px solid #4caf82}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:8px 8px 8px 14px;cursor:pointer;border-left:3px solid #555;position:relative;transition:border-color .15s,opacity .15s}
+.card:hover{border-color:#3a3a3a;border-left-color:inherit}
+.card.dragging{opacity:.35}
 .card[data-priority="low"]{border-left-color:#4a9eff}
 .card[data-priority="med"]{border-left-color:#f5c542}
 .card[data-priority="high"]{border-left-color:#f97316}
 .card[data-priority="crit"]{border-left-color:#e05c5c}
-.card-title{font-size:.8rem;font-weight:600;color:#e0e0e0;outline:none;border:none;background:none;width:100%;color:inherit;font-family:inherit}
-.card-title:focus{border-bottom:1px solid #4caf82}
-.card-notes{font-size:.7rem;color:#777;margin-top:4px}
-.card-footer{display:flex;align-items:center;gap:6px;margin-top:8px}
-.badge{font-size:.6rem;padding:2px 6px;border-radius:8px;font-weight:600;text-transform:uppercase}
-.badge-feature{background:#4caf8220;color:#4caf82;border:1px solid #4caf8244}
-.badge-bug{background:#e05c5c20;color:#e05c5c;border:1px solid #e05c5c44}
-.badge-improvement{background:#4a9eff20;color:#4a9eff;border:1px solid #4a9eff44}
-.card-del{margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:14px;padding:0 2px}
-.card-del:hover{color:#e05c5c}
-.empty-col{color:#444;font-size:.7rem;text-align:center;padding:20px 0}
+.drag-handle{position:absolute;left:3px;top:50%;transform:translateY(-50%);color:#444;font-size:.7rem;cursor:grab;user-select:none;padding:2px}
+.drag-handle:active{cursor:grabbing}
+.card-title{font-size:.78rem;font-weight:500;color:#e0e0e0;margin-left:6px}
+.card-notes-preview{font-size:.68rem;color:#666;margin-top:4px;margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.card-footer{display:flex;align-items:center;gap:5px;margin-top:6px;margin-left:6px}
+.badge{font-size:.58rem;padding:2px 6px;border-radius:8px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.badge-feature{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
+.badge-bug{background:#e05c5c18;color:#e05c5c;border:1px solid #e05c5c33}
+.badge-improvement{background:#4a9eff18;color:#4a9eff;border:1px solid #4a9eff33}
+.badge-research{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
+.badge-chore{background:#88888818;color:#999;border:1px solid #88888833}
+.card-del{position:absolute;top:6px;right:6px;background:none;border:none;color:#444;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;display:none}
+.card:hover .card-del{display:block}
+.card-del:hover{color:#e05c5c;background:#2a2a2a}
+.empty-col{color:#444;font-size:.7rem;text-align:center;padding:24px 0}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(3px);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-header{padding:16px 20px 12px;border-bottom:1px solid #2a2a2a;background:linear-gradient(135deg,#1a1a1a,#1f1510);border-radius:8px 8px 0 0}
+.modal-header h2{font-size:.85rem;color:#f97316;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.modal-body label{font-size:.68rem;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;display:block}
+.modal-body input,.modal-body textarea,.modal-body select{background:#111;border:1px solid #333;border-radius:4px;color:#ddd;padding:8px 10px;font-size:.8rem;font-family:inherit;width:100%}
+.modal-body input:focus,.modal-body textarea:focus,.modal-body select:focus{outline:none;border-color:#f97316}
+.modal-body textarea{min-height:100px;resize:vertical}
+.modal-row{display:flex;gap:10px}
+.modal-row>div{flex:1}
+.modal-created{font-size:.62rem;color:#555;margin-top:2px}
+.comments-section{border-top:1px solid #2a2a2a;padding-top:10px}
+.comments-list{max-height:140px;overflow-y:auto;margin-bottom:8px}
+.comment{padding:5px 0;border-bottom:1px solid #1f1f1f;font-size:.72rem}
+.comment .c-date{color:#555;font-size:.6rem;margin-right:6px}
+.comment .c-text{color:#ccc}
+.comment-input{display:flex;gap:6px}
+.comment-input input{flex:1;font-size:.72rem;padding:6px 8px}
+.comment-input button{padding:6px 12px;background:#4caf82;border:none;color:#fff;border-radius:4px;font-size:.7rem;font-weight:600;cursor:pointer}
+.comment-input button:hover{background:#3d9e70}
+.modal-footer{padding:12px 20px 16px;display:flex;gap:8px;justify-content:flex-end}
+.modal-footer button{padding:7px 18px;border-radius:5px;font-size:.75rem;font-weight:600;cursor:pointer;border:none}
+.btn-save{background:#f97316;color:#fff}
+.btn-save:hover{background:#ea6a0e}
+.btn-close{background:#2a2a2a;color:#aaa}
+.btn-close:hover{background:#333;color:#ddd}
 </style>
 </head>
 <body>
@@ -50,66 +85,156 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
     <a href="/">Dashboard</a>
     <a href="/simulator">Simulator</a>
     <a href="/chartdesigner">Chart Designer</a>
+    <a href="/docs">Docs</a>
     <a href="/board" class="active">Board</a>
     <a href="/admin/users">Users</a>
   </nav>
 </header>
 <div class="board" id="board"></div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2>Edit Card</h2></div>
+    <div class="modal-body">
+      <div><label>Title</label><input type="text" id="m-title"></div>
+      <div><label>Notes</label><textarea id="m-notes"></textarea></div>
+      <div class="modal-row">
+        <div><label>Priority</label><select id="m-priority"><option value="low">Low</option><option value="med">Medium</option><option value="high">High</option><option value="crit">Critical</option></select></div>
+        <div><label>Type</label><select id="m-type"><option value="feature">Feature</option><option value="bug">Bug</option><option value="improvement">Improvement</option><option value="research">Research</option><option value="chore">Chore</option></select></div>
+        <div><label>Module</label><select id="m-module"><option value="general">General</option><option value="simulator">Simulator</option><option value="chart-designer">Chart Designer</option><option value="indicators">Indicators</option><option value="landing">Landing</option></select></div>
+      </div>
+      <div class="modal-created" id="m-created"></div>
+      <div class="comments-section">
+        <label>Comments</label>
+        <div class="comments-list" id="m-comments"></div>
+        <div class="comment-input">
+          <input type="text" id="m-new-comment" placeholder="Add a comment...">
+          <button onclick="addComment()">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-close" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
 <script>
 const COLS=['Backlog','In Progress','Review','Done'];
-const PRIORITIES=['low','med','high','crit'];
-const TYPES=['feature','bug','improvement'];
 const LS_KEY='pf_board';
 
-function load(){try{return JSON.parse(localStorage.getItem(LS_KEY))||defaultData()}catch(e){return defaultData()}}
-function defaultData(){return {
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function defaultData(){return{
   'Backlog':[
-    {id:Date.now(),title:'Account Tracking Metrics',notes:'Discuss: what metrics to show (max drawdown, profit factor, Sharpe). Per-session or cumulative? Separate Performance page?',priority:'med',type:'feature'},
-    {id:Date.now()+1,title:'Tick Chart / Sub-minute TFs',notes:'Premium-only feature. Add tick chart and sub-1m timeframes for Edge tier subscribers.',priority:'low',type:'feature'},
-    {id:Date.now()+2,title:'Off-hours background shading',notes:'LWC timeToCoordinate limitation. Need alternative approach for shading non-RTH periods.',priority:'med',type:'bug'},
-  ],
-  'In Progress':[],
-  'Review':[],
-  'Done':[]
-}}
-function save(data){localStorage.setItem(LS_KEY,JSON.stringify(data))}
+    {id:uid(),title:'Account Tracking',notes:'',priority:'med',type:'feature',module:'general',created:new Date().toISOString().slice(0,10),comments:[]},
+    {id:uid(),title:'Tick Chart sub-minute TFs',notes:'',priority:'low',type:'feature',module:'chart-designer',created:new Date().toISOString().slice(0,10),comments:[]},
+    {id:uid(),title:'Off-hours shading',notes:'',priority:'med',type:'bug',module:'chart-designer',created:new Date().toISOString().slice(0,10),comments:[]}
+  ],'In Progress':[],'Review':[],'Done':[]}}
+
+function load(){try{const d=JSON.parse(localStorage.getItem(LS_KEY));if(d&&d['Backlog']!==undefined)return d}catch(e){}return defaultData()}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(data))}
 
 let data=load();
+let dragSrc=null;
+let modalRef=null;
 
 function render(){
-  const board=document.getElementById('board');
-  board.innerHTML='';
+  const board=document.getElementById('board');board.innerHTML='';
   COLS.forEach(col=>{
-    const div=document.createElement('div');
-    div.className='column';
-    div.dataset.col=col;
     const cards=data[col]||[];
-    div.innerHTML=`<div class="column-header"><h3>${col}<span class="count">${cards.length}</span></h3><button class="add-btn" onclick="addCard('${col}')">+</button></div><div class="cards" data-col="${col}"></div>`;
-    board.appendChild(div);
+    const div=document.createElement('div');div.className='column';div.dataset.col=col;
+    div.innerHTML=`<div class="col-header"><h3>${col}<span class="count">${cards.length}</span></h3><button class="col-add" onclick="addCard('${col}')">+</button></div><div class="cards" data-col="${col}">${cards.length?'':'<div class="empty-col">No cards</div>'}</div>`;
     const container=div.querySelector('.cards');
-    if(!cards.length)container.innerHTML='<div class="empty-col">No cards</div>';
-    cards.forEach((card,i)=>{
-      const el=document.createElement('div');
-      el.className='card';el.draggable=true;el.dataset.priority=card.priority;el.dataset.col=col;el.dataset.idx=i;
-      el.innerHTML=`<input class="card-title" value="${esc(card.title)}" onchange="updateCard('${col}',${i},'title',this.value)"><div class="card-notes">${esc(card.notes||'')}</div><div class="card-footer"><span class="badge badge-${card.type}">${card.type}</span><select onchange="updateCard('${col}',${i},'priority',this.value)" style="background:#111;border:1px solid #2a2a2a;color:#aaa;font-size:.6rem;border-radius:4px;padding:1px 4px">${PRIORITIES.map(p=>`<option${p===card.priority?' selected':''}>${p}</option>`).join('')}</select><select onchange="updateCard('${col}',${i},'type',this.value)" style="background:#111;border:1px solid #2a2a2a;color:#aaa;font-size:.6rem;border-radius:4px;padding:1px 4px">${TYPES.map(t=>`<option${t===card.type?' selected':''}>${t}</option>`).join('')}</select><button class="card-del" onclick="delCard('${col}',${i})">✕</button></div>`;
-      container.appendChild(el);
-      el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',JSON.stringify({col,idx:i}));el.classList.add('dragging')});
-      el.addEventListener('dragend',()=>el.classList.remove('dragging'));
-    });
-    container.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move'});
-    container.addEventListener('drop',e=>{
-      e.preventDefault();
-      const src=JSON.parse(e.dataTransfer.getData('text/plain'));
-      const card=data[src.col].splice(src.idx,1)[0];
-      data[col].push(card);save(data);render();
-    });
+    cards.forEach((card,i)=>container.appendChild(makeCard(card,col,i)));
+    div.addEventListener('dragover',e=>{e.preventDefault();div.classList.add('drag-over')});
+    div.addEventListener('dragleave',e=>{if(!div.contains(e.relatedTarget))div.classList.remove('drag-over')});
+    div.addEventListener('drop',e=>{e.preventDefault();div.classList.remove('drag-over');drop(col,e)});
+    board.appendChild(div);
   });
 }
 
-function addCard(col){data[col].push({title:'New Card',notes:'',priority:'low',type:'feature'});save(data);render()}
-function delCard(col,idx){data[col].splice(idx,1);save(data);render()}
-function updateCard(col,idx,key,val){data[col][idx][key]=val;save(data);render()}
-function esc(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function makeCard(card,col,idx){
+  const el=document.createElement('div');
+  el.className='card';el.draggable=true;el.dataset.priority=card.priority;el.dataset.col=col;el.dataset.idx=idx;
+  const notesPreview=card.notes?`<div class="card-notes-preview">${esc(card.notes.split('\n')[0].slice(0,60))}</div>`:'';
+  el.innerHTML=`<span class="drag-handle">⠿</span><button class="card-del" onclick="event.stopPropagation();delCard('${col}',${idx})">✕</button><div class="card-title">${esc(card.title)}</div>${notesPreview}<div class="card-footer"><span class="badge badge-${card.type}">${card.type}</span></div>`;
+  el.addEventListener('click',e=>{if(e.target.classList.contains('card-del'))return;openModal(col,idx)});
+  el.addEventListener('dragstart',e=>{dragSrc={col,idx};el.classList.add('dragging');e.dataTransfer.effectAllowed='move'});
+  el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+  return el;
+}
+
+function drop(targetCol,e){
+  if(!dragSrc)return;
+  const card=data[dragSrc.col].splice(dragSrc.idx,1)[0];
+  const container=document.querySelector(`.cards[data-col="${targetCol}"]`);
+  const cardEls=[...container.querySelectorAll('.card')];
+  let insertIdx=data[targetCol].length;
+  for(let i=0;i<cardEls.length;i++){
+    const r=cardEls[i].getBoundingClientRect();
+    if(e.clientY<r.top+r.height/2){insertIdx=i;break}
+  }
+  if(dragSrc.col===targetCol&&dragSrc.idx<insertIdx)insertIdx=Math.max(0,insertIdx-1);
+  data[targetCol].splice(insertIdx,0,card);
+  dragSrc=null;save();render();
+}
+
+function addCard(col){
+  const card={id:uid(),title:'',notes:'',priority:'low',type:'feature',module:'general',created:new Date().toISOString().slice(0,10),comments:[]};
+  data[col].push(card);save();render();
+  openModal(col,data[col].length-1);
+}
+
+function delCard(col,idx){if(confirm('Delete this card?')){data[col].splice(idx,1);save();render()}}
+
+function openModal(col,idx){
+  modalRef={col,idx};
+  const card=data[col][idx];
+  document.getElementById('m-title').value=card.title||'';
+  document.getElementById('m-notes').value=card.notes||'';
+  document.getElementById('m-priority').value=card.priority||'low';
+  document.getElementById('m-type').value=card.type||'feature';
+  document.getElementById('m-module').value=card.module||'general';
+  document.getElementById('m-created').textContent=card.created?'Created: '+card.created:'';
+  document.getElementById('m-new-comment').value='';
+  renderComments(card.comments||[]);
+  document.getElementById('modal-overlay').classList.add('active');
+  document.getElementById('m-title').focus();
+}
+
+function renderComments(comments){
+  const el=document.getElementById('m-comments');
+  if(!comments.length){el.innerHTML='<div style="color:#555;font-size:.65rem;padding:4px">No comments</div>';return}
+  el.innerHTML=comments.map(c=>`<div class="comment"><span class="c-date">${c.date}</span><span class="c-text">${esc(c.text)}</span></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function addComment(){
+  if(!modalRef)return;
+  const input=document.getElementById('m-new-comment');
+  const text=input.value.trim();if(!text)return;
+  const card=data[modalRef.col][modalRef.idx];
+  if(!card.comments)card.comments=[];
+  card.comments.push({text,date:new Date().toISOString().slice(0,10)});
+  input.value='';renderComments(card.comments);save();
+}
+
+function saveModal(){
+  if(!modalRef)return;
+  const card=data[modalRef.col][modalRef.idx];
+  card.title=document.getElementById('m-title').value.trim()||'Untitled';
+  card.notes=document.getElementById('m-notes').value.trim();
+  card.priority=document.getElementById('m-priority').value;
+  card.type=document.getElementById('m-type').value;
+  card.module=document.getElementById('m-module').value;
+  save();render();closeModal();
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('active');modalRef=null}
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalRef)closeModal()});
+document.getElementById('m-new-comment').addEventListener('keydown',e=>{if(e.key==='Enter')addComment()});
 
 render();
 </script>
