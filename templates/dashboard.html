@@ -113,108 +113,33 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 <script>
 (function(){
 var ALL_TICKERS=[
-{sym:'ES',label:'ES',name:'S&P 500 E-Mini',base:5520},
-{sym:'NQ',label:'NQ',name:'Nasdaq 100',base:20200},
-{sym:'GC',label:'GC',name:'Gold Futures',base:2350},
-{sym:'CL',label:'CL',name:'Crude Oil',base:78},
+{sym:'ES=F',label:'ES',name:'S&P 500 E-Mini',base:5520},
+{sym:'NQ=F',label:'NQ',name:'Nasdaq 100 E-Mini',base:20200},
+{sym:'GC=F',label:'GC',name:'Gold Futures',base:2350},
+{sym:'CL=F',label:'CL',name:'Crude Oil',base:78},
 {sym:'SPY',label:'SPY',name:'S&P 500 ETF',base:550},
 {sym:'QQQ',label:'QQQ',name:'Nasdaq ETF',base:470},
+{sym:'AAPL',label:'AAPL',name:'Apple Inc',base:190},
+{sym:'TSLA',label:'TSLA',name:'Tesla Inc',base:180},
+{sym:'NVDA',label:'NVDA',name:'Nvidia',base:950},
+{sym:'BTC-USD',label:'BTC',name:'Bitcoin USD',base:105000}
 ];
 var DEFAULT_SYMS=['ES=F','NQ=F','GC=F','CL=F','SPY','QQQ'];
 var userSyms=JSON.parse(localStorage.getItem('pf_dash_tickers')||'null')||DEFAULT_SYMS;
-var TICKERS=userSyms.map(function(s){return ALL_TICKERS.find(function(t){return t.sym===s})||{sym:s,label:s.replace('=F',''),base:100}});
-var activeSym=TICKERS[0].sym,cache={};
+var TICKERS=userSyms.map(function(sym){var k=ALL_TICKERS.find(function(t){return t.sym===sym});return k||{sym:sym,label:sym.replace('=F','').replace('-USD',''),name:sym,base:100}});
 function saveTickers(){localStorage.setItem('pf_dash_tickers',JSON.stringify(TICKERS.map(function(t){return t.sym})))}
-
+var activeSym=TICKERS[0].sym,cache={};
 var strip=document.getElementById('tickerStrip');
-var chart,series;
-
-function fetchQuotes(){
-  fetch('/api/quotes?symbols='+TICKERS.map(function(t){return t.sym}).join(',')).then(function(r){return r.json()}).then(function(quotes){
-    quotes.forEach(function(q){
-      var t=TICKERS.find(function(x){return x.sym===q.symbol});
-      if(t){t.livePrice=q.price;t.changePct=q.changePct;t.liveName=q.name}
-    });
-    buildCards();
-    updateHeader();
-  }).catch(function(){});
-}
-
-function fetchChart(sym){
-  fetch('/api/chart?symbol='+sym+'&interval=5m&range=5d').then(function(r){return r.json()}).then(function(candles){
-    if(candles.length){series.setData(candles);chart.timeScale().fitContent()}
-  }).catch(function(){});
-}
-
-function updateHeader(){
-  var t=TICKERS.find(function(x){return x.sym===activeSym});
-  if(!t)return;
-  document.getElementById('dashTicker').textContent=t.label;
-  var price=t.livePrice||t.base;
-  var pct=t.changePct||0;
-  var bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
-  document.getElementById('dashPrice').textContent=price.toLocaleString(undefined,{minimumFractionDigits:2});
-  document.getElementById('dashPrice').style.color=col;
-  document.getElementById('dashChange').textContent=(bull?'+':'')+pct.toFixed(2)+'%';
-  document.getElementById('dashChange').style.color=col;
-}
-
-function buildCards(){
-  strip.innerHTML='';
-  TICKERS.forEach(function(t){
-    var price=t.livePrice||t.base;
-    var pct=t.changePct||0;
-    var bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
-    var card=document.createElement('div');
-    card.className='ticker-card '+(bull?'bull':'bear')+(t.sym===activeSym?' active':'');
-    card.dataset.sym=t.sym;
-    card.innerHTML='<button class="tc-remove" title="Remove">✕</button><div class="tc-name">'+t.label+'</div>'
-      +'<div class="tc-price" style="color:'+col+'">'+price.toLocaleString(undefined,{minimumFractionDigits:2})+'</div>'
-      +'<div class="tc-change" style="color:'+col+'">'+(bull?'+':'')+pct.toFixed(2)+'%</div>';
-    card.addEventListener('click',function(e){if(e.target.classList.contains('tc-remove'))return;selectTicker(t.sym)});
-    card.querySelector('.tc-remove').addEventListener('click',function(e){e.stopPropagation();removeTicker(t.sym)});
-    strip.appendChild(card);
-  });
-  var addBtn=document.createElement('div');addBtn.className='ticker-add';addBtn.textContent='+';
-  addBtn.addEventListener('click',addTicker);strip.appendChild(addBtn);
-}
-
-function selectTicker(sym){
-  activeSym=sym;
-  document.querySelectorAll('.ticker-card').forEach(function(c){c.classList.toggle('active',c.dataset.sym===sym)});
-  updateHeader();
-  fetchChart(sym);
-}
-
-function removeTicker(sym){
-  TICKERS=TICKERS.filter(function(t){return t.sym!==sym});saveTickers();
-  if(activeSym===sym&&TICKERS.length)activeSym=TICKERS[0].sym;
-fetchQuotes();fetchChart(activeSym);setInterval(fetchQuotes,5000);
-setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);selectTicker(activeSym);
-}
-
-function addTicker(){
-  var sym=prompt('Ticker symbol (e.g. AAPL, TSLA, BTC):');
-  if(!sym)return;sym=sym.toUpperCase().trim();
-  if(TICKERS.find(function(t){return t.sym===sym}))return;
-  var known=ALL_TICKERS.find(function(t){return t.sym===sym});
-  TICKERS.push(known||{sym:sym,label:sym,base:100+Math.random()*200});
-  saveTickers();fetchQuotes();
-setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);selectTicker(sym);
-}
-
-// Init chart
+function gen(sym){if(cache[sym])return cache[sym];var t=TICKERS.find(function(x){return x.sym===sym})||TICKERS[0];var data=[],price=t.livePrice||t.base,bt=Math.floor(Date.now()/1000)-86400*7;for(var d=0;d<5;d++){var ds=bt+d*86400+34200;for(var b=0;b<78;b++){var time=ds+b*300,vol=(b<10||b>70)?1.8:1.0,drift=(Math.random()-.49)*price*.001*vol,o=price,c=o+drift,sp=Math.abs(drift)+Math.random()*price*.0008*vol;data.push({time:time,open:+o.toFixed(2),high:+Math.max(o,c)+Math.random()*sp*.6,low:+Math.min(o,c)-Math.random()*sp*.6,close:+c.toFixed(2)});price=c}}cache[sym]=data;return data}
+fetch('/api/quotes?symbols='+TICKERS.map(function(t){return t.sym}).join(',')).then(function(r){return r.json()}).then(function(q){q.forEach(function(x){var t=TICKERS.find(function(v){return v.sym===x.symbol});if(t){t.livePrice=x.price;t.liveChange=x.changePct;t.liveName=x.name}})}).catch(function(){}).finally(function(){buildCards();switchTicker(activeSym)});
+setInterval(function(){fetch('/api/quotes?symbols='+TICKERS.map(function(t){return t.sym}).join(',')).then(function(r){return r.json()}).then(function(q){if(!q.length)return;q.forEach(function(x){var t=TICKERS.find(function(v){return v.sym===x.symbol});if(t){t.livePrice=x.price;t.liveChange=x.changePct}});strip.querySelectorAll('.ticker-card').forEach(function(card){var sym=card.dataset.sym,t=TICKERS.find(function(v){return v.sym===sym});if(!t||!t.livePrice)return;var bull=(t.liveChange||0)>=0,col=bull?'#4caf82':'#e05c5c';card.querySelector('.tc-price').textContent=t.livePrice.toLocaleString(undefined,{minimumFractionDigits:2});card.querySelector('.tc-price').style.color=col;card.querySelector('.tc-change').textContent=(bull?'+':'')+(t.liveChange||0).toFixed(2)+'%';card.querySelector('.tc-change').style.color=col;card.className='ticker-card '+(bull?'bull':'bear')+(sym===activeSym?' active':'')});var at=TICKERS.find(function(v){return v.sym===activeSym});if(at&&at.livePrice){var bull=at.liveChange>=0,col=bull?'#4caf82':'#e05c5c';document.getElementById('dashPrice').textContent=at.livePrice.toLocaleString(undefined,{minimumFractionDigits:2});document.getElementById('dashPrice').style.color=col;document.getElementById('dashChange').textContent=(bull?'+':'')+at.liveChange.toFixed(2)+'%';document.getElementById('dashChange').style.color=col}}).catch(function(){})},5000);
+function buildCards(){strip.innerHTML='';TICKERS.forEach(function(t){var price=t.livePrice||null,pct=t.liveChange||null;if(!price){var d=gen(t.sym);var last=d[d.length-1],first=d[0];price=last.close;pct=((last.close-first.open)/first.open*100)}var bull=pct>=0,col=bull?'#4caf82':'#e05c5c';var card=document.createElement('div');card.className='ticker-card '+(bull?'bull':'bear')+(t.sym===activeSym?' active':'');card.dataset.sym=t.sym;card.innerHTML='<button class="tc-remove" title="Remove">\u2715</button><div class="tc-name">'+t.label+'</div><div class="tc-price" style="color:'+col+'">'+price.toLocaleString(undefined,{minimumFractionDigits:2})+'</div><div class="tc-change" style="color:'+col+'">'+(bull?'+':'')+pct.toFixed(2)+'%</div>';card.onclick=function(e){if(e.target.classList.contains('tc-remove'))return;switchTicker(t.sym)};card.querySelector('.tc-remove').onclick=function(e){e.stopPropagation();removeTicker(t.sym)};strip.appendChild(card)});var ab=document.createElement('div');ab.className='ticker-add';ab.textContent='+';ab.onclick=function(){var sym=prompt('Ticker (e.g. AAPL, SI=F, BTC-USD):');if(!sym)return;sym=sym.trim().toUpperCase();if(TICKERS.find(function(t){return t.sym===sym}))return;fetch('/api/quotes?symbols='+encodeURIComponent(sym)).then(function(r){return r.json()}).then(function(q){if(!q.length){alert('Not found');return}TICKERS.push({sym:sym,label:sym.replace('=F','').replace('-USD',''),name:q[0].name||sym,base:q[0].price,livePrice:q[0].price,liveChange:q[0].changePct});saveTickers();buildCards();switchTicker(sym)}).catch(function(){alert('Not found')})};strip.appendChild(ab)}
+function removeTicker(sym){TICKERS=TICKERS.filter(function(t){return t.sym!==sym});saveTickers();if(activeSym===sym&&TICKERS.length)switchTicker(TICKERS[0].sym);buildCards()}
 var el=document.getElementById('dashChart');
-chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clientHeight,
-  layout:{background:{color:'#0e0e0e'},textColor:'#888',attributionLogo:false},
-  grid:{vertLines:{color:'#1a1a1a'},horzLines:{color:'#1a1a1a'}},
-  crosshair:{mode:0},rightPriceScale:{borderColor:'#222'},timeScale:{borderColor:'#222',timeVisible:true}});
-series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#e05c5c',borderUpColor:'#4caf82',borderDownColor:'#e05c5c',wickUpColor:'#4caf82',wickDownColor:'#e05c5c'});
+var chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clientHeight,layout:{background:{color:'#0e0e0e'},textColor:'#888',attributionLogo:false},grid:{vertLines:{color:'#1a1a1a'},horzLines:{color:'#1a1a1a'}},crosshair:{mode:0},rightPriceScale:{borderColor:'#222'},timeScale:{borderColor:'#222',timeVisible:true}});
+var series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#e05c5c',borderUpColor:'#4caf82',borderDownColor:'#e05c5c',wickUpColor:'#4caf82',wickDownColor:'#e05c5c'});
 new ResizeObserver(function(){chart.applyOptions({width:el.clientWidth,height:el.clientHeight})}).observe(el);
-
-buildCards();
-setInterval(function(){cache={};buildCards();var d=gen(activeSym),last=d[d.length-1],first=d[0];var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?"#4caf82":"#e05c5c";document.getElementById("dashPrice").textContent=last.close.toFixed(2);document.getElementById("dashPrice").style.color=col;document.getElementById("dashChange").textContent=(bull?"+":"")+pct.toFixed(2)+"%";document.getElementById("dashChange").style.color=col;series.setData(d)},5000);
-selectTicker(activeSym);
+function switchTicker(sym){activeSym=sym;var t=TICKERS.find(function(x){return x.sym===sym})||TICKERS[0];document.getElementById('dashTicker').textContent=t.label;fetch('/api/chart?symbol='+encodeURIComponent(sym)+'&interval=1d&range=6mo').then(function(r){return r.json()}).then(function(candles){if(candles.length>5){cache[sym]=candles;series.setData(candles)}else{series.setData(gen(sym))}chart.timeScale().fitContent()}).catch(function(){series.setData(gen(sym));chart.timeScale().fitContent()});var price=t.livePrice||t.base,pct=t.liveChange||0,bull=pct>=0,col=bull?'#4caf82':'#e05c5c';document.getElementById('dashPrice').textContent=price.toLocaleString(undefined,{minimumFractionDigits:2});document.getElementById('dashPrice').style.color=col;document.getElementById('dashChange').textContent=(bull?'+':'')+pct.toFixed(2)+'%';document.getElementById('dashChange').style.color=col;strip.querySelectorAll('.ticker-card').forEach(function(c){c.classList.toggle('active',c.dataset.sym===sym)})}
 })();
 </script>
 </body>
