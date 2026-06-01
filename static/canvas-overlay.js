@@ -334,6 +334,34 @@ class CanvasOverlay {
         styleRow.appendChild(styleSelect);
         popup.appendChild(styleRow);
 
+        // Text-specific fields
+        if (drawing.type === 'text') {
+            const textRow = document.createElement('label');
+            textRow.textContent = 'Text: ';
+            const textInput = document.createElement('textarea');
+            textInput.value = drawing.text || '';
+            textInput.style.cssText = 'width:100%;min-height:50px;background:#111;border:1px solid #444;color:#ddd;border-radius:3px;padding:4px;font:11px Inter,sans-serif;resize:vertical;';
+            textInput.addEventListener('input', () => { drawing.text = textInput.value; this._scheduleRedraw(); });
+            textRow.appendChild(document.createElement('br'));
+            textRow.appendChild(textInput);
+            popup.appendChild(textRow);
+
+            const sizeRow = document.createElement('label');
+            sizeRow.textContent = 'Size: ';
+            const sizeInput = document.createElement('input');
+            sizeInput.type = 'range'; sizeInput.min = '8'; sizeInput.max = '32'; sizeInput.step = '1';
+            sizeInput.value = String(drawing.fontSize || 12);
+            sizeInput.style.cssText = 'width:80px;vertical-align:middle;';
+            sizeInput.addEventListener('input', () => { drawing.fontSize = Number(sizeInput.value); this._scheduleRedraw(); });
+            const sizeVal = document.createElement('span');
+            sizeVal.textContent = ' ' + (drawing.fontSize || 12) + 'px';
+            sizeVal.style.color = '#888';
+            sizeInput.addEventListener('input', () => { sizeVal.textContent = ' ' + sizeInput.value + 'px'; });
+            sizeRow.appendChild(sizeInput);
+            sizeRow.appendChild(sizeVal);
+            popup.appendChild(sizeRow);
+        }
+
         // Delete button
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Delete';
@@ -922,9 +950,11 @@ class CanvasOverlay {
             const y = this._priceToY(d.p1.price);
             if (x == null || y == null) return;
             ctx.save();
-            ctx.font = (d.fontSize || 12) + 'px Inter, sans-serif';
+            const fontSize = d.fontSize || 12;
+            ctx.font = fontSize + 'px Inter, sans-serif';
             ctx.fillStyle = d.color || '#f0c040';
-            ctx.fillText(d.text || 'Text', x, y);
+            const lines = (d.text || 'Text').split('\n');
+            lines.forEach((line, i) => ctx.fillText(line, x, y + i * (fontSize + 2)));
             if (hovered) this._drawHandle(ctx, x, y, d.color || '#f0c040');
             ctx.restore();
             return;
