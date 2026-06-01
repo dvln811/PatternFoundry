@@ -914,10 +914,6 @@ class CanvasOverlay {
 
 // Text tool extension
 (function() {
-    const orig_onMouseDown = CanvasOverlay.prototype._onMouseDown;
-    const orig_renderDrawing = CanvasOverlay.prototype._renderDrawing;
-    const orig_hitTest = CanvasOverlay.prototype._hitTest;
-
     const origRender = CanvasOverlay.prototype._renderDrawing;
     CanvasOverlay.prototype._renderDrawing = function(d, hovered) {
         if (d.type === 'text') {
@@ -955,4 +951,26 @@ class CanvasOverlay {
         }
         origMouseDown.call(this, e);
     };
+
+    // Double-click to edit text
+    const chartEl = document.getElementById('sim-chart');
+    if (chartEl) {
+        chartEl.addEventListener('dblclick', function(e) {
+            if (!window.drawMgr) return;
+            const rect = chartEl.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            for (const d of window.drawMgr.drawings) {
+                if (d.type !== 'text') continue;
+                const dx = window.drawMgr._timeToX(d.p1.time);
+                const dy = window.drawMgr._priceToY(d.p1.price);
+                if (dx == null || dy == null) continue;
+                if (Math.abs(x - dx) < 60 && Math.abs(y - dy) < 16) {
+                    const newText = prompt('Edit text:', d.text);
+                    if (newText !== null) { d.text = newText; window.drawMgr._requestRedraw(); }
+                    return;
+                }
+            }
+        });
+    }
 })();

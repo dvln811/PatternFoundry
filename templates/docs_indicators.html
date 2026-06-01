@@ -193,7 +193,7 @@ table tr:hover td{background:#151515}
   color: p.a &gt; p.b ? <span class="str">'#4caf82'</span> : <span class="str">'#e05c5c'</span>
 }));
 
-<span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: hist };</pre>
+<span class="kw">return</span> hist;</pre>
 
 <h4>Bollinger Bands (Multi-Line)</h4>
 <p>Classic Bollinger Bands with upper, middle, and lower bands:</p>
@@ -227,7 +227,7 @@ table tr:hover td{background:#151515}
          p.value &lt; <span class="num">30</span> ? <span class="str">'#4caf82'</span> : <span class="str">'#888'</span>
 }));
 
-<span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: colored };</pre>
+<span class="kw">return</span> colored;</pre>
 
 <h4>Custom Momentum Indicator</h4>
 <p>Rate of change smoothed with an EMA, displayed as a zero-line oscillator:</p>
@@ -254,7 +254,7 @@ table tr:hover td{background:#151515}
   color: p.value &gt; <span class="num">0</span> ? <span class="str">'#4caf82'</span> : <span class="str">'#e05c5c'</span>
 }));
 
-<span class="kw">return</span> { type: <span class="str">'oscillator'</span>, data: result };</pre>
+<span class="kw">return</span> result;</pre>
 
 <h3>Saving &amp; Loading Indicators</h3>
 <p>To save a custom indicator for reuse:</p>
