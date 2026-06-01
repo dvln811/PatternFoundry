@@ -209,6 +209,10 @@
 
     .hidden { display: none !important; }
 
+    /* Themed tooltips */
+    [data-tip]{position:relative}
+    [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;background:#0e1217;border:1px solid #f97316;color:#ddd;font-size:.65rem;padding:4px 8px;border-radius:4px;white-space:nowrap;z-index:9999;pointer-events:none}
+
     /* ── Indicator toolbar ── */
     .ind-toolbar {
       display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
@@ -414,7 +418,7 @@
 
       <!-- Playback bar -->
       <div class="playback">
-        <button class="pb-btn" id="pb-play" onclick="togglePlay()" title="Play/Pause">&#9654;</button>
+        <button class="pb-btn" id="pb-play" onclick="togglePlay()" data-tip="Play/Pause">&#9654;</button>
         <label style="font-size:0.72rem;color:#bbb">Speed</label>
         <select id="pb-speed" style="width:auto;padding:4px 8px;font-size:0.72rem">
           <option value="0.25">0.25x</option>
@@ -427,8 +431,8 @@
           <option value="100">100x</option>
           <option value="200">200x</option>
         </select>
-        <button onclick="toggleDOM()" title="Depth of Market" style="background:#1a1a1a;border:1px solid #f0c040;color:#f0c040;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">DOM</button>
-        <button onclick="resetChartView()" title="Reset view to current candle" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">⊙ Reset</button>
+        <button onclick="toggleDOM()" data-tip="DOM" style="background:#1a1a1a;border:1px solid #f0c040;color:#f0c040;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">DOM</button>
+        <button onclick="resetChartView()" data-tip="Reset View" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">⊙ Reset</button>
         <span class="pb-info" id="pb-info">Load a session to begin</span>
       </div>
 
@@ -448,7 +452,7 @@
           <input type="number" id="ind-period" value="20" min="1" max="500" placeholder="Period">
         </span>
         <button class="ind-add-btn" onclick="addIndicator()">+</button>
-        <button class="ind-add-btn" onclick="openCustomIndicator()" title="Custom Indicator" style="font-family:monospace">{ }</button>
+        <button class="ind-add-btn" onclick="openCustomIndicator()" data-tip="Custom Indicator" style="font-family:monospace">{ }</button>
         <div class="tb-sep"></div>
         <div id="ind-chips" style="display:flex;flex-wrap:wrap;gap:2px"></div>
       </div>
@@ -456,19 +460,19 @@
       <!-- Drawing toolbar -->
       <div class="ind-toolbar" style="gap:3px">
         <button class="ind-add-btn" data-draw-tool="line" onclick="setDrawTool('line')" title="Free Line">╱</button>
-        <button class="ind-add-btn" data-draw-tool="hline" onclick="setDrawTool('hline')" title="Horizontal">―</button>
-        <button class="ind-add-btn" data-draw-tool="vline" onclick="setDrawTool('vline')" title="Vertical">│</button>
-        <button class="ind-add-btn" data-draw-tool="arrow" onclick="setDrawTool('arrow')" title="Arrow">→</button>
-        <button class="ind-add-btn" data-draw-tool="channel" onclick="setDrawTool('channel')" title="Channel">═</button>
-        <button class="ind-add-btn" data-draw-tool="rect" onclick="setDrawTool('rect')" title="Rectangle">▭</button>
-        <button class="ind-add-btn" data-draw-tool="ellipse" onclick="setDrawTool('ellipse')" title="Ellipse">⬭</button>
-        <button class="ind-add-btn" data-draw-tool="fib" onclick="setDrawTool('fib')" title="Fib Retracement">Fib</button>
-        <button class="ind-add-btn" data-draw-tool="gannbox" onclick="setDrawTool('gannbox')" title="Gann Box">Gann</button>
-        <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" title="Long Position" style="color:#4caf8288">▲ Long</button>
-        <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" title="Short Position" style="color:#e05c5c88">▼ Short</button>
+        <button class="ind-add-btn" data-draw-tool="hline" onclick="setDrawTool('hline')" data-tip="Horizontal">―</button>
+        <button class="ind-add-btn" data-draw-tool="vline" onclick="setDrawTool('vline')" data-tip="Vertical">│</button>
+        <button class="ind-add-btn" data-draw-tool="arrow" onclick="setDrawTool('arrow')" data-tip="Arrow">→</button>
+        <button class="ind-add-btn" data-draw-tool="channel" onclick="setDrawTool('channel')" data-tip="Channel">═</button>
+        <button class="ind-add-btn" data-draw-tool="rect" onclick="setDrawTool('rect')" data-tip="Rectangle">▭</button>
+        <button class="ind-add-btn" data-draw-tool="ellipse" onclick="setDrawTool('ellipse')" data-tip="Ellipse">⬭</button>
+        <button class="ind-add-btn" data-draw-tool="fib" onclick="setDrawTool('fib')" data-tip="Fib Retracement">Fib</button>
+        <button class="ind-add-btn" data-draw-tool="gannbox" onclick="setDrawTool('gannbox')" data-tip="Gann Box">Gann</button>
+        <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" data-tip="Long Position" style="color:#4caf8288">▲ Long</button>
+        <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" data-tip="Short Position" style="color:#e05c5c88">▼ Short</button>
         <input type="color" id="draw-color" value="#f0c040" onchange="if(drawMgr)drawMgr.setColor(this.value)" style="width:24px;height:24px;border:1px solid #2a2a2a;border-radius:4px;background:#1a1a1a;cursor:pointer;padding:0">
-        <button class="ind-add-btn" onclick="setDrawTool(null)" title="Cancel">✕</button>
-        <button class="ind-add-btn" onclick="if(drawMgr)drawMgr.clear()" title="Clear all" style="color:#e05c5c;border-color:#e05c5c">Clear</button>
+        <button class="ind-add-btn" onclick="setDrawTool(null)" data-tip="Cancel">✕</button>
+        <button class="ind-add-btn" onclick="if(drawMgr)drawMgr.clear()" data-tip="Clear All" style="color:#e05c5c;border-color:#e05c5c">Clear</button>
       </div>
 
       <!-- Chart -->
@@ -1820,12 +1824,20 @@ function updateDOM(price, spread, tick) {
   html += `<div style="text-align:center;padding:2px;background:#1a1a1a;border-bottom:1px solid #333;font-size:0.68rem;color:#f0c040">Spread: ${spread.toFixed(2)}</div>`;
   html += '<div style="display:flex">';
 
+  // Find max volume for proportional bars
+  let maxVol = 1;
+  for (let i = 0; i < levels; i++) {
+    if (hasBids && i < tick.book_bids.length) maxVol = Math.max(maxVol, tick.book_bids[i][1]);
+    if (hasAsks && i < tick.book_asks.length) maxVol = Math.max(maxVol, tick.book_asks[i][1]);
+  }
+
   // Bid side
   html += '<div style="flex:1;border-right:1px solid #2a2a2a">';
   for (let i = 0; i < levels; i++) {
     const p = hasBids && i < tick.book_bids.length ? tick.book_bids[i][0] : (price - (i+1) * ts);
     const vol = hasBids && i < tick.book_bids.length ? tick.book_bids[i][1] : Math.max(5, Math.floor(50 * Math.pow(0.7, i)));
-    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(76,175,130,${0.12 - i * 0.02})"><span style="color:#4caf82">${vol}</span><span style="color:#ddd">${p.toFixed(2)}</span></div>`;
+    const barW = Math.round(vol / maxVol * 100);
+    html += `<div style="position:relative;padding:3px 6px;display:flex;justify-content:space-between"><div style="position:absolute;right:0;top:0;bottom:0;width:${barW}%;background:rgba(76,175,130,${0.15 - i*0.02});border-radius:2px 0 0 2px"></div><span style="position:relative;color:#4caf82;font-weight:500">${vol}</span><span style="position:relative;color:#ddd">${p.toFixed(2)}</span></div>`;
   }
   html += '</div>';
 
@@ -1834,9 +1846,13 @@ function updateDOM(price, spread, tick) {
   for (let i = 0; i < levels; i++) {
     const p = hasAsks && i < tick.book_asks.length ? tick.book_asks[i][0] : (price + (i+1) * ts);
     const vol = hasAsks && i < tick.book_asks.length ? tick.book_asks[i][1] : Math.max(5, Math.floor(50 * Math.pow(0.7, i)));
-    html += `<div style="display:flex;justify-content:space-between;padding:3px 6px;background:rgba(224,92,92,${0.12 - i * 0.02})"><span style="color:#ddd">${p.toFixed(2)}</span><span style="color:#e05c5c">${vol}</span></div>`;
+    const barW = Math.round(vol / maxVol * 100);
+    html += `<div style="position:relative;padding:3px 6px;display:flex;justify-content:space-between"><div style="position:absolute;left:0;top:0;bottom:0;width:${barW}%;background:rgba(224,92,92,${0.15 - i*0.02});border-radius:0 2px 2px 0"></div><span style="position:relative;color:#ddd">${p.toFixed(2)}</span><span style="position:relative;color:#e05c5c;font-weight:500">${vol}</span></div>`;
   }
   html += '</div></div>';
+
+  // Last trade indicator
+  html += `<div style="text-align:center;padding:3px;font-size:.6rem;color:#f0c040;border-top:1px solid #2a2a2a">Last: ${price.toFixed(2)}</div>`;
 
   ladder.innerHTML = html;
 
