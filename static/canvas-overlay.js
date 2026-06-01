@@ -269,7 +269,7 @@ class CanvasOverlay {
 
     _keyDown(e) {
         if (e.key === 'Escape') { this._drawState = null; this.setTool(null); if (window.setDrawTool) window.setDrawTool(null); this._scheduleRedraw(); return; }
-        if ((e.key === 'Delete' || e.key === 'Backspace') && !this.activeTool && document.activeElement.tagName !== 'INPUT') {
+        if ((e.key === 'Delete' || e.key === 'Backspace') && !this.activeTool && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
             if (this._hoveredDrawing) { this.remove(this._hoveredDrawing.id); this._hoveredDrawing = null; }
             else if (this.drawings.length) this.drawings.pop();
             this._scheduleRedraw();
