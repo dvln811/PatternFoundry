@@ -2,82 +2,209 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard — PatternFoundry</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<title>PatternFoundry — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d0d;color:#ddd;font-family:'Inter',sans-serif;min-height:100vh}
-a{color:#f97316;text-decoration:none}a:hover{text-decoration:underline}
-header{display:flex;align-items:center;padding:1rem 2rem;border-bottom:1px solid #222}
-header img{height:36px;margin-right:.75rem}header .brand{font-size:1.25rem;font-weight:700;color:#f97316;margin-right:2rem}
-header nav a{margin-right:1.25rem;color:#ddd;font-size:.9rem}header nav a.active{color:#f97316;font-weight:600}
-.ticker-strip{display:flex;gap:1rem;padding:1rem 2rem;overflow-x:auto;border-bottom:1px solid #222}
-.tick-card{background:#181818;border:1px solid #222;border-radius:6px;padding:.6rem 1rem;min-width:120px;text-align:center}
-.tick-card .symbol{font-weight:700;font-size:.85rem;color:#aaa}.tick-card .price{font-size:1.1rem;margin:.2rem 0}
-.tick-card .change.up{color:#4caf82}.tick-card .change.down{color:#f44}
-.main{display:grid;grid-template-columns:1fr 260px;gap:1.5rem;padding:1.5rem 2rem}
-#chart{background:#181818;border:1px solid #222;border-radius:8px;min-height:400px}
-.sidebar{display:flex;flex-direction:column;gap:1rem}
-.card{background:#181818;border:1px solid #222;border-radius:8px;padding:1rem}
-.card h3{font-size:.8rem;color:#aaa;text-transform:uppercase;margin-bottom:.75rem}
-.card a{display:block;padding:.4rem 0;font-size:.9rem}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-.stat{background:#111;border-radius:6px;padding:.75rem;text-align:center}
-.stat .val{font-size:1.3rem;font-weight:700;color:#f97316}.stat .lbl{font-size:.7rem;color:#aaa;margin-top:.2rem}
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0;z-index:100}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+
+.dash{display:grid;grid-template-columns:1fr 240px;gap:12px;padding:12px 16px;flex:1;overflow:hidden}
+.dash-main{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:hidden}
+.dash-chart{background:#0e0e0e;border:1px solid #2a2a2a;border-radius:5px;padding:10px;flex:1;min-height:200px;display:flex;flex-direction:column}
+
+.ticker-strip{display:flex;gap:6px;margin-bottom:8px;flex-shrink:0;flex-wrap:wrap;align-items:stretch}
+.ticker-card{padding:6px 10px;border-radius:4px;cursor:pointer;min-width:90px;background:#1a1a1a;border:1px solid #2a2a2a;transition:border-color .15s;position:relative}
+.ticker-card:hover{border-color:#4caf82}
+.ticker-card.active{border-color:#f97316}
+.ticker-card.bull{background:rgba(76,175,130,0.06);border-color:rgba(76,175,130,0.3)}
+.ticker-card.bear{background:rgba(224,92,92,0.06);border-color:rgba(224,92,92,0.3)}
+.ticker-card.active.bull,.ticker-card.active.bear{border-color:#f97316}
+.ticker-card .tc-name{font-size:11px;font-weight:700;color:#e0e0e0}
+.ticker-card .tc-price{font-size:12px;font-weight:600;margin-top:1px}
+.ticker-card .tc-change{font-size:10px}
+.ticker-card .tc-remove{display:none;position:absolute;top:2px;right:3px;background:none;border:none;color:#666;font-size:11px;cursor:pointer;padding:0 3px;line-height:1}
+.ticker-card:hover .tc-remove{display:block}
+.ticker-card .tc-remove:hover{color:#e05c5c}
+.ticker-add{min-width:36px;display:flex;align-items:center;justify-content:center;border-radius:4px;border:1px dashed #333;cursor:pointer;color:#555;font-size:18px;transition:border-color .15s,color .15s;padding:6px}
+.ticker-add:hover{border-color:#4caf82;color:#4caf82}
+
+.chart-header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.chart-header .ticker{color:#e0e0e0;font-size:15px;font-weight:700}
+.chart-header .price{font-size:15px;font-weight:600}
+.chart-header .change{font-size:12px}
+#dashChart{width:100%;flex:1;min-height:0;position:relative}
+
+.dash-news{background:#0e0e0e;border:1px solid #2a2a2a;border-radius:5px;display:flex;flex-direction:column;min-height:140px;max-height:220px}
+.dash-news-header{padding:10px 12px 6px;border-bottom:1px solid #1a1a1a}
+.dash-news-header h3{margin:0;color:#f97316;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.dash-news-body{padding:4px 12px 12px;overflow-y:auto;flex:1}
+.news-item{display:block;padding:6px 0;border-bottom:1px solid #1a1a1a;text-decoration:none}
+.news-item:last-child{border-bottom:none}
+.news-item .headline{color:#ccc;font-size:11px;font-weight:600;line-height:1.3}
+.news-item:hover .headline{color:#4caf82}
+.news-item .meta{color:#555;font-size:10px;margin-top:2px}
+
+.dash-sidebar{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.dash-sidebar h3{margin:0 0 6px;color:#f97316;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.dash-sidebar a{display:block;padding:12px;border-radius:5px;background:#0e0e0e;border:1px solid #2a2a2a;color:#e0e0e0;text-decoration:none;font-size:13px;font-weight:600;text-transform:uppercase;transition:border-color .15s}
+.dash-sidebar a:hover{border-color:#4caf82}
+.dash-sidebar a .desc{color:#666;font-size:11px;font-weight:400;margin-top:3px;text-transform:none}
+.dash-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-card{background:#0e0e0e;border:1px solid #2a2a2a;border-radius:5px;padding:10px}
+.stat-card .label{color:#999;font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+.stat-card .value{color:#e0e0e0;font-size:16px;font-weight:700;margin-top:2px}
 </style>
 </head>
 <body>
-<header>
-<img src="/static/patternFoundryLogo.png" alt="PatternFoundry">
-<span class="brand">PatternFoundry</span>
-<nav>
-<a href="/dashboard" class="active">Dashboard</a>
-<a href="/simulator">Simulator</a>
-<a href="/chartdesigner">Chart Designer</a>
-{% if is_admin %}<a href="/admin/users">Users</a>{% endif %}
-</nav>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/" class="active">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    {% if is_admin %}<a href="/admin/users">Users</a>{% endif %}
+  </nav>
 </header>
-<div class="ticker-strip" id="tickers"></div>
-<div class="main">
-<div id="chart"></div>
-<div class="sidebar">
-<div class="card">
+<div class="dash">
+<div class="dash-main">
+<div class="dash-chart">
+  <div class="ticker-strip" id="tickerStrip"></div>
+  <div class="chart-header">
+    <span class="ticker" id="dashTicker">ES</span>
+    <span class="price" id="dashPrice">—</span>
+    <span class="change" id="dashChange"></span>
+  </div>
+  <div id="dashChart"></div>
+</div>
+<div class="dash-news">
+  <div class="dash-news-header"><h3>Market Pulse</h3></div>
+  <div class="dash-news-body" id="newsFeed">
+    <div class="news-item"><div class="headline">Markets await Fed decision on rates</div><div class="meta">2h ago</div></div>
+    <div class="news-item"><div class="headline">Tech earnings beat expectations across the board</div><div class="meta">4h ago</div></div>
+    <div class="news-item"><div class="headline">Oil prices surge on supply concerns</div><div class="meta">6h ago</div></div>
+    <div class="news-item"><div class="headline">Bitcoin holds above key support level</div><div class="meta">8h ago</div></div>
+  </div>
+</div>
+</div>
+<div class="dash-sidebar">
 <h3>Quick Actions</h3>
-<a href="/simulator">🎯 Simulator</a>
-<a href="/chartdesigner">📐 Chart Designer</a>
-</div>
-<div class="card">
-<h3>Stats</h3>
-<div class="stats">
-<div class="stat"><div class="val">{{ stats.patterns if stats else 0 }}</div><div class="lbl">Patterns</div></div>
-<div class="stat"><div class="val">{{ stats.sim_hours if stats else 0 }}</div><div class="lbl">Sim Hours</div></div>
-<div class="stat"><div class="val">{{ stats.best_wr if stats else '—' }}</div><div class="lbl">Best WR</div></div>
-<div class="stat"><div class="val">{{ stats.trades if stats else 0 }}</div><div class="lbl">Trades</div></div>
-</div>
+<a href="/simulator">Simulator<div class="desc">Live practice trading</div></a>
+<a href="/chartdesigner">Chart Designer<div class="desc">Configure instruments</div></a>
+<div style="margin-top:8px"><h3>Your Stats</h3></div>
+<div class="dash-stats">
+<div class="stat-card"><div class="label">Sim Hours</div><div class="value">—</div></div>
+<div class="stat-card"><div class="label">Trades</div><div class="value">—</div></div>
+<div class="stat-card"><div class="label">Best WR</div><div class="value">—</div></div>
+<div class="stat-card"><div class="label">Patterns</div><div class="value">—</div></div>
 </div>
 </div>
 </div>
 <script>
 (function(){
-const tickers=[{s:'ES',base:5450},{s:'NQ',base:19800},{s:'GC',base:2350},{s:'CL',base:78},{s:'SPY',base:545},{s:'QQQ',base:480}];
-const strip=document.getElementById('tickers');
-tickers.forEach(t=>{
-const change=((Math.random()-.5)*t.base*.02).toFixed(2);
-const price=(t.base+parseFloat(change)).toFixed(2);
-const up=change>=0;
-strip.innerHTML+=`<div class="tick-card"><div class="symbol">${t.s}</div><div class="price">${price}</div><div class="change ${up?'up':'down'}">${up?'+':''}${change}</div></div>`;
-});
-// LWC chart
-const container=document.getElementById('chart');
-const chart=LightweightCharts.createChart(container,{width:container.clientWidth,height:400,layout:{background:{color:'#181818'},textColor:'#ddd'},grid:{vertLines:{color:'#222'},horzLines:{color:'#222'}}});
-const series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#f44',borderVisible:false,wickUpColor:'#4caf82',wickDownColor:'#f44'});
-let data=[],t=Math.floor(Date.now()/1000)-86400,p=5450;
-for(let i=0;i<100;i++){
-const o=p,h=o+Math.random()*20,l=o-Math.random()*20,c=l+Math.random()*(h-l);
-data.push({time:t,open:o,high:h,low:l,close:c});p=c;t+=900;
+var ALL_TICKERS=[
+{sym:'ES',label:'ES',name:'S&P 500 E-Mini',base:5520},
+{sym:'NQ',label:'NQ',name:'Nasdaq 100',base:20200},
+{sym:'GC',label:'GC',name:'Gold Futures',base:2350},
+{sym:'CL',label:'CL',name:'Crude Oil',base:78},
+{sym:'SPY',label:'SPY',name:'S&P 500 ETF',base:550},
+{sym:'QQQ',label:'QQQ',name:'Nasdaq ETF',base:470},
+];
+var DEFAULT_SYMS=['ES','NQ','GC','CL','SPY','QQQ'];
+var userSyms=JSON.parse(localStorage.getItem('pf_dash_tickers')||'null')||DEFAULT_SYMS;
+var TICKERS=userSyms.map(function(s){return ALL_TICKERS.find(function(t){return t.sym===s})||{sym:s,label:s,base:100}});
+var activeSym=TICKERS[0].sym,cache={};
+function saveTickers(){localStorage.setItem('pf_dash_tickers',JSON.stringify(TICKERS.map(function(t){return t.sym})))}
+
+function gen(sym){
+  if(cache[sym])return cache[sym];
+  var t=TICKERS.find(function(x){return x.sym===sym})||TICKERS[0];
+  var data=[],bt=Math.floor(Date.now()/1000)-86400*5,price=t.base;
+  for(var d=0;d<5;d++){var ds=bt+d*86400+34200;
+    for(var b=0;b<78;b++){var time=ds+b*300;
+      var vol=(b<10||b>70)?1.8:1.0;
+      var drift=(Math.random()-0.49)*price*0.001*vol;
+      var o=price,c=o+drift,spread=Math.abs(drift)+Math.random()*price*0.0008*vol;
+      var h=Math.max(o,c)+Math.random()*spread*0.6,l=Math.min(o,c)-Math.random()*spread*0.6;
+      data.push({time:time,open:+o.toFixed(2),high:+h.toFixed(2),low:+l.toFixed(2),close:+c.toFixed(2)});
+      price=c;
+  }}
+  cache[sym]=data;return data;
 }
-series.setData(data);
-new ResizeObserver(()=>chart.applyOptions({width:container.clientWidth})).observe(container);
+
+var strip=document.getElementById('tickerStrip');
+var chart,series;
+
+function buildCards(){
+  strip.innerHTML='';
+  TICKERS.forEach(function(t){
+    var d=gen(t.sym),last=d[d.length-1],first=d[0];
+    var pct=((last.close-first.open)/first.open*100);
+    var bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
+    var card=document.createElement('div');
+    card.className='ticker-card '+(bull?'bull':'bear')+(t.sym===activeSym?' active':'');
+    card.dataset.sym=t.sym;
+    card.innerHTML='<button class="tc-remove" title="Remove">✕</button><div class="tc-name">'+t.label+'</div>'
+      +'<div class="tc-price" style="color:'+col+'">'+last.close.toFixed(2)+'</div>'
+      +'<div class="tc-change" style="color:'+col+'">'+(bull?'+':'')+pct.toFixed(2)+'%</div>';
+    card.addEventListener('click',function(e){if(e.target.classList.contains('tc-remove')){removeTicker(t.sym);return}selectTicker(t.sym)});
+    card.querySelector('.tc-remove').addEventListener('click',function(e){e.stopPropagation();removeTicker(t.sym)});
+    strip.appendChild(card);
+  });
+  var addBtn=document.createElement('div');addBtn.className='ticker-add';addBtn.textContent='+';
+  addBtn.addEventListener('click',addTicker);strip.appendChild(addBtn);
+}
+
+function selectTicker(sym){
+  activeSym=sym;
+  document.querySelectorAll('.ticker-card').forEach(function(c){c.classList.toggle('active',c.dataset.sym===sym)});
+  var t=TICKERS.find(function(x){return x.sym===sym});
+  document.getElementById('dashTicker').textContent=t?t.label:sym;
+  var d=gen(sym),last=d[d.length-1],first=d[0];
+  var pct=((last.close-first.open)/first.open*100),bull=pct>=0,col=bull?'#4caf82':'#e05c5c';
+  document.getElementById('dashPrice').textContent=last.close.toFixed(2);
+  document.getElementById('dashPrice').style.color=col;
+  document.getElementById('dashChange').textContent=(bull?'+':'')+pct.toFixed(2)+'%';
+  document.getElementById('dashChange').style.color=col;
+  series.setData(d);chart.timeScale().fitContent();
+}
+
+function removeTicker(sym){
+  TICKERS=TICKERS.filter(function(t){return t.sym!==sym});saveTickers();
+  if(activeSym===sym&&TICKERS.length)activeSym=TICKERS[0].sym;
+  buildCards();selectTicker(activeSym);
+}
+
+function addTicker(){
+  var sym=prompt('Ticker symbol (e.g. AAPL, TSLA, BTC):');
+  if(!sym)return;sym=sym.toUpperCase().trim();
+  if(TICKERS.find(function(t){return t.sym===sym}))return;
+  var known=ALL_TICKERS.find(function(t){return t.sym===sym});
+  TICKERS.push(known||{sym:sym,label:sym,base:100+Math.random()*200});
+  saveTickers();buildCards();selectTicker(sym);
+}
+
+// Init chart
+var el=document.getElementById('dashChart');
+chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clientHeight,
+  layout:{background:{color:'#0e0e0e'},textColor:'#888',attributionLogo:false},
+  grid:{vertLines:{color:'#1a1a1a'},horzLines:{color:'#1a1a1a'}},
+  crosshair:{mode:0},rightPriceScale:{borderColor:'#222'},timeScale:{borderColor:'#222',timeVisible:true}});
+series=chart.addCandlestickSeries({upColor:'#4caf82',downColor:'#e05c5c',borderUpColor:'#4caf82',borderDownColor:'#e05c5c',wickUpColor:'#4caf82',wickDownColor:'#e05c5c'});
+new ResizeObserver(function(){chart.applyOptions({width:el.clientWidth,height:el.clientHeight})}).observe(el);
+
+buildCards();
+selectTicker(activeSym);
 })();
 </script>
 </body>
