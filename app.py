@@ -157,6 +157,10 @@ def simulator():
 def landing_preview():
     return render_template('landing.html')
 
+@app.route('/docs')
+def docs():
+    return render_template('docs.html')
+
 @app.route('/board')
 def board():
     if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
