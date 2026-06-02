@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry - Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
+.wrap{max-width:600px;margin:40px auto;padding:0 24px}
+h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.subtitle{color:#888;font-size:.78rem;margin-bottom:28px}
+.card{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:24px;margin-bottom:20px}
+.card h2{font-size:.78rem;color:#f97316;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px}
+.field input{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;padding:10px 12px;color:#e0e0e0;font-size:.85rem;font-family:inherit}
+.field input:focus{outline:none;border-color:#4caf82}
+.field .hint{font-size:.65rem;color:#555;margin-top:4px}
+.btn{padding:8px 20px;border-radius:5px;font-size:.78rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.03em;border:none}
+.btn-save{background:#4caf82;color:#fff}
+.btn-save:hover{background:#3d9e72}
+.btn-reset{background:transparent;border:1px solid #e05c5c;color:#e05c5c;margin-left:10px}
+.btn-reset:hover{background:#e05c5c18}
+.btn-row{display:flex;align-items:center;margin-top:20px}
+.balance-display{font-size:1.1rem;font-weight:700;color:#e0e0e0;margin-bottom:16px}
+.balance-display span{color:#888;font-size:.7rem;font-weight:400;text-transform:uppercase;display:block;margin-bottom:2px}
+.toast{position:fixed;bottom:24px;right:24px;background:#4caf82;color:#fff;padding:10px 18px;border-radius:5px;font-size:.78rem;font-weight:600;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
+    <a href="/settings" class="active">Settings</a>
+    <a href="/docs">Docs</a>
+    {% if is_admin %}<a href="/admin">Admin</a>{% endif %}
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
+  </nav>
+</header>
+<div class="wrap">
+<h1>Settings</h1>
+<p class="subtitle">Trading account configuration</p>
+
+<div class="card">
+  <h2>Trading Account</h2>
+  <div class="balance-display"><span>Current Balance</span><span id="current-bal">—</span></div>
+  <div class="field">
+    <label>Account Balance ($)</label>
+    <input type="number" id="inp-balance" min="1000" max="250000" step="1000">
+    <div class="hint">Set your sim account value. This rolls forward session to session.</div>
+  </div>
+  <div class="field">
+    <label>Commission per Contract (round trip)</label>
+    <input type="number" id="inp-commission" min="0" max="50" step="0.05">
+    <div class="hint">Applied per contract on each trade close. Schwab futures default: $2.25</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-save" onclick="saveSettings()">Save</button>
+    <button class="btn btn-reset" onclick="resetAccount()">Reset Account</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentAccount = null;
+
+async function loadAccount() {
+  const res = await fetch('/api/account', {credentials:'include'});
+  currentAccount = await res.json();
+  document.getElementById('current-bal').textContent = '$' + currentAccount.balance.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('inp-balance').value = currentAccount.balance;
+  document.getElementById('inp-commission').value = currentAccount.commission_per_contract;
+}
+
+async function saveSettings() {
+  const balance = parseFloat(document.getElementById('inp-balance').value);
+  const commission = parseFloat(document.getElementById('inp-commission').value);
+  await fetch('/api/account', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({balance, commission})});
+  toast('Settings saved');
+  loadAccount();
+}
+
+async function resetAccount() {
+  if (!confirm('Reset your trading account? This archives your current account and starts fresh. Session history is preserved.')) return;
+  const balance = parseFloat(document.getElementById('inp-balance').value) || 50000;
+  const commission = parseFloat(document.getElementById('inp-commission').value) || 2.25;
+  await fetch('/api/account/reset', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({balance, commission})});
+  toast('Account reset');
+  loadAccount();
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+loadAccount();
+</script>
+</body>
+</html>

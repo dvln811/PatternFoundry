@@ -70,14 +70,69 @@ def init_db():
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS trading_accounts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        starting_balance REAL DEFAULT 50000,
+        balance REAL DEFAULT 50000,
+        commission_per_contract REAL DEFAULT 2.25,
+        status TEXT DEFAULT 'active',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        archived_at TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )''')
+    # Add account_id to sessions if missing (migration-safe)
+    try:
+        conn.execute('ALTER TABLE sessions ADD COLUMN account_id INTEGER')
+    except Exception:
+        pass
     conn.commit()
     conn.close()
 
 
-def save_session(user_id, date, character, trades, wins, pnl):
+def get_active_account(user_id):
     conn = _get_db()
-    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl) VALUES (?,?,?,?,?,?)',
-                 (user_id, date, character, trades, wins, pnl))
+    row = conn.execute('SELECT * FROM trading_accounts WHERE user_id=? AND status="active"', (user_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def create_account(user_id, balance=50000, commission=2.25):
+    conn = _get_db()
+    conn.execute('INSERT INTO trading_accounts (user_id, starting_balance, balance, commission_per_contract) VALUES (?,?,?,?)',
+                 (user_id, balance, balance, commission))
+    conn.commit()
+    conn.close()
+
+
+def update_account_balance(account_id, new_balance):
+    conn = _get_db()
+    conn.execute('UPDATE trading_accounts SET balance=? WHERE id=?', (new_balance, account_id))
+    conn.commit()
+    conn.close()
+
+
+def update_account_settings(account_id, balance, commission):
+    conn = _get_db()
+    conn.execute('UPDATE trading_accounts SET balance=?, starting_balance=?, commission_per_contract=? WHERE id=?',
+                 (balance, balance, commission, account_id))
+    conn.commit()
+    conn.close()
+
+
+def reset_account(user_id, balance=50000, commission=2.25):
+    conn = _get_db()
+    conn.execute('UPDATE trading_accounts SET status="archived", archived_at=CURRENT_TIMESTAMP WHERE user_id=? AND status="active"', (user_id,))
+    conn.execute('INSERT INTO trading_accounts (user_id, starting_balance, balance, commission_per_contract) VALUES (?,?,?,?)',
+                 (user_id, balance, balance, commission))
+    conn.commit()
+    conn.close()
+
+
+def save_session(user_id, date, character, trades, wins, pnl, account_id=None):
+    conn = _get_db()
+    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id) VALUES (?,?,?,?,?,?,?)',
+                 (user_id, date, character, trades, wins, pnl, account_id))
     conn.commit()
     conn.close()
 

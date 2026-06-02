@@ -13,7 +13,8 @@ from generators import (CHARACTERS, CharacterSpec, RegimeSpec, DriftSpec,
                         VolatilitySpec, WickSpec, VolumeSpec, GapSpec, EventSpec,
                         generate_v2, apply_session_structure,
                         extract_gap_cfg, disable_internal_gaps)
-from models import User, init_db, _get_db, save_session, get_sessions
+from models import User, init_db, _get_db, save_session, get_sessions, \
+    get_active_account, create_account, update_account_balance, update_account_settings, reset_account
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('PF_SECRET', secrets.token_hex(32))
@@ -427,6 +428,61 @@ def api_get_sessions():
     if not uid:
         return jsonify({'error': 'unauthorized'}), 401
     return jsonify(get_sessions(uid))
+
+
+@app.route('/api/account')
+def api_get_account():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    acct = get_active_account(uid)
+    if not acct:
+        create_account(uid)
+        acct = get_active_account(uid)
+    return jsonify(acct)
+
+
+@app.route('/api/account', methods=['POST'])
+def api_update_account():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(force=True)
+    acct = get_active_account(uid)
+    if not acct:
+        create_account(uid, float(data.get('balance', 50000)), float(data.get('commission', 2.25)))
+    else:
+        update_account_settings(acct['id'], float(data.get('balance', acct['balance'])),
+                                float(data.get('commission', acct['commission_per_contract'])))
+    return jsonify({'saved': True})
+
+
+@app.route('/api/account/reset', methods=['POST'])
+def api_reset_account():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(force=True)
+    reset_account(uid, float(data.get('balance', 50000)), float(data.get('commission', 2.25)))
+    return jsonify({'reset': True})
+
+
+@app.route('/api/account/update-balance', methods=['POST'])
+def api_update_balance():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(force=True)
+    acct = get_active_account(uid)
+    if not acct:
+        return jsonify({'error': 'no_account'}), 404
+    update_account_balance(acct['id'], float(data['balance']))
+    return jsonify({'saved': True})
+
+
+@app.route('/settings')
+def settings_page():
+    return render_template('settings.html')
 
 
 def _build_spec_from_payload(data):

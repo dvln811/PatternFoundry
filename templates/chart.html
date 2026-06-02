@@ -260,6 +260,7 @@
     <a href="/simulator" class="active">Simulator</a>
     <a href="/chartdesigner">Chart Designer</a>
     <a href="/stats">Stats</a>
+    <a href="/settings">Settings</a>
     <a href="/docs">Docs</a>
     {% if is_admin %}<a href="/admin">Admin</a>{% endif %}
     {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
@@ -295,7 +296,7 @@
             </div>
             <div class="field" style="flex:1">
               <label>Balance</label>
-              <input type="number" id="start-bal" value="5000" min="100" step="100">
+              <div id="start-bal-display" style="font-size:0.8rem;color:#e0e0e0;padding:6px 0">$50,000.00</div>
             </div>
           </div>
           <div class="field">
@@ -614,10 +615,23 @@ let playTimer = null, isPlaying = false;
 let currentPrice = 0, tickSize = 0.25, tickValue = 1.25;
 let candleTF = 60;
 let currentCandle = null;
-let account = { balance: 5000, startBal: 5000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
+let account = { balance: 50000, startBal: 50000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
+let serverAccount = { id: null, commission: 2.25, balance: 50000 };
 let sessionClosed = false;
 let position = null, pendingOrder = null;
 let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
+
+// Load trading account from server
+(async () => {
+  try {
+    const r = await fetch('/api/account', {credentials:'include'});
+    const data = await r.json();
+    serverAccount = { id: data.id, commission: data.commission_per_contract, balance: data.balance };
+    account.balance = data.balance;
+    account.startBal = data.balance;
+    document.getElementById('start-bal-display').textContent = '$' + data.balance.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  } catch(e) {}
+})();
 let setupMode = null;
 let setupEntryLine = null, setupSlLine = null, setupTpLine = null;
 let posDragState = null;
@@ -803,8 +817,8 @@ async function loadSession() {
   tickValue     = data.tick_value || 1.25;
 
   account = {
-    balance: parseFloat(document.getElementById('start-bal').value) || 5000,
-    startBal: parseFloat(document.getElementById('start-bal').value) || 5000,
+    balance: serverAccount.balance || 50000,
+    startBal: serverAccount.balance || 50000,
     sessionPnl: 0, trades: [], wins: 0, losses: 0,
   };
   sessionClosed = false;
@@ -1206,7 +1220,9 @@ function closeTrade(exitPrice, reason) {
   if (!position) return;
   const { direction: dir, entry, qty } = position;
   const tpp = 1 / tickSize;
-  const pnl = (dir === 'long' ? exitPrice - entry : entry - exitPrice) * tpp * tickValue * qty;
+  const rawPnl = (dir === 'long' ? exitPrice - entry : entry - exitPrice) * tpp * tickValue * qty;
+  const commission = serverAccount.commission * qty;
+  const pnl = rawPnl - commission;
   account.balance    += pnl;
   account.sessionPnl += pnl;
   if (pnl > 0) account.wins++; else account.losses++;
@@ -1236,6 +1252,9 @@ function saveSessionToHistory() {
     pnl: Math.round(account.sessionPnl * 100) / 100,
   };
   fetch('/api/sessions', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry)});
+  // Persist rolling balance
+  fetch('/api/account/update-balance', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({balance: Math.round(account.balance * 100) / 100})});
 }
 
 function closeSession() {
