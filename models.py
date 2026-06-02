@@ -138,7 +138,12 @@ def get_archived_accounts(user_id):
 
 def get_account_sessions(account_id):
     conn = _get_db()
-    rows = conn.execute('SELECT date, character, trades, wins, pnl FROM sessions WHERE account_id=? ORDER BY id ASC', (account_id,)).fetchall()
+    # Include legacy sessions (NULL account_id) only if this is the active account
+    acct = conn.execute('SELECT user_id, status FROM trading_accounts WHERE id=?', (account_id,)).fetchone()
+    if acct and acct['status'] == 'active':
+        rows = conn.execute('SELECT date, character, trades, wins, pnl FROM sessions WHERE (account_id=? OR (account_id IS NULL AND user_id=?)) ORDER BY id ASC', (account_id, acct['user_id'])).fetchall()
+    else:
+        rows = conn.execute('SELECT date, character, trades, wins, pnl FROM sessions WHERE account_id=? ORDER BY id ASC', (account_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
