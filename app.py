@@ -221,11 +221,42 @@ def docs_orderbook():
 def docs_pricing():
     return render_template('docs_pricing.html')
 
+_BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
+os.makedirs(_BOARD_DIR, exist_ok=True)
+
 @app.route('/board')
 def board():
     if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
         return redirect('/')
-    return render_template('board.html')
+    return render_template('board.html', board_api_key=os.environ.get('BOARD_API_KEY', ''))
+
+@app.route('/api/board/save', methods=['POST', 'OPTIONS'])
+def board_save():
+    if request.method == 'OPTIONS':
+        return '', 204
+    api_key = request.headers.get('X-Board-Key', '')
+    valid_key = os.environ.get('BOARD_API_KEY', '')
+    has_key = valid_key and api_key == valid_key
+    if not has_key and not _IS_LOCAL:
+        return jsonify({'error': 'unauthorized'}), 403
+    data = request.get_json()
+    path = os.path.join(_BOARD_DIR, 'pf_board.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2)
+    return jsonify({'saved': True})
+
+@app.route('/api/board/load')
+def board_load():
+    api_key = request.headers.get('X-Board-Key', '')
+    valid_key = os.environ.get('BOARD_API_KEY', '')
+    has_key = valid_key and api_key == valid_key
+    if not has_key and not _IS_LOCAL:
+        return jsonify({'error': 'unauthorized'}), 403
+    path = os.path.join(_BOARD_DIR, 'pf_board.json')
+    if os.path.isfile(path):
+        with open(path, encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    return jsonify({}), 404
 
 @app.route('/marketing')
 def marketing():

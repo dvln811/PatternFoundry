@@ -92,6 +92,11 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
       <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
   </nav>
 </header>
+<div style="padding:4px 16px 0;display:flex;gap:8px;align-items:center">
+  <button onclick="uploadBoard()" style="background:transparent;border:1px solid #4caf82;color:#4caf82;padding:3px 10px;border-radius:3px;font-size:0.68rem;font-weight:600;cursor:pointer">↑ Upload</button>
+  <button onclick="downloadBoard()" style="background:transparent;border:1px solid #a78bfa;color:#a78bfa;padding:3px 10px;border-radius:3px;font-size:0.68rem;font-weight:600;cursor:pointer">↓ Download</button>
+  <span id="board-status" style="font-size:0.65rem;color:#888;margin-left:6px"></span>
+</div>
 <div class="board" id="board"></div>
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
@@ -248,7 +253,29 @@ document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.targe
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalRef)closeModal()});
 document.getElementById('m-new-comment').addEventListener('keydown',e=>{if(e.key==='Enter')addComment()});
 
-render();
+const _IS_FLY = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
+const REMOTE = _IS_FLY ? '' : 'https://patternfoundry.net';
+const BOARD_KEY = '{{ board_api_key or "" }}';
+
+function uploadBoard(){
+  fetch(REMOTE+'/api/board/save',{method:'POST',headers:{'Content-Type':'application/json','X-Board-Key':BOARD_KEY},body:JSON.stringify(data)})
+    .then(r=>{if(r.ok)status('↑ Uploaded ✓');else status('Upload failed (auth?)');})
+    .catch(()=>status('Upload failed (network?)'));
+}
+function downloadBoard(){
+  fetch(REMOTE+'/api/board/load',{headers:{'X-Board-Key':BOARD_KEY}}).then(r=>{if(!r.ok)throw r;return r.json();})
+    .then(d=>{data=d;localStorage.setItem(LS_KEY,JSON.stringify(data));render();status('↓ Downloaded ✓');})
+    .catch(()=>status('Download failed'));
+}
+function status(msg){const el=document.getElementById('board-status');el.textContent=msg;setTimeout(()=>el.textContent='',3000);}
+
+if(_IS_FLY){
+  fetch('/api/board/load',{credentials:'include'}).then(r=>{if(r.ok)return r.json();throw r;})
+    .then(d=>{data=d;localStorage.setItem(LS_KEY,JSON.stringify(data));render();})
+    .catch(()=>{render();});
+} else {
+  render();
+}
 </script>
 <div id="board-tooltip" style="display:none;position:fixed;z-index:9999;background:#0e1217;border:1px solid #f97316;border-radius:6px;padding:10px 12px;max-width:300px;font-size:.72rem;color:#ddd;white-space:pre-wrap;line-height:1.4;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.5)"></div>
 </body>
