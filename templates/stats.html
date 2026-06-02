@@ -75,7 +75,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 <div class="section">
   <h2>Equity Curve</h2>
-  <div class="equity-chart" id="equity-chart"></div>
+  <div class="equity-chart"><canvas id="equity-chart"></canvas></div>
 </div>
 
 <div class="section">
@@ -106,7 +106,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 </div>
 
-<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const LS_KEY = 'pf_session_history';
 
@@ -131,27 +131,38 @@ function renderStats() {
 
   // Equity curve
   if (history.length > 0) {
-    const container = document.getElementById('equity-chart');
-    container.innerHTML = '';
-    const chart = LightweightCharts.createChart(container, {
-      width: container.clientWidth, height: 220,
-      layout: { background: { color: '#111' }, textColor: '#888' },
-      grid: { vertLines: { color: '#1a1a1a' }, horzLines: { color: '#1a1a1a' } },
-      rightPriceScale: { borderColor: '#2a2a2a' },
-      timeScale: { borderColor: '#2a2a2a' },
-    });
+    const ctx = document.getElementById('equity-chart').getContext('2d');
     let running = 0;
-    const eqData = history.map((h, i) => {
-      running += (h.pnl || 0);
-      return { time: h.date || `2026-01-${String(i+1).padStart(2,'0')}`, value: running };
+    const curve = history.map(h => { running += (h.pnl || 0); return running; });
+    const color = running >= 0 ? '#4caf82' : '#e05c5c';
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: curve.map((_, i) => i + 1),
+        datasets: [{
+          data: curve,
+          borderColor: color,
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: true,
+          backgroundColor: color + '18',
+          tension: 0.2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => ' $' + c.parsed.y.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+        },
+        scales: {
+          x: { ticks: { color: '#bbb', maxTicksLimit: 10 }, grid: { color: '#1a1a1a' } },
+          y: { ticks: { color: '#bbb', callback: v => '$' + v.toLocaleString() }, grid: { color: '#1a1a1a' } }
+        }
+      }
     });
-    const line = chart.addAreaSeries({
-      lineColor: running >= 0 ? '#4caf82' : '#e05c5c',
-      topColor: running >= 0 ? '#4caf8233' : '#e05c5c33',
-      bottomColor: 'transparent', lineWidth: 2,
-    });
-    line.setData(eqData);
-    chart.timeScale().fitContent();
   }
 
   // Session history table
