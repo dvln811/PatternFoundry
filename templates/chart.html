@@ -1233,14 +1233,9 @@ function saveSessionToHistory() {
     character: document.getElementById('sim-instrument').value || 'Unknown',
     trades: account.trades.length,
     wins: account.wins,
-    losses: account.losses,
     pnl: Math.round(account.sessionPnl * 100) / 100,
   };
-  const key = 'pf_session_history';
-  let history = [];
-  try { history = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-  history.push(entry);
-  localStorage.setItem(key, JSON.stringify(history));
+  fetch('/api/sessions', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry)});
 }
 
 function closeSession() {

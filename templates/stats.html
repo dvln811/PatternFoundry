@@ -108,14 +108,12 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const LS_KEY = 'pf_session_history';
-
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e) { return []; }
+async function loadHistory() {
+  try { const r = await fetch('/api/sessions', {credentials:'include'}); return await r.json(); } catch(e) { return []; }
 }
 
-function renderStats() {
-  const history = loadHistory();
+async function renderStats() {
+  const history = await loadHistory();
   const totalSessions = history.length;
   const totalTrades = history.reduce((s, h) => s + (h.trades || 0), 0);
   const totalWins = history.reduce((s, h) => s + (h.wins || 0), 0);
@@ -176,17 +174,15 @@ function renderStats() {
     const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
     return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl}</td><td>${tag}</td></tr>`;
   }).join('');
+
+  renderStreak(history);
 }
 
-// Practice streak + calendar heatmap
-function renderStreak() {
-  const history = loadHistory();
+function renderStreak(history) {
   const dates = new Set(history.map(h => h.date));
-  // Calculate streak (consecutive days ending today or yesterday)
   let streak = 0;
   const today = new Date();
   let check = new Date(today);
-  // Allow today or yesterday as the streak start
   const todayStr = check.toISOString().slice(0, 10);
   if (!dates.has(todayStr)) {
     check.setDate(check.getDate() - 1);
@@ -200,12 +196,10 @@ function renderStreak() {
   // Calendar heatmap (last 53 weeks = 371 days)
   const grid = document.getElementById('cal-grid');
   grid.innerHTML = '';
-  // Count sessions per day
   const counts = {};
   history.forEach(h => { counts[h.date] = (counts[h.date] || 0) + 1; });
   const startDate = new Date(today);
   startDate.setDate(startDate.getDate() - 370);
-  // Align to Sunday
   startDate.setDate(startDate.getDate() - startDate.getDay());
   for (let i = 0; i < 371; i++) {
     const d = new Date(startDate);
@@ -221,7 +215,6 @@ function renderStreak() {
 }
 
 renderStats();
-renderStreak();
 
 // ── Iron Man Mode ────────────────────────────────────────────────────────────
 async function renderIronMan() {

@@ -59,8 +59,34 @@ def init_db():
         completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(run_id) REFERENCES ironman_runs(id)
     )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        character TEXT,
+        trades INTEGER DEFAULT 0,
+        wins INTEGER DEFAULT 0,
+        pnl REAL DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )''')
     conn.commit()
     conn.close()
+
+
+def save_session(user_id, date, character, trades, wins, pnl):
+    conn = _get_db()
+    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl) VALUES (?,?,?,?,?,?)',
+                 (user_id, date, character, trades, wins, pnl))
+    conn.commit()
+    conn.close()
+
+
+def get_sessions(user_id):
+    conn = _get_db()
+    rows = conn.execute('SELECT date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 class User(UserMixin):

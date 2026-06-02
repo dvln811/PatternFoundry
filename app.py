@@ -13,7 +13,7 @@ from generators import (CHARACTERS, CharacterSpec, RegimeSpec, DriftSpec,
                         VolatilitySpec, WickSpec, VolumeSpec, GapSpec, EventSpec,
                         generate_v2, apply_session_structure,
                         extract_gap_cfg, disable_internal_gaps)
-from models import User, init_db, _get_db
+from models import User, init_db, _get_db, save_session, get_sessions
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('PF_SECRET', secrets.token_hex(32))
@@ -408,6 +408,25 @@ def ironman_forfeit():
     conn.commit()
     conn.close()
     return jsonify({'forfeited': True})
+
+
+@app.route('/api/sessions', methods=['POST'])
+def api_save_session():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(force=True)
+    save_session(uid, data.get('date', ''), data.get('character', ''),
+                 int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)))
+    return jsonify({'saved': True})
+
+
+@app.route('/api/sessions')
+def api_get_sessions():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    return jsonify(get_sessions(uid))
 
 
 def _build_spec_from_payload(data):
