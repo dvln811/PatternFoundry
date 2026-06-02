@@ -155,6 +155,7 @@ def get_account_sessions(account_id):
 def purge_archived_accounts(user_id):
     conn = _get_db()
     conn.execute('DELETE FROM sessions WHERE account_id IN (SELECT id FROM trading_accounts WHERE user_id=? AND status="archived")', (user_id,))
+    conn.execute('DELETE FROM sessions WHERE account_id IS NULL AND user_id=?', (user_id,))
     conn.execute('DELETE FROM trading_accounts WHERE user_id=? AND status="archived"', (user_id,))
     conn.commit()
     conn.close()
@@ -170,7 +171,15 @@ def save_session(user_id, date, character, trades, wins, pnl, account_id=None):
 
 def get_sessions(user_id):
     conn = _get_db()
-    rows = conn.execute('SELECT date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
+    # NULL sessions belong to the first-ever account. If that account was purged, exclude them.
+    first = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? ORDER BY id ASC LIMIT 1', (user_id,)).fetchone()
+    active = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? AND status="active"', (user_id,)).fetchone()
+    # If the first account IS the active account, there are no older accounts — NULLs are orphans
+    include_nulls = first and active and first['id'] != active['id']
+    if include_nulls:
+        rows = conn.execute('SELECT date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
+    else:
+        rows = conn.execute('SELECT date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? AND account_id IS NOT NULL ORDER BY id ASC', (user_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
