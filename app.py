@@ -272,6 +272,12 @@ def marketing():
         return redirect('/')
     return render_template('marketing.html')
 
+@app.route('/feature-ideas')
+def feature_ideas():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('feature_ideas.html')
+
 @app.route('/stats')
 def stats():
     return render_template('stats.html')

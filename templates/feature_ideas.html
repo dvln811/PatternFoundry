@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry - Feature Ideas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
+.wrap{max-width:900px;margin:40px auto;padding:0 24px}
+h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.subtitle{color:#888;font-size:.78rem;margin-bottom:32px}
+h2{color:#f97316;font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;margin:32px 0 12px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+h3{color:#e0e0e0;font-size:.78rem;font-weight:700;margin:16px 0 8px}
+h4{color:#a78bfa;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px}
+p{color:#ccc;font-size:.78rem;line-height:1.7;margin-bottom:10px}
+ul,ol{padding-left:20px;margin-bottom:12px}
+li{color:#ccc;font-size:.75rem;line-height:1.6;margin-bottom:4px}
+li strong{color:#e0e0e0}
+.status{display:inline-block;font-size:.6rem;padding:2px 8px;border-radius:8px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-left:8px}
+.status-live{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
+.status-wip{background:#f9731618;color:#f97316;border:1px solid #f9731633}
+.status-concept{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
+.status-planned{background:#4a9eff18;color:#4a9eff;border:1px solid #4a9eff33}
+.spec-box{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px;margin:12px 0}
+.spec-box p{margin-bottom:6px}
+code{background:#1a1a1a;padding:1px 5px;border-radius:3px;font-size:.72rem;color:#f97316}
+.divider{border:none;border-top:1px solid #1a1a1a;margin:24px 0}
+.tier-table{width:100%;border-collapse:collapse;font-size:.72rem;margin:12px 0}
+.tier-table th{text-align:left;color:#888;font-weight:600;padding:6px 8px;border-bottom:1px solid #2a2a2a}
+.tier-table td{padding:6px 8px;border-bottom:1px solid #1a1a1a;color:#ccc}
+.note{background:#1a1510;border:1px solid #f9731633;border-radius:5px;padding:10px 14px;font-size:.72rem;color:#f97316;margin:12px 0}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
+    <a href="/docs">Docs</a>
+    {% if is_admin %}<a href="/admin" class="active">Admin</a>{% endif %}
+    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
+  </nav>
+</header>
+<div class="wrap">
+<h1>Feature Ideas & Design</h1>
+<p class="subtitle">Running design document for upcoming features — gamification, stats, challenges, and engagement mechanics.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>1. Iron Man Mode <span class="status status-live">Live</span></h2>
+
+<h3>Concept</h3>
+<p>A persistent account challenge that simulates prop firm evaluation conditions. The user commits to a funded-account-style challenge where they cannot reset, cherry-pick sessions, or quit without consequence. Designed to build discipline and replicate the psychological pressure of real capital at risk.</p>
+
+<h3>Core Rules</h3>
+<ul>
+  <li><strong>Configurable starting capital</strong> — default $10,000, user selects at challenge start ($5k / $10k / $25k / $50k)</li>
+  <li><strong>Target</strong> — reach +10% of starting capital to "pass" the challenge</li>
+  <li><strong>Drawdown limit</strong> — trailing max drawdown of 20% from peak equity (measured from starting balance). Breach = instant fail</li>
+  <li><strong>No session skipping</strong> — sessions assigned randomly (character + seed), user must complete or it counts as flat</li>
+  <li><strong>No cherry-picking</strong> — no instrument/character selection during a challenge</li>
+  <li><strong>Forfeit penalty</strong> — abandoning mid-challenge ends the run, recorded as forfeit in history</li>
+  <li><strong>Separate tracking</strong> — Iron Man stats never mix with free practice stats</li>
+  <li><strong>Multiple attempts</strong> — unlimited retries, each tracked as "Attempt #N"</li>
+</ul>
+
+<h3>Configurable Parameters</h3>
+<div class="spec-box">
+  <h4>User-Selected at Start</h4>
+  <ul>
+    <li><strong>Starting balance</strong>: $5,000 / $10,000 / $25,000 / $50,000</li>
+    <li><strong>Difficulty preset</strong> (future): Bronze (+10%, -20%), Silver (+8%, -10%), Gold (+6%, -5%)</li>
+  </ul>
+  <h4>System Constants (v1)</h4>
+  <ul>
+    <li>Target: +10% from start</li>
+    <li>Max drawdown: -20% trailing from peak (relative to start balance)</li>
+    <li>Position sizing: user-controlled but capped at reasonable % of challenge balance</li>
+  </ul>
+</div>
+
+<h3>Session Flow (when Iron Man active)</h3>
+<ol>
+  <li>User opens Simulator → system detects active Iron Man run</li>
+  <li>Character and seed assigned randomly (no user choice)</li>
+  <li>Session plays normally — all trading tools available</li>
+  <li>On session complete (all ticks played): results auto-submitted to <code>/api/ironman/session-complete</code></li>
+  <li>Balance, peak, drawdown recalculated server-side</li>
+  <li>If target or drawdown breached → challenge ends automatically</li>
+  <li>If user navigates away mid-session → counts as flat day (no trades recorded)</li>
+</ol>
+
+<h3>Completion Outcomes</h3>
+<ul>
+  <li><strong>Target Reached</strong> — "Passed" badge, best metrics recorded (days taken, win rate, max drawdown touched)</li>
+  <li><strong>Drawdown Breach</strong> — "Failed" with stats showing where it went wrong</li>
+  <li><strong>Forfeit</strong> — voluntary quit, recorded but no penalty beyond losing progress</li>
+</ul>
+
+<h3>API (Implemented)</h3>
+<div class="spec-box">
+  <p><code>GET /api/ironman/status</code> — current run or history</p>
+  <p><code>POST /api/ironman/start</code> — begin new challenge</p>
+  <p><code>POST /api/ironman/session-complete</code> — submit session results (pnl, trades, wins, character, seed)</p>
+  <p><code>POST /api/ironman/forfeit</code> — end active run</p>
+</div>
+
+<h3>TODO</h3>
+<ul>
+  <li>Wire simulator to auto-detect active Iron Man and disable character selection</li>
+  <li>Auto-submit session results on completion</li>
+  <li>Add starting balance selector to Start Challenge UI</li>
+  <li>Add difficulty tiers (Bronze/Silver/Gold)</li>
+  <li>Badge/achievement on pass</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>2. Session History & Equity Curve <span class="status status-live">Live</span></h2>
+
+<h3>Concept</h3>
+<p>Automatic journaling without manual effort. Every completed simulator session is recorded with key metrics, building a long-term performance picture. The "journal that writes itself."</p>
+
+<h3>What's Tracked (per session)</h3>
+<ul>
+  <li>Date, character/instrument, number of trades, wins, losses</li>
+  <li>Session P/L (dollar amount)</li>
+  <li>Cumulative equity curve across all sessions</li>
+</ul>
+
+<h3>Display</h3>
+<ul>
+  <li>Summary cards: total sessions, total trades, overall win rate, cumulative P/L</li>
+  <li>Equity curve: LightweightCharts area series showing running P/L</li>
+  <li>Session history table: sortable, most recent first</li>
+</ul>
+
+<h3>TODO — Server-Side Migration</h3>
+<ul>
+  <li>Currently localStorage only — need to migrate to server-side (SQLite session_history table)</li>
+  <li>API: <code>POST /api/sessions/record</code> and <code>GET /api/sessions/history</code></li>
+  <li>Sync on page load, persist across devices</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>3. Practice Streaks & Calendar Heatmap <span class="status status-live">Live</span></h2>
+
+<h3>Concept</h3>
+<p>Duolingo-style streak counter that rewards consistency. The goal is habit formation — making daily practice automatic. Combined with a GitHub-style contribution heatmap for visual satisfaction.</p>
+
+<h3>Mechanics</h3>
+<ul>
+  <li><strong>Streak counter</strong> — consecutive days with at least 1 completed session</li>
+  <li>Streak continues if today or yesterday has activity (grace for timezone drift)</li>
+  <li><strong>Calendar heatmap</strong> — 53 weeks (371 days), intensity by sessions per day</li>
+  <li>Levels: 0 (empty), 1 (light), 2 (medium), 3-4 (bright), 5+ (max)</li>
+</ul>
+
+<h3>TODO — Server-Side Migration</h3>
+<ul>
+  <li>Streak should persist server-side (currently derives from localStorage session history)</li>
+  <li>Once session history moves to DB, streak calculates from that</li>
+  <li>Consider streak freeze (1/week?) to prevent frustration — TBD</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>4. Achievements & Badges <span class="status status-concept">Concept</span></h2>
+
+<h3>Philosophy</h3>
+<p>Reward <strong>process and discipline</strong>, not outcomes. A trader who follows their plan and loses should earn more than one who revenge-trades and gets lucky. Badges are cosmetic — no gameplay advantage.</p>
+
+<h3>Proposed Badge Categories</h3>
+
+<h4>Milestone Badges</h4>
+<ul>
+  <li>"First Blood" — complete first ever session</li>
+  <li>"Ten Sessions" / "Fifty" / "Hundred" / "Thousand"</li>
+  <li>"Century Club" — 100 total trades executed</li>
+  <li>"Iron Will" — pass first Iron Man challenge</li>
+</ul>
+
+<h4>Discipline Badges</h4>
+<ul>
+  <li>"Plan the Trade" — 10 consecutive sessions where SL/TP hit (no manual close)</li>
+  <li>"Flat After a Loss" — did not re-enter within 30 seconds of a losing trade (x5)</li>
+  <li>"Three and Done" — completed 5 sessions with ≤3 trades each (no overtrading)</li>
+  <li>"Survived the Drawdown" — had 5+ consecutive losers in Iron Man, continued and recovered</li>
+</ul>
+
+<h4>Streak Badges</h4>
+<ul>
+  <li>"Week Warrior" — 7-day streak</li>
+  <li>"Month of Mastery" — 30-day streak</li>
+  <li>"Quarterly Grind" — 90-day streak</li>
+</ul>
+
+<h4>Performance Badges (outcome-based, secondary)</h4>
+<ul>
+  <li>"Green Week" — 5 consecutive profitable sessions</li>
+  <li>"Sniper" — 80%+ win rate across 10+ trades in a single session</li>
+  <li>"Risk Manager" — avg loss < avg win for 20 consecutive sessions</li>
+</ul>
+
+<h3>Display</h3>
+<ul>
+  <li>Badge shelf on Stats page (grid of earned badges, dimmed for unearned)</li>
+  <li>Tooltip on hover showing requirements + date earned</li>
+  <li>Optional: badge count shown on avatar/profile</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>5. Session Grades & Report Cards <span class="status status-concept">Concept</span></h2>
+
+<h3>Concept</h3>
+<p>After each session, auto-generate a "report card" grading execution quality — not just P/L. This teaches traders to evaluate their process independent of outcome.</p>
+
+<h3>Grading Criteria (proposed)</h3>
+<ul>
+  <li><strong>Plan Adherence (40%)</strong> — Did SL/TP hit naturally? Or was it manual close / SL moved?</li>
+  <li><strong>Risk Management (25%)</strong> — Was position sizing consistent? Was R:R ≥ 1.5:1?</li>
+  <li><strong>Overtrading Score (20%)</strong> — Number of trades vs session length. Penalize rapid re-entry after loss</li>
+  <li><strong>Patience (15%)</strong> — Time between trades. Reward waiting for setup vs. impulse entries</li>
+</ul>
+
+<h3>Grade Scale</h3>
+<ul>
+  <li>A+ (95-100) → A (90-94) → B+ (85-89) → B (80-84) → C (70-79) → D (60-69) → F (&lt;60)</li>
+  <li>Displayed as letter grade + numeric score</li>
+  <li>Trend line of grades over time on Stats page</li>
+</ul>
+
+<h3>Implementation Notes</h3>
+<ul>
+  <li>Requires tracking: time of each trade entry/exit, whether SL/TP was moved, position sizes</li>
+  <li>Server-side calculation after session submit</li>
+  <li>Optional "session notes" text field for minimal manual journaling</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>6. Challenges & Missions <span class="status status-concept">Concept</span></h2>
+
+<h3>Concept</h3>
+<p>Structured constraints that teach specific skills. Rather than "just trade," give the user a focused objective that forces deliberate practice of a specific behavior.</p>
+
+<h3>Daily Challenges (rotating)</h3>
+<ul>
+  <li>"First Pullback Only" — only trade the first pullback after ORB</li>
+  <li>"Scalper" — take 5+ trades, each held less than 2 minutes</li>
+  <li>"Sniper Session" — maximum 2 trades, both must be profitable</li>
+  <li>"Risk:Reward" — every trade must have at least 2:1 R:R setup</li>
+  <li>"The Wait" — do not enter a trade in the first 15 minutes</li>
+</ul>
+
+<h3>Weekly Targets</h3>
+<ul>
+  <li>"Consistency Week" — achieve positive P/L on 4 out of 5 sessions</li>
+  <li>"Efficiency" — average ≥2:1 R:R across all trades for the week</li>
+  <li>"Volume" — complete 10 sessions in one week</li>
+  <li>"Process Over Outcome" — earn grade B or higher on 5 sessions</li>
+</ul>
+
+<h3>Implementation Notes</h3>
+<ul>
+  <li>Challenge completion checked server-side after session submit</li>
+  <li>Completing challenges could award XP or badge progress</li>
+  <li>Challenges should be opt-in (shown on dashboard, click to activate)</li>
+  <li>Don't gate features behind challenges — they're for engagement only</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>7. Performance Analytics (Advanced Stats) <span class="status status-planned">Planned</span></h2>
+
+<h3>Metrics to Add</h3>
+<ul>
+  <li><strong>Profit Factor</strong> — gross wins / gross losses</li>
+  <li><strong>Max Drawdown</strong> — largest peak-to-trough decline</li>
+  <li><strong>Average R-Multiple</strong> — avg(pnl / risk_per_trade)</li>
+  <li><strong>Expectancy</strong> — (win% × avg_win) - (loss% × avg_loss)</li>
+  <li><strong>Best/Worst Trade</strong> — single largest win and loss</li>
+  <li><strong>Time-of-Day Performance</strong> — P/L broken down by time of entry (morning vs afternoon)</li>
+  <li><strong>Instrument Breakdown</strong> — per-character win rate and P/L</li>
+  <li><strong>Consecutive Wins/Losses</strong> — max streaks in both directions</li>
+  <li><strong>Average Hold Time</strong> — mean time between entry and exit</li>
+</ul>
+
+<h3>Visualization</h3>
+<ul>
+  <li>R-multiple distribution histogram</li>
+  <li>Win rate by instrument bar chart</li>
+  <li>Drawdown curve (separate from equity curve)</li>
+  <li>Monthly P/L bar chart</li>
+</ul>
+
+<h3>Tier Gating (future)</h3>
+<table class="tier-table">
+  <tr><th>Metric</th><th>Free</th><th>Practice</th><th>Edge</th></tr>
+  <tr><td>Basic stats (WR, P/L, trades)</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Equity curve</td><td>Last 10 sessions</td><td>Full</td><td>Full</td></tr>
+  <tr><td>Advanced metrics</td><td>—</td><td>✓</td><td>✓</td></tr>
+  <tr><td>R-multiple distribution</td><td>—</td><td>—</td><td>✓</td></tr>
+  <tr><td>Time-of-day analysis</td><td>—</td><td>—</td><td>✓</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>8. Visual Flair & Engagement Polish <span class="status status-concept">Concept</span></h2>
+
+<h3>Ideas</h3>
+<ul>
+  <li><strong>Confetti animation</strong> — on green session completion or achievement unlock</li>
+  <li><strong>Equity curve "level up"</strong> — border color changes at milestones (bronze → silver → gold)</li>
+  <li><strong>Sound effects</strong> — subtle audio on trade execution, SL/TP hit (optional, off by default)</li>
+  <li><strong>Streak fire animation</strong> — the 🔥 emoji pulses/glows at streak milestones</li>
+  <li><strong>Iron Man completion celebration</strong> — full-screen animation on passing the challenge</li>
+</ul>
+
+<h3>Principles</h3>
+<ul>
+  <li>All visual flair is optional and can be disabled</li>
+  <li>Never block the UI or interrupt trading</li>
+  <li>Keep it professional — this is a serious tool with satisfying feedback, not a mobile game</li>
+</ul>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>9. Server-Side Data Architecture <span class="status status-planned">Planned</span></h2>
+
+<h3>Migration Priority</h3>
+<p>Everything should live server-side so users can work across devices. Current localStorage-based features need migration:</p>
+<ol>
+  <li><strong>Session history</strong> → <code>session_history</code> table (user_id, date, character, trades, wins, losses, pnl, grade)</li>
+  <li><strong>Streaks</strong> → derived from session_history dates</li>
+  <li><strong>Achievements</strong> → <code>user_achievements</code> table (user_id, badge_id, earned_at)</li>
+  <li><strong>Iron Man</strong> → already server-side ✓</li>
+  <li><strong>Saved sessions</strong> → <code>saved_sessions</code> table (user_id, session_data JSON, created_at)</li>
+</ol>
+
+<h3>Schema Additions Needed</h3>
+<div class="spec-box">
+<p><code>session_history</code>: id, user_id, date, character, seed, trades, wins, losses, pnl, grade, details_json, created_at</p>
+<p><code>user_achievements</code>: id, user_id, badge_id, earned_at</p>
+<p><code>user_preferences</code>: id, user_id, key, value (for settings like sound on/off, confetti, etc.)</p>
+</div>
+
+<div class="note">
+  <strong>Design principle:</strong> The user should be able to log in from any device and immediately see their full history, streaks, Iron Man progress, and achievements. No data should live exclusively in localStorage in production.
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>10. What We're NOT Doing</h2>
+<ul>
+  <li><strong>Leaderboards / social comparison</strong> — this is about personal discipline, not competition</li>
+  <li><strong>Pay-to-win mechanics</strong> — no purchased advantages or XP boosters</li>
+  <li><strong>Lockout timers</strong> — the constraint should be psychological, not mechanical</li>
+  <li><strong>AI trade suggestions</strong> — we teach process, not predictions</li>
+  <li><strong>Copy trading</strong> — every trade decision must be the user's own</li>
+</ul>
+
+</div>
+</body>
+</html>
