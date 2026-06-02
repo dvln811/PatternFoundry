@@ -17,34 +17,37 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-he
 .wrap{max-width:960px;margin:40px auto;padding:0 24px}
 h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
 .subtitle{color:#888;font-size:.78rem;margin-bottom:28px}
+.section{margin-bottom:28px}
+.section h2{font-size:.78rem;color:#f97316;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.section .hint{font-size:.65rem;color:#555;margin-top:4px}
+.streak-row{display:flex;align-items:center;gap:16px}
+.streak-fire{font-size:1.8rem}
+.streak-num{font-size:1.6rem;font-weight:700;color:#f97316}
+.streak-label{font-size:.75rem;color:#888}
+.acct-list{max-height:140px;overflow-y:auto;border:1px solid #2a2a2a;border-radius:6px;background:#111}
+.acct-item{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a1a1a;font-size:.72rem}
+.acct-item:last-child{border-bottom:none}
+.acct-item:hover{background:#1a1a1a}
+.acct-item.active{background:#1a2a1f;border-left:3px solid #4caf82}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
 .stat-card{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:14px;text-align:center}
 .stat-val{font-size:1.3rem;font-weight:700;color:#e0e0e0}
 .stat-val.pos{color:#4caf82}.stat-val.neg{color:#e05c5c}
 .stat-label{font-size:.65rem;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
-.section{margin-bottom:28px}
-.section h2{font-size:.78rem;color:#f97316;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
-.equity-chart{background:#111;border:1px solid #2a2a2a;border-radius:6px;height:220px;display:flex;align-items:center;justify-content:center;position:relative}
-.streak-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
-.streak-fire{font-size:1.8rem}
-.streak-num{font-size:1.6rem;font-weight:700;color:#f97316}
-.streak-label{font-size:.75rem;color:#888}
-.cal-grid{display:grid;grid-template-columns:repeat(53,1fr);gap:2px}
-.cal-cell{width:100%;aspect-ratio:1;border-radius:2px;background:#1a1a1a}
-.cal-cell.l1{background:#1b3a2a}.cal-cell.l2{background:#2d6b47}.cal-cell.l3{background:#4caf82}.cal-cell.l4{background:#7cdfb0}
+.equity-chart{background:#111;border:1px solid #2a2a2a;border-radius:6px;height:180px;position:relative}
+.history-wrap{max-height:320px;overflow-y:auto;border:1px solid #2a2a2a;border-radius:6px}
 .history-table{width:100%;border-collapse:collapse;font-size:.75rem}
-.history-table th{text-align:left;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid #2a2a2a}
+.history-table th{text-align:left;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid #2a2a2a;position:sticky;top:0;background:#111}
 .history-table td{padding:8px 10px;border-bottom:1px solid #1a1a1a;color:#ccc}
 .history-table tr:hover td{background:#111}
 .tag{font-size:.6rem;padding:2px 6px;border-radius:8px;font-weight:600}
 .tag-win{background:#4caf8218;color:#4caf82}.tag-loss{background:#e05c5c18;color:#e05c5c}
 .empty-state{color:#555;font-size:.78rem;text-align:center;padding:40px}
+.cal-grid{display:grid;grid-template-columns:repeat(53,1fr);gap:2px}
+.cal-cell{width:100%;aspect-ratio:1;border-radius:2px;background:#1a1a1a}
+.cal-cell.l1{background:#1b3a2a}.cal-cell.l2{background:#2d6b47}.cal-cell.l3{background:#4caf82}.cal-cell.l4{background:#7cdfb0}
 .iron-box{background:#111;border:1px solid #2a2a2a;border-left:3px solid #f97316;border-radius:6px;padding:20px}
 .iron-box h3{color:#e0e0e0;font-size:.85rem;font-weight:700;margin-bottom:8px}
-.iron-box p{color:#888;font-size:.78rem;line-height:1.6;margin-bottom:8px}
-.iron-rules{list-style:none;padding:0}
-.iron-rules li{color:#ccc;font-size:.75rem;padding:4px 0;padding-left:16px;position:relative}
-.iron-rules li::before{content:'▸';position:absolute;left:0;color:#f97316}
 .avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
 </style>
 </head>
@@ -67,18 +70,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 <h1>Performance & Stats</h1>
 <p class="subtitle">Session history, equity curve, and practice analytics</p>
 
-<div class="stats-grid" id="stats-grid">
-  <div class="stat-card"><div class="stat-val" id="s-sessions">0</div><div class="stat-label">Sessions</div></div>
-  <div class="stat-card"><div class="stat-val" id="s-trades">0</div><div class="stat-label">Total Trades</div></div>
-  <div class="stat-card"><div class="stat-val" id="s-winrate">-</div><div class="stat-label">Win Rate</div></div>
-  <div class="stat-card"><div class="stat-val" id="s-pnl">$0</div><div class="stat-label">Cumulative P/L</div></div>
-</div>
-
-<div class="section">
-  <h2>Equity Curve</h2>
-  <div class="equity-chart"><canvas id="equity-chart"></canvas></div>
-</div>
-
+<!-- Practice Streak -->
 <div class="section">
   <h2>Practice Streak</h2>
   <div class="streak-row">
@@ -86,18 +78,54 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     <span class="streak-num" id="streak-num">0</span>
     <span class="streak-label">day streak</span>
   </div>
-  <div class="cal-grid" id="cal-grid"></div>
 </div>
 
+<!-- Account Selector -->
+<div class="section">
+  <h2>Account</h2>
+  <div class="acct-list" id="acct-list"><div style="padding:10px;color:#555;font-size:.72rem">Loading...</div></div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid" id="stats-grid">
+  <div class="stat-card"><div class="stat-val" id="s-sessions">0</div><div class="stat-label">Sessions</div></div>
+  <div class="stat-card"><div class="stat-val" id="s-trades">0</div><div class="stat-label">Total Trades</div></div>
+  <div class="stat-card"><div class="stat-val" id="s-winrate">-</div><div class="stat-label">Win Rate</div></div>
+  <div class="stat-card"><div class="stat-val" id="s-pnl">$0</div><div class="stat-label">Cumulative P/L</div></div>
+</div>
+
+<!-- Equity Curve (selected account) -->
+<div class="section">
+  <h2>Equity Curve — <span id="eq-title">Selected Account</span></h2>
+  <div class="equity-chart"><canvas id="equity-chart"></canvas></div>
+</div>
+
+<!-- Aggregated Equity Curve -->
+<div class="section">
+  <h2>Equity Curve — All Accounts (Aggregated)</h2>
+  <div class="equity-chart"><canvas id="equity-chart-agg"></canvas></div>
+</div>
+
+<!-- Session History -->
 <div class="section">
   <h2>Session History</h2>
-  <table class="history-table" id="history-table">
-    <thead><tr><th>Date</th><th>Character</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Result</th></tr></thead>
-    <tbody id="history-body"></tbody>
-  </table>
+  <div class="history-wrap">
+    <table class="history-table" id="history-table">
+      <thead><tr><th>Date</th><th>Character</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Result</th></tr></thead>
+      <tbody id="history-body"></tbody>
+    </table>
+  </div>
   <div class="empty-state" id="no-history">No sessions recorded yet. Complete a simulator session to start tracking.</div>
 </div>
 
+<!-- Calendar Heatmap -->
+<div class="section">
+  <h2>Practice Activity</h2>
+  <p class="hint" style="margin-bottom:8px">Your practice consistency over the last year. Each cell is one day — darker green = more sessions that day.</p>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<!-- Iron Man -->
 <div class="section">
   <h2>Iron Man Mode</h2>
   <div class="iron-box" id="iron-panel">
@@ -109,16 +137,72 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-async function loadHistory() {
-  try { const r = await fetch('/api/sessions', {credentials:'include'}); return await r.json(); } catch(e) { return []; }
+let allSessions = [];
+let selectedAccountId = null;
+let equityChartInstance = null;
+let aggChartInstance = null;
+
+async function init() {
+  // Load all sessions + accounts
+  const [sessRes, acctRes, archivedRes] = await Promise.all([
+    fetch('/api/sessions', {credentials:'include'}),
+    fetch('/api/account', {credentials:'include'}),
+    fetch('/api/account/archived', {credentials:'include'}),
+  ]);
+  allSessions = await sessRes.json();
+  const activeAcct = await acctRes.json();
+  const archived = await archivedRes.json();
+
+  // Build account list
+  const accounts = [];
+  accounts.push({ id: activeAcct.id, label: 'Current', balance: activeAcct.balance, starting: activeAcct.starting_balance, status: 'active', date: activeAcct.created_at });
+  archived.forEach(a => {
+    const pnl = a.balance - a.starting_balance;
+    accounts.push({ id: a.id, label: `$${a.starting_balance.toLocaleString()} → $${a.balance.toLocaleString()}`, balance: a.balance, starting: a.starting_balance, status: 'archived', date: a.archived_at });
+  });
+
+  renderAccountList(accounts);
+  selectedAccountId = activeAcct.id;
+  highlightAccount(selectedAccountId);
+  renderForAccount(selectedAccountId);
+  renderAggregated();
+  renderStreak(allSessions);
+  renderIronMan();
 }
 
-async function renderStats() {
-  const history = await loadHistory();
-  const totalSessions = history.length;
-  const totalTrades = history.reduce((s, h) => s + (h.trades || 0), 0);
-  const totalWins = history.reduce((s, h) => s + (h.wins || 0), 0);
-  const totalPnl = history.reduce((s, h) => s + (h.pnl || 0), 0);
+function renderAccountList(accounts) {
+  const el = document.getElementById('acct-list');
+  el.innerHTML = accounts.map(a => {
+    const pnl = a.balance - a.starting;
+    const color = pnl >= 0 ? '#4caf82' : '#e05c5c';
+    const statusTag = a.status === 'active' ? '<span style="color:#4caf82;font-size:.6rem;font-weight:600">ACTIVE</span>' : '<span style="color:#555;font-size:.6rem">archived</span>';
+    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})">
+      <span style="color:#ccc">${a.label}</span>
+      <span style="color:${color}">${pnl>=0?'+':''}$${pnl.toFixed(2)}</span>
+      ${statusTag}
+    </div>`;
+  }).join('');
+}
+
+function highlightAccount(id) {
+  document.querySelectorAll('.acct-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.id) === id));
+}
+
+async function selectAccount(id) {
+  selectedAccountId = id;
+  highlightAccount(id);
+  renderForAccount(id);
+}
+
+async function renderForAccount(accountId) {
+  const res = await fetch('/api/sessions?account_id=' + accountId, {credentials:'include'});
+  const sessions = await res.json();
+
+  // Stats cards
+  const totalSessions = sessions.length;
+  const totalTrades = sessions.reduce((s, h) => s + (h.trades || 0), 0);
+  const totalWins = sessions.reduce((s, h) => s + (h.wins || 0), 0);
+  const totalPnl = sessions.reduce((s, h) => s + (h.pnl || 0), 0);
   const wr = totalTrades > 0 ? ((totalWins / totalTrades) * 100).toFixed(1) + '%' : '-';
 
   document.getElementById('s-sessions').textContent = totalSessions;
@@ -128,55 +212,62 @@ async function renderStats() {
   pnlEl.textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(2);
   pnlEl.className = 'stat-val ' + (totalPnl >= 0 ? 'pos' : 'neg');
 
-  // Equity curve
-  if (history.length > 0) {
-    const ctx = document.getElementById('equity-chart').getContext('2d');
-    let running = 0;
-    const curve = history.map(h => { running += (h.pnl || 0); return running; });
-    const color = running >= 0 ? '#4caf82' : '#e05c5c';
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: curve.map((_, i) => i + 1),
-        datasets: [{
-          data: curve,
-          borderColor: color,
-          borderWidth: 1.5,
-          pointRadius: 0,
-          fill: true,
-          backgroundColor: color + '18',
-          tension: 0.2,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 300 },
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: c => ' $' + c.parsed.y.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } }
-        },
-        scales: {
-          x: { ticks: { color: '#bbb', maxTicksLimit: 10 }, grid: { color: '#1a1a1a' } },
-          y: { ticks: { color: '#bbb', callback: v => '$' + v.toLocaleString() }, grid: { color: '#1a1a1a' } }
-        }
-      }
-    });
-  }
+  // Equity curve for selected account
+  document.getElementById('eq-title').textContent = 'Selected Account';
+  renderEquityCurve('equity-chart', sessions, 'equityChartInstance');
 
-  // Session history table
+  // Session history
   const tbody = document.getElementById('history-body');
   const noHist = document.getElementById('no-history');
-  if (history.length === 0) { noHist.style.display = 'block'; return; }
+  if (sessions.length === 0) { noHist.style.display = 'block'; tbody.innerHTML = ''; return; }
   noHist.style.display = 'none';
-  tbody.innerHTML = history.slice().reverse().map(h => {
+  tbody.innerHTML = sessions.slice().reverse().map(h => {
     const wr = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
     const pnl = (h.pnl >= 0 ? '+$' : '-$') + Math.abs(h.pnl || 0).toFixed(2);
     const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
     return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl}</td><td>${tag}</td></tr>`;
   }).join('');
+}
 
-  renderStreak(history);
+function renderAggregated() {
+  renderEquityCurve('equity-chart-agg', allSessions, 'aggChartInstance');
+}
+
+function renderEquityCurve(canvasId, sessions, instanceKey) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  if (window[instanceKey]) window[instanceKey].destroy();
+  if (sessions.length === 0) { window[instanceKey] = null; return; }
+  let running = 0;
+  const curve = sessions.map(h => { running += (h.pnl || 0); return running; });
+  const color = running >= 0 ? '#4caf82' : '#e05c5c';
+  window[instanceKey] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: curve.map((_, i) => i + 1),
+      datasets: [{
+        data: curve,
+        borderColor: color,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: true,
+        backgroundColor: color + '18',
+        tension: 0.2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ' $' + c.parsed.y.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { ticks: { color: '#bbb', maxTicksLimit: 10 }, grid: { color: '#1a1a1a' } },
+        y: { ticks: { color: '#bbb', callback: v => '$' + v.toLocaleString() }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
 }
 
 function renderStreak(history) {
@@ -185,16 +276,11 @@ function renderStreak(history) {
   const today = new Date();
   let check = new Date(today);
   const todayStr = check.toISOString().slice(0, 10);
-  if (!dates.has(todayStr)) {
-    check.setDate(check.getDate() - 1);
-  }
-  while (dates.has(check.toISOString().slice(0, 10))) {
-    streak++;
-    check.setDate(check.getDate() - 1);
-  }
+  if (!dates.has(todayStr)) check.setDate(check.getDate() - 1);
+  while (dates.has(check.toISOString().slice(0, 10))) { streak++; check.setDate(check.getDate() - 1); }
   document.getElementById('streak-num').textContent = streak;
 
-  // Calendar heatmap (last 53 weeks = 371 days)
+  // Calendar heatmap
   const grid = document.getElementById('cal-grid');
   grid.innerHTML = '';
   const counts = {};
@@ -215,19 +301,14 @@ function renderStreak(history) {
   }
 }
 
-renderStats();
-
 // ── Iron Man Mode ────────────────────────────────────────────────────────────
 async function renderIronMan() {
   const panel = document.getElementById('iron-panel');
   try {
-    const res = await fetch('/api/ironman/status', {credentials: 'include'});
+    const res = await fetch('/api/ironman/status', {credentials:'include'});
     const data = await res.json();
-    if (data.active) {
-      renderActiveRun(data.run, data.sessions);
-    } else {
-      renderInactive(data.history || []);
-    }
+    if (data.active) renderActiveRun(data.run, data.sessions);
+    else renderInactive(data.history || []);
   } catch(e) {
     panel.innerHTML = '<p style="color:#e05c5c;font-size:.75rem">Failed to load Iron Man status.</p>';
   }
@@ -240,7 +321,6 @@ function renderActiveRun(run, sessions) {
   const ddPct = (((run.peak_balance - run.balance) / run.start_balance) * 100).toFixed(2);
   const targetBal = run.start_balance * (1 + run.target_pct / 100);
   const progress = Math.max(0, Math.min(100, ((run.balance - run.start_balance) / (targetBal - run.start_balance)) * 100));
-
   let html = `<h3>🦾 Iron Man Challenge — Attempt #${run.attempt}</h3>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0">
       <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:${pnl>=0?'#4caf82':'#e05c5c'}">$${run.balance.toFixed(0)}</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Balance</div></div>
@@ -253,7 +333,6 @@ function renderActiveRun(run, sessions) {
       <div style="background:#1a1a1a;border-radius:3px;height:8px;overflow:hidden"><div style="height:100%;width:${Math.max(0,progress)}%;background:linear-gradient(90deg,#4caf82,#7cdfb0);border-radius:3px;transition:width .3s"></div></div>
       <div style="font-size:.55rem;color:#555;margin-top:2px">Drawdown limit: ${run.drawdown_limit_pct}% from peak</div>
     </div>`;
-
   if (sessions.length > 0) {
     html += `<div style="margin-top:12px;max-height:160px;overflow-y:auto"><table style="width:100%;font-size:.7rem;border-collapse:collapse">
       <tr style="color:#888"><th style="text-align:left;padding:4px">Day</th><th style="text-align:left;padding:4px">Character</th><th style="text-align:right;padding:4px">Trades</th><th style="text-align:right;padding:4px">P/L</th><th style="text-align:right;padding:4px">Balance</th></tr>`;
@@ -263,7 +342,6 @@ function renderActiveRun(run, sessions) {
     });
     html += '</table></div>';
   }
-
   html += `<div style="margin-top:14px"><button onclick="forfeitIronMan()" style="background:#2a2a2a;border:1px solid #e05c5c;color:#e05c5c;padding:6px 14px;border-radius:4px;font-size:.7rem;font-weight:600;cursor:pointer">Forfeit Run</button></div>`;
   panel.innerHTML = html;
 }
@@ -273,7 +351,6 @@ function renderInactive(history) {
   let html = `<h3>🦾 Iron Man Challenge</h3>
     <p style="color:#ccc;font-size:.78rem;margin:10px 0">A persistent account challenge. $10,000 starting capital, +10% target, -20% drawdown limit. No cherry-picking — sessions assigned randomly. Forfeit resets your run.</p>
     <button onclick="startIronMan()" style="background:#f97316;border:none;color:#fff;padding:8px 20px;border-radius:5px;font-size:.78rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.03em">Start Challenge</button>`;
-
   if (history.length > 0) {
     html += `<div style="margin-top:16px"><h4 style="font-size:.7rem;color:#888;text-transform:uppercase;margin-bottom:8px">Past Attempts</h4>
       <table style="width:100%;font-size:.7rem;border-collapse:collapse">
@@ -302,7 +379,7 @@ async function forfeitIronMan() {
   renderIronMan();
 }
 
-renderIronMan();
+init();
 </script>
 </body>
 </html>

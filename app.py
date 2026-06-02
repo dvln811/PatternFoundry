@@ -418,8 +418,10 @@ def api_save_session():
     if not uid:
         return jsonify({'error': 'unauthorized'}), 401
     data = request.get_json(force=True)
+    acct = get_active_account(uid)
+    acct_id = acct['id'] if acct else None
     save_session(uid, data.get('date', ''), data.get('character', ''),
-                 int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)))
+                 int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)), acct_id)
     return jsonify({'saved': True})
 
 
@@ -428,6 +430,9 @@ def api_get_sessions():
     uid = _get_user_id()
     if not uid:
         return jsonify({'error': 'unauthorized'}), 401
+    account_id = request.args.get('account_id')
+    if account_id:
+        return jsonify(get_account_sessions(int(account_id)))
     return jsonify(get_sessions(uid))
 
 
