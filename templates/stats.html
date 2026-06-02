@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry - Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.wrap{max-width:960px;margin:40px auto;padding:0 24px}
+h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.subtitle{color:#888;font-size:.78rem;margin-bottom:28px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:14px;text-align:center}
+.stat-val{font-size:1.3rem;font-weight:700;color:#e0e0e0}
+.stat-val.pos{color:#4caf82}.stat-val.neg{color:#e05c5c}
+.stat-label{font-size:.65rem;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+.section{margin-bottom:28px}
+.section h2{font-size:.78rem;color:#f97316;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #1a1a1a}
+.equity-chart{background:#111;border:1px solid #2a2a2a;border-radius:6px;height:220px;display:flex;align-items:center;justify-content:center;position:relative}
+.streak-row{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.streak-fire{font-size:1.8rem}
+.streak-num{font-size:1.6rem;font-weight:700;color:#f97316}
+.streak-label{font-size:.75rem;color:#888}
+.cal-grid{display:grid;grid-template-columns:repeat(53,1fr);gap:2px}
+.cal-cell{width:100%;aspect-ratio:1;border-radius:2px;background:#1a1a1a}
+.cal-cell.l1{background:#1b3a2a}.cal-cell.l2{background:#2d6b47}.cal-cell.l3{background:#4caf82}.cal-cell.l4{background:#7cdfb0}
+.history-table{width:100%;border-collapse:collapse;font-size:.75rem}
+.history-table th{text-align:left;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid #2a2a2a}
+.history-table td{padding:8px 10px;border-bottom:1px solid #1a1a1a;color:#ccc}
+.history-table tr:hover td{background:#111}
+.tag{font-size:.6rem;padding:2px 6px;border-radius:8px;font-weight:600}
+.tag-win{background:#4caf8218;color:#4caf82}.tag-loss{background:#e05c5c18;color:#e05c5c}
+.empty-state{color:#555;font-size:.78rem;text-align:center;padding:40px}
+.iron-box{background:#111;border:1px solid #2a2a2a;border-left:3px solid #f97316;border-radius:6px;padding:20px}
+.iron-box h3{color:#e0e0e0;font-size:.85rem;font-weight:700;margin-bottom:8px}
+.iron-box p{color:#888;font-size:.78rem;line-height:1.6;margin-bottom:8px}
+.iron-rules{list-style:none;padding:0}
+.iron-rules li{color:#ccc;font-size:.75rem;padding:4px 0;padding-left:16px;position:relative}
+.iron-rules li::before{content:'▸';position:absolute;left:0;color:#f97316}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats" class="active">Stats</a>
+    <a href="/admin">Admin</a>
+  </nav>
+</header>
+<div class="wrap">
+<h1>Performance & Stats</h1>
+<p class="subtitle">Session history, equity curve, and practice analytics</p>
+
+<div class="stats-grid" id="stats-grid">
+  <div class="stat-card"><div class="stat-val" id="s-sessions">0</div><div class="stat-label">Sessions</div></div>
+  <div class="stat-card"><div class="stat-val" id="s-trades">0</div><div class="stat-label">Total Trades</div></div>
+  <div class="stat-card"><div class="stat-val" id="s-winrate">-</div><div class="stat-label">Win Rate</div></div>
+  <div class="stat-card"><div class="stat-val" id="s-pnl">$0</div><div class="stat-label">Cumulative P/L</div></div>
+</div>
+
+<div class="section">
+  <h2>Equity Curve</h2>
+  <div class="equity-chart" id="equity-chart"></div>
+</div>
+
+<div class="section">
+  <h2>Practice Streak</h2>
+  <div class="streak-row">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-num" id="streak-num">0</span>
+    <span class="streak-label">day streak</span>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<div class="section">
+  <h2>Session History</h2>
+  <table class="history-table" id="history-table">
+    <thead><tr><th>Date</th><th>Character</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Result</th></tr></thead>
+    <tbody id="history-body"></tbody>
+  </table>
+  <div class="empty-state" id="no-history">No sessions recorded yet. Complete a simulator session to start tracking.</div>
+</div>
+
+<div class="section">
+  <h2>Iron Man Mode</h2>
+  <div class="iron-box">
+    <h3>🦾 Iron Man Challenge</h3>
+    <p>A persistent account challenge designed to build discipline. No resets, no do-overs — just like a real funded account.</p>
+    <ul class="iron-rules">
+      <li><strong>Fixed starting capital</strong> — $10,000 simulated account</li>
+      <li><strong>No session skipping</strong> — you must finish each session (or it counts as a flat day)</li>
+      <li><strong>No cherry-picking</strong> — sessions are assigned randomly, not chosen</li>
+      <li><strong>Quitting forfeits the run</strong> — if you abandon mid-challenge, stats reset</li>
+      <li><strong>Drawdown limit</strong> — breach -20% and the challenge ends (like a prop firm eval)</li>
+      <li><strong>Target</strong> — reach +10% ($11,000) to "pass" the challenge</li>
+      <li><strong>Tracks separately</strong> — Iron Man stats don't mix with free practice stats</li>
+    </ul>
+    <p style="margin-top:12px;color:#555;font-size:.7rem">Status: <strong>Concept</strong> — not yet implemented. This is the design direction.</p>
+  </div>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+const LS_KEY = 'pf_session_history';
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e) { return []; }
+}
+
+function renderStats() {
+  const history = loadHistory();
+  const totalSessions = history.length;
+  const totalTrades = history.reduce((s, h) => s + (h.trades || 0), 0);
+  const totalWins = history.reduce((s, h) => s + (h.wins || 0), 0);
+  const totalPnl = history.reduce((s, h) => s + (h.pnl || 0), 0);
+  const wr = totalTrades > 0 ? ((totalWins / totalTrades) * 100).toFixed(1) + '%' : '-';
+
+  document.getElementById('s-sessions').textContent = totalSessions;
+  document.getElementById('s-trades').textContent = totalTrades;
+  document.getElementById('s-winrate').textContent = wr;
+  const pnlEl = document.getElementById('s-pnl');
+  pnlEl.textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(2);
+  pnlEl.className = 'stat-val ' + (totalPnl >= 0 ? 'pos' : 'neg');
+
+  // Equity curve
+  if (history.length > 0) {
+    const container = document.getElementById('equity-chart');
+    container.innerHTML = '';
+    const chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth, height: 220,
+      layout: { background: { color: '#111' }, textColor: '#888' },
+      grid: { vertLines: { color: '#1a1a1a' }, horzLines: { color: '#1a1a1a' } },
+      rightPriceScale: { borderColor: '#2a2a2a' },
+      timeScale: { borderColor: '#2a2a2a' },
+    });
+    let running = 0;
+    const eqData = history.map((h, i) => {
+      running += (h.pnl || 0);
+      return { time: h.date || `2026-01-${String(i+1).padStart(2,'0')}`, value: running };
+    });
+    const line = chart.addAreaSeries({
+      lineColor: running >= 0 ? '#4caf82' : '#e05c5c',
+      topColor: running >= 0 ? '#4caf8233' : '#e05c5c33',
+      bottomColor: 'transparent', lineWidth: 2,
+    });
+    line.setData(eqData);
+    chart.timeScale().fitContent();
+  }
+
+  // Session history table
+  const tbody = document.getElementById('history-body');
+  const noHist = document.getElementById('no-history');
+  if (history.length === 0) { noHist.style.display = 'block'; return; }
+  noHist.style.display = 'none';
+  tbody.innerHTML = history.slice().reverse().map(h => {
+    const wr = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
+    const pnl = (h.pnl >= 0 ? '+$' : '-$') + Math.abs(h.pnl || 0).toFixed(2);
+    const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
+    return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl}</td><td>${tag}</td></tr>`;
+  }).join('');
+}
+
+// Practice streak + calendar heatmap
+function renderStreak() {
+  const history = loadHistory();
+  const dates = new Set(history.map(h => h.date));
+  // Calculate streak (consecutive days ending today or yesterday)
+  let streak = 0;
+  const today = new Date();
+  let check = new Date(today);
+  // Allow today or yesterday as the streak start
+  const todayStr = check.toISOString().slice(0, 10);
+  if (!dates.has(todayStr)) {
+    check.setDate(check.getDate() - 1);
+  }
+  while (dates.has(check.toISOString().slice(0, 10))) {
+    streak++;
+    check.setDate(check.getDate() - 1);
+  }
+  document.getElementById('streak-num').textContent = streak;
+
+  // Calendar heatmap (last 53 weeks = 371 days)
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  // Count sessions per day
+  const counts = {};
+  history.forEach(h => { counts[h.date] = (counts[h.date] || 0) + 1; });
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 370);
+  // Align to Sunday
+  startDate.setDate(startDate.getDate() - startDate.getDay());
+  for (let i = 0; i < 371; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    const c = counts[key] || 0;
+    const lvl = c === 0 ? '' : c === 1 ? 'l1' : c === 2 ? 'l2' : c <= 4 ? 'l3' : 'l4';
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell ' + lvl;
+    cell.title = key + ': ' + c + ' session' + (c !== 1 ? 's' : '');
+    grid.appendChild(cell);
+  }
+}
+
+renderStats();
+renderStreak();
+</script>
+</body>
+</html>

@@ -86,6 +86,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
     <a href="/">Dashboard</a>
     <a href="/simulator">Simulator</a>
     <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
     <a href="/docs">Docs</a>
     <a href="/admin" class="active">Admin</a>
   {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
@@ -128,6 +129,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 <script>
 const COLS=['Backlog','In Progress','Review','Done'];
 const LS_KEY='pf_board';
+const _IS_FLY = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -140,7 +142,10 @@ function defaultData(){return{
   ],'In Progress':[],'Review':[],'Done':[]}}
 
 function load(){try{const d=JSON.parse(localStorage.getItem(LS_KEY));if(d&&d['Backlog']!==undefined)return d}catch(e){}return defaultData()}
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(data))}
+function save(){
+  localStorage.setItem(LS_KEY,JSON.stringify(data));
+  if(_IS_FLY) fetch('/api/board/save',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(data)}).catch(()=>{});
+}
 
 let data=load();
 let dragSrc=null;
@@ -253,7 +258,6 @@ document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.targe
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalRef)closeModal()});
 document.getElementById('m-new-comment').addEventListener('keydown',e=>{if(e.key==='Enter')addComment()});
 
-const _IS_FLY = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 const REMOTE = _IS_FLY ? '' : 'https://patternfoundry.net';
 const BOARD_KEY = '{{ board_api_key or "" }}';
 

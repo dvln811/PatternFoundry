@@ -13,7 +13,7 @@ if [ -n "$PIDS" ]; then
 fi
 
 # Spawn detached
-nohup "$PYTHON" "$PROJ/app.py" > "$PROJ/flask.log" 2>&1 &
+BOARD_API_KEY="M_rnFxusEXFytMlA-ovFL-_vp3WTiteZ-MynS1XTImE" nohup "$PYTHON" "$PROJ/app.py" > "$PROJ/flask.log" 2>&1 &
 SERVER_PID=$!
 disown "$SERVER_PID"
 

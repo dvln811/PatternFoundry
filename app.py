@@ -272,6 +272,10 @@ def marketing():
         return redirect('/')
     return render_template('marketing.html')
 
+@app.route('/stats')
+def stats():
+    return render_template('stats.html')
+
 
 def _build_spec_from_payload(data):
     return CharacterSpec(

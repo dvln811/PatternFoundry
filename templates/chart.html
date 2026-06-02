@@ -259,6 +259,7 @@
       <a href="/">Dashboard</a>
       <a href="/simulator" class="active">Simulator</a>
       <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
       <a href="/docs">Docs</a>
       {% if is_admin %}<a href="/admin">Admin</a>{% endif %}
     {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
@@ -885,6 +886,7 @@ function stepTick() {
     stopPlay();
     document.getElementById('pb-info').textContent = 'Session complete';
     if (position) closePosition();
+    saveSessionToHistory();
     return;
   }
   processTick(allTicks[tickIdx++]);
@@ -1214,6 +1216,24 @@ function closeTrade(exitPrice, reason) {
   document.getElementById('btn-close').classList.add('hidden');
   updatePosition(); updateAccount();
   addLogRow(account.trades[account.trades.length - 1]);
+}
+
+// ── Session history persistence ──────────────────────────────────────────
+function saveSessionToHistory() {
+  if (account.trades.length === 0) return; // no trades = nothing to record
+  const entry = {
+    date: new Date().toISOString().slice(0, 10),
+    character: document.getElementById('sim-instrument').value || 'Unknown',
+    trades: account.trades.length,
+    wins: account.wins,
+    losses: account.losses,
+    pnl: Math.round(account.sessionPnl * 100) / 100,
+  };
+  const key = 'pf_session_history';
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+  history.push(entry);
+  localStorage.setItem(key, JSON.stringify(history));
 }
 
 // ── Live SL/TP drag ──────────────────────────────────────────────────────
