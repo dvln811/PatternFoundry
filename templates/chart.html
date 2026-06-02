@@ -808,6 +808,7 @@ async function loadSession() {
     sessionPnl: 0, trades: [], wins: 0, losses: 0,
   };
   sessionClosed = false;
+  document.getElementById('pb-play').disabled = false;
   position = null; pendingOrder = null;
   entryLine = slLine = tpLine = pendingLine = null;
   updateAccount(); updatePosition();
@@ -930,7 +931,7 @@ function resetChartView() {
   chart.priceScale('right').applyOptions({ autoScale: true });
 }
 
-function togglePlay() { isPlaying ? stopPlay() : startPlay(); }
+function togglePlay() { if (sessionClosed) return; isPlaying ? stopPlay() : startPlay(); }
 
 function startPlay() {
   const sessionStart = window._sessionStart || 0;
@@ -1251,7 +1252,7 @@ function closeSession() {
   saveSessionToHistory();
   document.getElementById('pb-info').textContent = 'Session closed ✓';
   document.getElementById('btn-close-session').style.display = 'none';
-  // Disable further trading
+  document.getElementById('pb-play').disabled = true;
   document.getElementById('btn-long').disabled = true;
   document.getElementById('btn-short').disabled = true;
 }
