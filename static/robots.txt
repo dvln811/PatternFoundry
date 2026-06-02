@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /board
+Disallow: /marketing
+Disallow: /feature-ideas
+Disallow: /simulator
+Disallow: /chartdesigner
+Disallow: /stats
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+
+Sitemap: https://patternfoundry.net/sitemap.xml

@@ -5,7 +5,7 @@ import json
 import secrets
 import pandas as pd
 from datetime import date, datetime
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 import data_generator as dg
@@ -202,6 +202,16 @@ def simulator():
 @app.route('/landing')
 def landing_preview():
     return render_template('landing.html')
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt')
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml')
+
 
 @app.route('/docs')
 def docs():
