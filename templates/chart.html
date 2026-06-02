@@ -1365,10 +1365,11 @@ function updatePosition() {
     const riskPts = Math.abs(entry - sl);
     const riskDollars = riskPts * tpp * tickValue * qty;
     const rr = riskPts > 0 ? (Math.abs(tp - entry) / riskPts).toFixed(1) : '?';
+    const riskPct = account.balance > 0 ? (riskDollars / account.balance * 100).toFixed(1) : '0.0';
     box.innerHTML = `<div style="font-weight:600;color:#f0c040;margin-bottom:4px">PENDING ${dir.toUpperCase()} ${qty} @ ${entry.toFixed(2)}</div>`
       + `<div class="acct-row"><span class="acct-label">SL</span><span style="color:#e05c5c">${sl.toFixed(2)}</span></div>`
       + `<div class="acct-row"><span class="acct-label">TP</span><span style="color:#4caf82">${tp.toFixed(2)}</span></div>`
-      + `<div class="acct-row"><span class="acct-label">Risk</span><span style="color:#e05c5c">$${riskDollars.toFixed(2)}</span></div>`
+      + `<div class="acct-row"><span class="acct-label">Risk</span><span style="color:#e05c5c">$${riskDollars.toFixed(2)} (${riskPct}%)</span></div>`
       + `<div class="acct-row"><span class="acct-label">R:R</span><span>${rr}</span></div>`;
     return;
   }
@@ -1380,12 +1381,13 @@ function updatePosition() {
   const pc = pnl >= 0 ? '#4caf82' : '#e05c5c';
   const riskPts = Math.abs(entry - sl);
   const riskDollars = riskPts * tpp * tickValue * qty;
+  const riskPct = account.balance > 0 ? (riskDollars / account.balance * 100).toFixed(1) : '0.0';
   const rr = riskPts > 0 ? (Math.abs(tp - entry) / riskPts).toFixed(1) : '-';
   box.innerHTML = `<div style="font-weight:600;color:${dir === 'long' ? '#4caf82' : '#e05c5c'};margin-bottom:4px">${dir.toUpperCase()} ${qty} @ ${entry.toFixed(2)}</div>`
     + `<div class="acct-row"><span class="acct-label">P/L</span><span style="color:${pc};font-weight:600">${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}</span></div>`
     + `<div class="acct-row"><span class="acct-label">SL</span><span style="color:#e05c5c">${sl.toFixed(2)}</span></div>`
     + `<div class="acct-row"><span class="acct-label">TP</span><span style="color:#4caf82">${tp.toFixed(2)}</span></div>`
-    + `<div class="acct-row"><span class="acct-label">Risk</span><span style="color:#e05c5c">$${riskDollars.toFixed(2)}</span></div>`
+    + `<div class="acct-row"><span class="acct-label">Risk</span><span style="color:#e05c5c">$${riskDollars.toFixed(2)} (${riskPct}%)</span></div>`
     + `<div class="acct-row"><span class="acct-label">R:R</span><span>${rr}</span></div>`;
 }
 
