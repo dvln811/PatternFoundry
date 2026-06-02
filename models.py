@@ -29,6 +29,36 @@ def init_db():
         last_login_at TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS ironman_runs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        attempt INTEGER DEFAULT 1,
+        status TEXT DEFAULT 'active',
+        start_balance REAL DEFAULT 10000,
+        balance REAL DEFAULT 10000,
+        peak_balance REAL DEFAULT 10000,
+        target_pct REAL DEFAULT 10.0,
+        drawdown_limit_pct REAL DEFAULT 20.0,
+        day_count INTEGER DEFAULT 0,
+        started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        ended_at TEXT,
+        end_reason TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS ironman_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        day_num INTEGER NOT NULL,
+        character TEXT,
+        seed TEXT,
+        trades INTEGER DEFAULT 0,
+        wins INTEGER DEFAULT 0,
+        losses INTEGER DEFAULT 0,
+        pnl REAL DEFAULT 0,
+        balance_after REAL,
+        completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(run_id) REFERENCES ironman_runs(id)
+    )''')
     conn.commit()
     conn.close()
 

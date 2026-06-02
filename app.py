@@ -13,7 +13,7 @@ from generators import (CHARACTERS, CharacterSpec, RegimeSpec, DriftSpec,
                         VolatilitySpec, WickSpec, VolumeSpec, GapSpec, EventSpec,
                         generate_v2, apply_session_structure,
                         extract_gap_cfg, disable_internal_gaps)
-from models import User, init_db
+from models import User, init_db, _get_db
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('PF_SECRET', secrets.token_hex(32))
@@ -275,6 +275,133 @@ def marketing():
 @app.route('/stats')
 def stats():
     return render_template('stats.html')
+
+
+# ── Iron Man Mode API ─────────────────────────────────────────────────────────
+
+def _get_user_id():
+    if _IS_LOCAL:
+        return 1
+    return current_user.id if current_user.is_authenticated else None
+
+@app.route('/api/ironman/status')
+def ironman_status():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = _get_db()
+    run = conn.execute(
+        'SELECT * FROM ironman_runs WHERE user_id=? AND status="active" ORDER BY id DESC LIMIT 1',
+        (uid,)).fetchone()
+    if not run:
+        # Return history of past runs
+        past = conn.execute(
+            'SELECT * FROM ironman_runs WHERE user_id=? ORDER BY id DESC LIMIT 20', (uid,)).fetchall()
+        conn.close()
+        return jsonify({'active': False, 'history': [dict(r) for r in past]})
+    sessions = conn.execute(
+        'SELECT * FROM ironman_sessions WHERE run_id=? ORDER BY day_num', (run['id'],)).fetchall()
+    conn.close()
+    return jsonify({
+        'active': True,
+        'run': dict(run),
+        'sessions': [dict(s) for s in sessions],
+    })
+
+@app.route('/api/ironman/start', methods=['POST'])
+def ironman_start():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = _get_db()
+    # Check no active run
+    active = conn.execute(
+        'SELECT id FROM ironman_runs WHERE user_id=? AND status="active"', (uid,)).fetchone()
+    if active:
+        conn.close()
+        return jsonify({'error': 'already_active'}), 409
+    # Determine attempt number
+    count = conn.execute(
+        'SELECT COUNT(*) FROM ironman_runs WHERE user_id=?', (uid,)).fetchone()[0]
+    conn.execute(
+        'INSERT INTO ironman_runs (user_id, attempt) VALUES (?, ?)',
+        (uid, count + 1))
+    conn.commit()
+    run = conn.execute(
+        'SELECT * FROM ironman_runs WHERE user_id=? AND status="active" ORDER BY id DESC LIMIT 1',
+        (uid,)).fetchone()
+    conn.close()
+    return jsonify({'started': True, 'run': dict(run)})
+
+@app.route('/api/ironman/session-complete', methods=['POST'])
+def ironman_session_complete():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = _get_db()
+    run = conn.execute(
+        'SELECT * FROM ironman_runs WHERE user_id=? AND status="active" ORDER BY id DESC LIMIT 1',
+        (uid,)).fetchone()
+    if not run:
+        conn.close()
+        return jsonify({'error': 'no_active_run'}), 404
+    data = request.get_json()
+    pnl = float(data.get('pnl', 0))
+    new_balance = run['balance'] + pnl
+    new_peak = max(run['peak_balance'], new_balance)
+    day_num = run['day_count'] + 1
+
+    conn.execute(
+        'INSERT INTO ironman_sessions (run_id, day_num, character, seed, trades, wins, losses, pnl, balance_after) VALUES (?,?,?,?,?,?,?,?,?)',
+        (run['id'], day_num, data.get('character'), data.get('seed'),
+         int(data.get('trades', 0)), int(data.get('wins', 0)), int(data.get('losses', 0)),
+         pnl, new_balance))
+    conn.execute(
+        'UPDATE ironman_runs SET balance=?, peak_balance=?, day_count=? WHERE id=?',
+        (new_balance, new_peak, day_num, run['id']))
+
+    # Check drawdown breach
+    drawdown_pct = ((new_peak - new_balance) / run['start_balance']) * 100
+    target_balance = run['start_balance'] * (1 + run['target_pct'] / 100)
+    end_reason = None
+
+    if drawdown_pct >= run['drawdown_limit_pct']:
+        end_reason = 'drawdown_breach'
+    elif new_balance >= target_balance:
+        end_reason = 'target_reached'
+
+    if end_reason:
+        conn.execute(
+            'UPDATE ironman_runs SET status="completed", ended_at=CURRENT_TIMESTAMP, end_reason=? WHERE id=?',
+            (end_reason, run['id']))
+
+    conn.commit()
+    conn.close()
+    return jsonify({
+        'balance': new_balance,
+        'peak': new_peak,
+        'day': day_num,
+        'drawdown_pct': round(drawdown_pct, 2),
+        'ended': end_reason,
+    })
+
+@app.route('/api/ironman/forfeit', methods=['POST'])
+def ironman_forfeit():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = _get_db()
+    run = conn.execute(
+        'SELECT id FROM ironman_runs WHERE user_id=? AND status="active"', (uid,)).fetchone()
+    if not run:
+        conn.close()
+        return jsonify({'error': 'no_active_run'}), 404
+    conn.execute(
+        'UPDATE ironman_runs SET status="completed", ended_at=CURRENT_TIMESTAMP, end_reason="forfeit" WHERE id=?',
+        (run['id'],))
+    conn.commit()
+    conn.close()
+    return jsonify({'forfeited': True})
 
 
 def _build_spec_from_payload(data):
