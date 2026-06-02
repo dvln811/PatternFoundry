@@ -30,6 +30,7 @@ h2{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 .fb-meta{font-size:.68rem;color:#555;margin-top:8px}
 .fb-delete{background:none;border:1px solid #e05c5c44;color:#e05c5c88;border-radius:4px;padding:2px 8px;font-size:.65rem;cursor:pointer}
 .fb-delete:hover{border-color:#e05c5c;color:#e05c5c}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
 </style>
 </head>
 <body>
@@ -37,7 +38,13 @@ h2{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
   <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
   <nav>
     <a href="/">Dashboard</a>
-    <a href="/admin" class="active">Admin</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
+    <a href="/docs">Docs</a>
+    {% if is_admin %}<a href="/admin" class="active">Admin</a>{% endif %}
+    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
   </nav>
 </header>
 <div class="wrap">
