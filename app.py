@@ -245,7 +245,7 @@ def board_save():
     api_key = request.headers.get('X-Board-Key', '')
     valid_key = os.environ.get('BOARD_API_KEY', '')
     has_key = valid_key and api_key == valid_key
-    if not has_key and not _IS_LOCAL:
+    if not has_key and not _IS_LOCAL and not (current_user.is_authenticated and current_user.is_admin):
         return jsonify({'error': 'unauthorized'}), 403
     data = request.get_json()
     path = os.path.join(_BOARD_DIR, 'pf_board.json')
@@ -258,7 +258,7 @@ def board_load():
     api_key = request.headers.get('X-Board-Key', '')
     valid_key = os.environ.get('BOARD_API_KEY', '')
     has_key = valid_key and api_key == valid_key
-    if not has_key and not _IS_LOCAL:
+    if not has_key and not _IS_LOCAL and not (current_user.is_authenticated and current_user.is_admin):
         return jsonify({'error': 'unauthorized'}), 403
     path = os.path.join(_BOARD_DIR, 'pf_board.json')
     if os.path.isfile(path):
