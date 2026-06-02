@@ -294,10 +294,6 @@
                 <option value="504">2 years</option>
               </select>
             </div>
-            <div class="field" style="flex:1">
-              <label>Balance</label>
-              <div id="start-bal-display" style="font-size:0.8rem;color:#e0e0e0;padding:6px 0">$50,000.00</div>
-            </div>
           </div>
           <div class="field">
             <label>Seed <span style="font-size:0.6rem;color:#666">(blank = random)</span></label>
@@ -315,7 +311,7 @@
         <h2 onclick="this.parentElement.classList.toggle('collapsed')">Account</h2>
         <div class="sec-body">
           <div class="acct-box">
-            <div class="acct-row"><span class="acct-label">Balance</span><span class="acct-val" id="a-bal">$5,000.00</span></div>
+            <div class="acct-row"><span class="acct-label">Balance</span><span class="acct-val" id="a-bal">—</span></div>
             <div class="acct-row"><span class="acct-label">Open P/L</span><span class="acct-val" id="a-opl">$0.00</span></div>
             <div class="acct-row"><span class="acct-label">Session P/L</span><span class="acct-val" id="a-spl">$0.00</span></div>
             <div style="display:flex;gap:12px">
@@ -629,7 +625,9 @@ let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
     serverAccount = { id: data.id, commission: data.commission_per_contract, balance: data.balance };
     account.balance = data.balance;
     account.startBal = data.balance;
-    document.getElementById('start-bal-display').textContent = '$' + data.balance.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+    const bEl = document.getElementById('a-bal');
+    bEl.textContent = '$' + data.balance.toFixed(2);
+    bEl.style.color = '#e0e0e0';
   } catch(e) {}
 })();
 let setupMode = null;

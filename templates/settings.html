@@ -73,6 +73,22 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     <button class="btn btn-reset" onclick="resetAccount()">Reset Account</button>
   </div>
 </div>
+
+<div class="card">
+  <h2>Archived Accounts</h2>
+  <div id="archived-list" style="max-height:200px;overflow-y:auto;margin-bottom:12px">
+    <div style="color:#555;font-size:.75rem">Loading...</div>
+  </div>
+  <div id="archived-stats" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid #1a1a1a">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+      <div style="text-align:center"><div id="as-sessions" style="font-size:1rem;font-weight:700;color:#e0e0e0">0</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Sessions</div></div>
+      <div style="text-align:center"><div id="as-trades" style="font-size:1rem;font-weight:700;color:#e0e0e0">0</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Trades</div></div>
+      <div style="text-align:center"><div id="as-wr" style="font-size:1rem;font-weight:700;color:#e0e0e0">-</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Win Rate</div></div>
+      <div style="text-align:center"><div id="as-pnl" style="font-size:1rem;font-weight:700;color:#e0e0e0">$0</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">P/L</div></div>
+    </div>
+  </div>
+  <button class="btn btn-reset" onclick="purgeArchived()" style="margin:0">Purge All Archived</button>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -114,7 +130,48 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 2000);
 }
 
+async function loadArchived() {
+  const res = await fetch('/api/account/archived', {credentials:'include'});
+  const accounts = await res.json();
+  const el = document.getElementById('archived-list');
+  if (!accounts.length) { el.innerHTML = '<div style="color:#555;font-size:.75rem">No archived accounts</div>'; return; }
+  el.innerHTML = accounts.map(a => {
+    const pnl = a.balance - a.starting_balance;
+    const color = pnl >= 0 ? '#4caf82' : '#e05c5c';
+    return `<div onclick="selectArchived(${a.id})" style="padding:8px 10px;border:1px solid #2a2a2a;border-radius:4px;margin-bottom:4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onmouseenter="this.style.borderColor='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a'">
+      <span style="font-size:.72rem;color:#ccc">$${a.starting_balance.toLocaleString()} → $${a.balance.toLocaleString()}</span>
+      <span style="font-size:.68rem;color:${color}">${pnl>=0?'+':''}$${pnl.toFixed(2)}</span>
+      <span style="font-size:.6rem;color:#555">${(a.archived_at||'').slice(0,10)}</span>
+    </div>`;
+  }).join('');
+}
+
+async function selectArchived(id) {
+  const res = await fetch('/api/account/' + id + '/sessions', {credentials:'include'});
+  const sessions = await res.json();
+  const panel = document.getElementById('archived-stats');
+  panel.style.display = 'block';
+  const totalTrades = sessions.reduce((s,h) => s + (h.trades||0), 0);
+  const totalWins = sessions.reduce((s,h) => s + (h.wins||0), 0);
+  const totalPnl = sessions.reduce((s,h) => s + (h.pnl||0), 0);
+  document.getElementById('as-sessions').textContent = sessions.length;
+  document.getElementById('as-trades').textContent = totalTrades;
+  document.getElementById('as-wr').textContent = totalTrades > 0 ? ((totalWins/totalTrades)*100).toFixed(1)+'%' : '-';
+  const pnlEl = document.getElementById('as-pnl');
+  pnlEl.textContent = (totalPnl>=0?'+$':'-$') + Math.abs(totalPnl).toFixed(2);
+  pnlEl.style.color = totalPnl >= 0 ? '#4caf82' : '#e05c5c';
+}
+
+async function purgeArchived() {
+  if (!confirm('Permanently delete ALL archived accounts and their session history? This cannot be undone.')) return;
+  await fetch('/api/account/purge-archived', {method:'POST', credentials:'include'});
+  toast('Archived accounts purged');
+  document.getElementById('archived-stats').style.display = 'none';
+  loadArchived();
+}
+
 loadAccount();
+loadArchived();
 </script>
 </body>
 </html>

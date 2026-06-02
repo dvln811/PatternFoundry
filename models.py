@@ -129,6 +129,28 @@ def reset_account(user_id, balance=50000, commission=2.25):
     conn.close()
 
 
+def get_archived_accounts(user_id):
+    conn = _get_db()
+    rows = conn.execute('SELECT * FROM trading_accounts WHERE user_id=? AND status="archived" ORDER BY archived_at DESC', (user_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_account_sessions(account_id):
+    conn = _get_db()
+    rows = conn.execute('SELECT date, character, trades, wins, pnl FROM sessions WHERE account_id=? ORDER BY id ASC', (account_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def purge_archived_accounts(user_id):
+    conn = _get_db()
+    conn.execute('DELETE FROM sessions WHERE account_id IN (SELECT id FROM trading_accounts WHERE user_id=? AND status="archived")', (user_id,))
+    conn.execute('DELETE FROM trading_accounts WHERE user_id=? AND status="archived"', (user_id,))
+    conn.commit()
+    conn.close()
+
+
 def save_session(user_id, date, character, trades, wins, pnl, account_id=None):
     conn = _get_db()
     conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id) VALUES (?,?,?,?,?,?,?)',

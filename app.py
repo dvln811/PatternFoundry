@@ -14,7 +14,8 @@ from generators import (CHARACTERS, CharacterSpec, RegimeSpec, DriftSpec,
                         generate_v2, apply_session_structure,
                         extract_gap_cfg, disable_internal_gaps)
 from models import User, init_db, _get_db, save_session, get_sessions, \
-    get_active_account, create_account, update_account_balance, update_account_settings, reset_account
+    get_active_account, create_account, update_account_balance, update_account_settings, reset_account, \
+    get_archived_accounts, get_account_sessions, purge_archived_accounts
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('PF_SECRET', secrets.token_hex(32))
@@ -478,6 +479,31 @@ def api_update_balance():
         return jsonify({'error': 'no_account'}), 404
     update_account_balance(acct['id'], float(data['balance']))
     return jsonify({'saved': True})
+
+
+@app.route('/api/account/archived')
+def api_archived_accounts():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    return jsonify(get_archived_accounts(uid))
+
+
+@app.route('/api/account/<int:account_id>/sessions')
+def api_account_sessions(account_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    return jsonify(get_account_sessions(account_id))
+
+
+@app.route('/api/account/purge-archived', methods=['POST'])
+def api_purge_archived():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    purge_archived_accounts(uid)
+    return jsonify({'purged': True})
 
 
 @app.route('/settings')
