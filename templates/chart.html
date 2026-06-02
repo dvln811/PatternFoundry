@@ -437,6 +437,7 @@
         </select>
         <button onclick="toggleDOM()" data-tip="DOM" style="background:#1a1a1a;border:1px solid #f0c040;color:#f0c040;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">DOM</button>
         <button onclick="resetChartView()" data-tip="Reset View" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:4px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">⊙ Reset</button>
+        <button id="btn-close-session" onclick="closeSession()" style="background:#1a1a1a;border:1px solid #4caf82;color:#4caf82;padding:4px 10px;border-radius:5px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:inherit;display:none">✓ Close Session</button>
         <span class="pb-info" id="pb-info">Load a session to begin</span>
       </div>
 
@@ -614,6 +615,7 @@ let currentPrice = 0, tickSize = 0.25, tickValue = 1.25;
 let candleTF = 60;
 let currentCandle = null;
 let account = { balance: 5000, startBal: 5000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
+let sessionClosed = false;
 let position = null, pendingOrder = null;
 let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
 let setupMode = null;
@@ -805,6 +807,7 @@ async function loadSession() {
     startBal: parseFloat(document.getElementById('start-bal').value) || 5000,
     sessionPnl: 0, trades: [], wins: 0, losses: 0,
   };
+  sessionClosed = false;
   position = null; pendingOrder = null;
   entryLine = slLine = tpLine = pendingLine = null;
   updateAccount(); updatePosition();
@@ -829,6 +832,7 @@ async function loadSession() {
   document.getElementById('btn-short').disabled = false;
   document.getElementById('chart-overlay').classList.add('hidden');
   document.getElementById('pb-info').textContent = `Ready - ${allTicks.length} ticks · ${data.session_date || ''}`;
+  document.getElementById('btn-close-session').style.display = 'inline-block';
   chart.timeScale().fitContent();
 }
 
@@ -1220,6 +1224,8 @@ function closeTrade(exitPrice, reason) {
 
 // ── Session history persistence ──────────────────────────────────────────
 function saveSessionToHistory() {
+  if (sessionClosed) return; // prevent double-save
+  sessionClosed = true;
   if (account.trades.length === 0) return; // no trades = nothing to record
   const entry = {
     date: new Date().toISOString().slice(0, 10),
@@ -1234,6 +1240,20 @@ function saveSessionToHistory() {
   try { history = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
   history.push(entry);
   localStorage.setItem(key, JSON.stringify(history));
+}
+
+function closeSession() {
+  if (account.trades.length === 0 && !position) {
+    if (!confirm('No trades taken. Close session anyway?')) return;
+  }
+  stopPlay();
+  if (position) closeTrade(currentPrice, 'Session Close');
+  saveSessionToHistory();
+  document.getElementById('pb-info').textContent = 'Session closed ✓';
+  document.getElementById('btn-close-session').style.display = 'none';
+  // Disable further trading
+  document.getElementById('btn-long').disabled = true;
+  document.getElementById('btn-short').disabled = true;
 }
 
 // ── Live SL/TP drag ──────────────────────────────────────────────────────
