@@ -94,6 +94,12 @@ def logout():
     resp.delete_cookie('session')
     return resp
 
+@app.route('/admin')
+def admin_hub():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('admin_hub.html')
+
 @app.route('/admin/users')
 def admin_users():
     if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
