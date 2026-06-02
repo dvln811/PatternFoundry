@@ -30,6 +30,14 @@ def load_user(user_id):
 # Local dev: auto-login as admin (skip auth)
 _IS_LOCAL = os.environ.get('PF_LOCAL', '1') == '1'
 
+@app.after_request
+def _board_cors(response):
+    if request.path.startswith('/api/board'):
+        response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Board-Key'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    return response
+
 @app.before_request
 def check_auth():
     # Public paths
