@@ -113,6 +113,33 @@ def admin_users_action():
     elif action == 'demote': User.set_role(uid, 'user')
     return redirect(url_for('admin_users'))
 
+@app.route('/admin/feedback')
+def admin_feedback():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    fb_dir = os.path.join(os.path.dirname(__file__), 'data', 'feedback')
+    items = []
+    if os.path.isdir(fb_dir):
+        for fn in sorted(os.listdir(fb_dir), reverse=True):
+            if not fn.endswith('.json'): continue
+            with open(os.path.join(fb_dir, fn)) as f:
+                fb = json.load(f)
+            from datetime import datetime
+            fb['file'] = fn
+            fb['time_str'] = datetime.fromtimestamp(fb.get('time', 0)).strftime('%Y-%m-%d %H:%M')
+            items.append(fb)
+    return render_template('admin_feedback.html', items=items)
+
+@app.route('/admin/feedback/delete', methods=['POST'])
+def admin_feedback_delete():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    fn = request.form.get('file', '')
+    fb_dir = os.path.join(os.path.dirname(__file__), 'data', 'feedback')
+    path = os.path.join(fb_dir, fn)
+    if os.path.isfile(path): os.remove(path)
+    return redirect('/admin/feedback')
+
 
 # ── Pages ─────────────────────────────────────────────────────────────────────
 
