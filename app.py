@@ -15,7 +15,7 @@ from generators import (CHARACTERS, CharacterSpec, RegimeSpec, DriftSpec,
                         extract_gap_cfg, disable_internal_gaps)
 from models import User, init_db, _get_db, save_session, get_sessions, \
     get_active_account, create_account, update_account_balance, update_account_settings, reset_account, \
-    get_archived_accounts, get_account_sessions, purge_archived_accounts
+    get_archived_accounts, get_account_sessions, purge_archived_accounts, nuke_user_stats
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('PF_SECRET', secrets.token_hex(32))
@@ -127,6 +127,7 @@ def admin_users_action():
     elif action == 'unban': User.set_banned(uid, False)
     elif action == 'promote': User.set_role(uid, 'admin')
     elif action == 'demote': User.set_role(uid, 'user')
+    elif action == 'nuke': nuke_user_stats(uid)
     return redirect(url_for('admin_users'))
 
 @app.route('/admin/feedback')

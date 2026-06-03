@@ -73,6 +73,7 @@ tr:hover{background:#1a1a1a}
       {% else %}
       <button name="action" value="promote" class="btn">→ Admin</button>
       {% endif %}
+      <button name="action" value="nuke" class="btn btn-danger" onclick="return confirm('Nuke all stats for {{u.name}}? This cannot be undone.')">Nuke Stats</button>
     </form>
     {% else %}<span style="color:#555;font-size:.72rem">You</span>{% endif %}
   </td>

@@ -180,6 +180,18 @@ def purge_archived_accounts(user_id):
     conn.close()
 
 
+def nuke_user_stats(user_id):
+    conn = _get_db()
+    # Delete trades for all user sessions
+    conn.execute('DELETE FROM trades WHERE session_id IN (SELECT id FROM sessions WHERE user_id=?)', (user_id,))
+    conn.execute('DELETE FROM sessions WHERE user_id=?', (user_id,))
+    conn.execute('DELETE FROM ironman_sessions WHERE run_id IN (SELECT id FROM ironman_runs WHERE user_id=?)', (user_id,))
+    conn.execute('DELETE FROM ironman_runs WHERE user_id=?', (user_id,))
+    conn.execute('DELETE FROM trading_accounts WHERE user_id=?', (user_id,))
+    conn.commit()
+    conn.close()
+
+
 def save_session(user_id, date, character, trades, wins, pnl, account_id=None, seed=None, hist_days=None, tick_size=None, tick_value=None, candles=None, trade_list=None, drawings=None):
     conn = _get_db()
     conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
