@@ -1060,19 +1060,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Review Mode ────────────────────────────────────────────────────────
   if (REVIEW_MODE) {
-    // Hide sidebar sections except session header
+    // Hide sidebar sections
     document.getElementById('sec-session').style.display = 'none';
     document.getElementById('sec-account').style.display = 'none';
     document.getElementById('sec-trade').style.display = 'none';
-    // Hide playback controls, show close button
+    document.getElementById('sec-position').style.display = 'none';
+    document.getElementById('sec-sessions').style.display = 'none';
+    // Expand trade log
+    document.getElementById('sec-log').classList.remove('collapsed');
+    // Replace playback controls with close button
     const pb = document.querySelector('.playback');
     pb.innerHTML = `<button onclick="window.location='/stats'" style="background:#1a1a1a;border:1px solid #f97316;color:#f97316;padding:6px 16px;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit">✕ Close Review</button><span class="pb-info" id="pb-info">Loading session…</span>`;
     // Load session data
-    fetch(`/api/sessions/${REVIEW_MODE}`, {credentials:'include'}).then(r=>r.json()).then(data => {
+    fetch(`/api/sessions/${REVIEW_MODE}`, {credentials:'include'}).then(r=>r.json()).then(async data => {
       if (data.error) { document.getElementById('pb-info').textContent = 'Session not found'; return; }
-      const candles = (data.candles||[]).map(c=>({time:c.t,open:c.o,high:c.h,low:c.l,close:c.c}));
-      candleSeries.setData(candles);
-      volSeries.setData((data.candles||[]).map(c=>({time:c.t,value:c.v||0,color:c.c>=c.o?'#4caf8266':'#e05c5c66'})));
+      const sessionCandles = (data.candles||[]).map(c=>({time:c.t,open:c.o,high:c.h,low:c.l,close:c.c,volume:c.v||0}));
+      tickSize = data.tick_size || 0.25;
+      tickValue = data.tick_value || 1.25;
+
+      // Regenerate historical candles from seed/instrument/hist_days
+      let histCandles = [];
+      if (data.seed && data.character) {
+        try {
+          const hRes = await fetch(`/api/sim-session?instrument=${data.character}&num_hist_days=${data.hist_days||5}&seed=${data.seed}`, {credentials:'include'});
+          const hData = await hRes.json();
+          histCandles = hData.history || [];
+        } catch(e) {}
+      }
+
+      // Store 1-min candles for TF switching and indicators
+      window._historyBars = histCandles;
+      const allBars = [...histCandles, ...sessionCandles];
+
+      // Populate allTicks with one synthetic tick per 1-min candle (for TF change handler)
+      allTicks = allBars.map(c => ({time: c.time, price: c.close, volume: c.volume || 0}));
+      tickIdx = allTicks.length;
+
+      // Rebucket to current TF
+      const bucketed = rebucketHistory(allBars, candleTF);
+      window._chartData = bucketed.map(c=>({time:c.time,open:c.open,high:c.high,low:c.low,close:c.close}));
+      candleSeries.setData(window._chartData);
+      volSeries.setData(bucketed.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?'#4caf8266':'#e05c5c66'})));
+
       // Buy/sell markers
       const trades = data.trade_list || [];
       const markers = [];
@@ -1082,6 +1111,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       markers.sort((a,b)=>a.time-b.time);
       candleSeries.setMarkers(markers);
+
+      // Populate trade log
+      const log = document.getElementById('trade-log');
+      log.innerHTML = '';
+      for (const t of trades) {
+        const pc = (t.pnl||0) >= 0 ? '#4caf82' : '#e05c5c';
+        const dir = t.direction || '';
+        const dc = dir === 'long' ? '#4caf82' : '#e05c5c';
+        const r = document.createElement('div'); r.className = 'log-row';
+        r.innerHTML = `<span style="font-weight:600;color:${dc}">${dir.toUpperCase()} ${t.qty||1}</span>`
+          + `<span style="color:#bbb">${(t.entry_price||0).toFixed(2)}→${(t.exit_price||0).toFixed(2)}</span>`
+          + `<span style="color:${pc};font-weight:600">$${Math.abs(t.pnl||0).toFixed(2)}</span>`
+          + `<span style="color:#888">${t.exit_reason||''}</span>`;
+        log.prepend(r);
+      }
+      if (trades.length === 0) log.innerHTML = '<div style="font-size:0.72rem;color:#bbb;padding:4px 0">No trades</div>';
+
+      // Indicators work now since window._chartData is populated
+      if (activeIndicators.length) recomputeIndicators();
+
       chart.timeScale().fitContent();
       document.getElementById('pb-info').textContent = `${data.character||'?'} — ${data.date} · ${data.trades} trades · P/L: $${(data.pnl||0).toFixed(2)}`;
     });
