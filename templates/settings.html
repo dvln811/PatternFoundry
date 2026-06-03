@@ -63,11 +63,6 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     <input type="number" id="inp-balance" min="1000" max="250000" step="1000">
     <div class="hint">Set your sim account value. This rolls forward session to session.</div>
   </div>
-  <div class="field">
-    <label>Commission per Contract (round trip)</label>
-    <input type="number" id="inp-commission" min="0" max="50" step="0.05">
-    <div class="hint">Applied per contract on each trade close. Schwab futures default: $2.25</div>
-  </div>
   <div class="btn-row">
     <button class="btn btn-save" onclick="saveSettings()">Save</button>
     <button class="btn btn-reset" onclick="resetAccount()">Reset Account</button>
@@ -85,14 +80,12 @@ async function loadAccount() {
   currentAccount = await res.json();
   document.getElementById('current-bal').textContent = '$' + currentAccount.balance.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
   document.getElementById('inp-balance').value = currentAccount.balance;
-  document.getElementById('inp-commission').value = currentAccount.commission_per_contract;
 }
 
 async function saveSettings() {
   const balance = parseFloat(document.getElementById('inp-balance').value);
-  const commission = parseFloat(document.getElementById('inp-commission').value);
   await fetch('/api/account', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({balance, commission})});
+    body: JSON.stringify({balance})});
   toast('Settings saved');
   loadAccount();
 }
@@ -100,9 +93,8 @@ async function saveSettings() {
 async function resetAccount() {
   if (!confirm('Reset your trading account? This archives your current account and starts fresh. Session history is preserved.')) return;
   const balance = parseFloat(document.getElementById('inp-balance').value) || 50000;
-  const commission = parseFloat(document.getElementById('inp-commission').value) || 2.25;
   await fetch('/api/account/reset', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({balance, commission})});
+    body: JSON.stringify({balance})});
   toast('Account reset');
   loadAccount();
 }
