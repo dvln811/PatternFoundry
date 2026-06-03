@@ -174,28 +174,23 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-03 session 3)
+## Recent Work (2026-06-03 session 4)
 
-1. **Drawing lock button** — SVG padlock in toolbar, prevents inadvertent drawing movement (drag/hover disabled when locked, right-click edit still works)
-2. **Iron Man sessions separated from regular account** — IM sessions save with `account_id=NULL` + `ironman_run_id`, balance update skipped. Stats page no longer polluted.
-3. **`ironman_run_id` column** on sessions table — links replay-able sessions to specific Iron Man runs for per-run history/stats
-4. **Admin Nuke Stats button** — wipes all user data (trades, sessions, Iron Man, accounts). Available for all users including self.
-5. **Settings page locked down** — no more mid-account balance edits. Must reset to change starting balance. Empty accounts auto-deleted on reset.
-6. **Margin system** — initial margin check on order entry (reject if insufficient), maintenance margin auto-liquidation every tick. Per-instrument values based on real Tradovate/CME data.
-7. **14 instruments** — Added MES, MNQ, MCL, M2K (micro futures), RTY (E-mini Russell), AAPL, MSFT, PLTR (stocks). All with realistic margins and tuned microstructure characters.
-8. **Iron Man configurable** — Start params: balance, drawdown%, target%, max_sessions. Presets: Micro $5k, Standard $10k, Full $50k, Hardcore. Margin-filtered random instrument selection.
-9. **Chart Designer presets** — All 14 instruments with optgroup categories, sliders populate per-instrument microstructure values.
-10. **Stats account list columns** — Status, Starting Balance, Current Balance, P/L ($+%), Date
-11. **Dollar formatting** — All dollar amounts on Stats page use thousands separators
+1. **Aggregated equity curve normalized to %** — Each session's P&L is divided by its account's starting balance, plotted as cumulative % return. Fixes misleading raw-dollar aggregation across different-sized accounts.
+2. **Stats page reordered** — Agg EQ → Account → Stats Cards → Selected EQ → Instrument Breakdown → Monthly P&L → Drawdown → Session History → Iron Man → Practice Streak + Activity
+3. **Enhanced stat cards** — Second row: Profit Factor, Avg Win, Avg Loss, Largest Win, Largest Loss, Max Consecutive Wins, Max Consecutive Losses. Computed from trade-level data via new `/api/trades` endpoint.
+4. **Per-instrument breakdown table** — Win rate, P&L, avg trade, profit factor per instrument for the selected account.
+5. **Monthly P&L bar chart** — Green/red bars grouped by YYYY-MM with dollar tooltips.
+6. **Drawdown chart** — Red area line showing drawdown from peak equity over time.
+7. **Iron Man aggregate metrics** — Mini card grid above Past Attempts: Runs, Pass Rate, Avg Return, Best Run, Worst Run, Total Sessions.
+8. **Iron Man Past Attempts enhanced** — Now shows: Start Balance, Target%, Max DD%, Max Sessions, Actual Sessions, Final Balance, Return%.
 
 ---
 
 ## Next Steps
 
-- **Stats enhancements:** Profit factor, avg win/loss, largest win/loss, max consecutive, per-instrument breakdown, monthly P&L bar chart, drawdown chart
-- **Iron Man stats panel:** Per-run detailed stats, compare runs, aggregate IM metrics
+- **Marketing:** Reddit/Discord presence, short demo video, content strategy
 - **Chart Designer tick_value:** Add tick_value/margin fields to designer UI for custom characters
-- **Marketing:** Reddit/Discord presence, short demo video
 - **Session history:** Per-trade annotations, journal notes
 - **See board + /feature-ideas** for full roadmap
 
