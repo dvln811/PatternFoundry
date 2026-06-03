@@ -72,14 +72,10 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 <h1>Performance & Stats</h1>
 <p class="subtitle">Session history, equity curve, and practice analytics</p>
 
-<!-- Practice Streak -->
+<!-- Aggregated Equity Curve -->
 <div class="section">
-  <h2>Practice Streak</h2>
-  <div class="streak-row">
-    <span class="streak-fire">🔥</span>
-    <span class="streak-num" id="streak-num">0</span>
-    <span class="streak-label">day streak</span>
-  </div>
+  <h2>Equity Curve — All Accounts (Aggregated)</h2>
+  <div class="equity-chart"><canvas id="equity-chart-agg"></canvas></div>
 </div>
 
 <!-- Account Selector -->
@@ -106,12 +102,6 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
   <div class="equity-chart"><canvas id="equity-chart"></canvas></div>
 </div>
 
-<!-- Aggregated Equity Curve -->
-<div class="section">
-  <h2>Equity Curve — All Accounts (Aggregated)</h2>
-  <div class="equity-chart"><canvas id="equity-chart-agg"></canvas></div>
-</div>
-
 <!-- Session History -->
 <div class="section">
   <h2>Session History</h2>
@@ -124,19 +114,29 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
   <div class="empty-state" id="no-history">No sessions recorded yet. Complete a simulator session to start tracking.</div>
 </div>
 
-<!-- Calendar Heatmap -->
-<div class="section">
-  <h2>Practice Activity</h2>
-  <p class="hint" style="margin-bottom:8px">Your practice consistency over the last year. Each cell is one day — darker green = more sessions that day.</p>
-  <div class="cal-grid" id="cal-grid"></div>
-</div>
-
 <!-- Iron Man -->
 <div class="section">
   <h2>Iron Man Mode</h2>
   <div class="iron-box" id="iron-panel">
     <div id="iron-loading" style="color:#555;font-size:.75rem">Loading...</div>
   </div>
+</div>
+
+<!-- Practice Streak -->
+<div class="section">
+  <h2>Practice Streak</h2>
+  <div class="streak-row">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-num" id="streak-num">0</span>
+    <span class="streak-label">day streak</span>
+  </div>
+</div>
+
+<!-- Calendar Heatmap -->
+<div class="section">
+  <h2>Practice Activity</h2>
+  <p class="hint" style="margin-bottom:8px">Your practice consistency over the last year. Each cell is one day — darker green = more sessions that day.</p>
+  <div class="cal-grid" id="cal-grid"></div>
 </div>
 
 </div>
@@ -416,16 +416,19 @@ function renderInactive(history) {
     <button onclick="startIronMan()" style="background:transparent;border:1px solid #f97316;color:#f97316;padding:8px 20px;border-radius:5px;font-size:.78rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.03em;margin-top:8px">Start Challenge</button>`;
   if (history.length > 0) {
     html += `<div style="margin-top:16px"><h4 style="font-size:.7rem;color:#888;text-transform:uppercase;margin-bottom:8px">Past Attempts</h4>
-      <table style="width:100%;font-size:.7rem;border-collapse:collapse">
-      <tr style="color:#888"><th style="text-align:left;padding:4px">#</th><th style="text-align:left;padding:4px">Result</th><th style="text-align:right;padding:4px">Days</th><th style="text-align:right;padding:4px">Final Balance</th><th style="text-align:left;padding:4px">Date</th></tr>`;
+      <div style="max-height:200px;overflow-y:auto">
+      <table style="width:100%;font-size:.65rem;border-collapse:collapse">
+      <tr style="color:#888"><th style="text-align:left;padding:4px">#</th><th style="text-align:left;padding:4px">Result</th><th style="text-align:right;padding:4px">Start</th><th style="text-align:right;padding:4px">Target%</th><th style="text-align:right;padding:4px">Max DD%</th><th style="text-align:right;padding:4px">Max Sess</th><th style="text-align:right;padding:4px">Sessions</th><th style="text-align:right;padding:4px">Final Bal</th><th style="text-align:right;padding:4px">Return%</th></tr>`;
     history.forEach(r => {
       const reason = r.end_reason === 'target_reached' ? '<span style="color:#4caf82">✓ Passed</span>' :
                      r.end_reason === 'drawdown_breach' ? '<span style="color:#e05c5c">✗ Drawdown</span>' :
-                     r.end_reason === 'max_sessions_reached' ? '<span style="color:#f97316">⏱ Max Sessions</span>' :
+                     r.end_reason === 'max_sessions_reached' ? '<span style="color:#f97316">⏱ Max Sess</span>' :
                      '<span style="color:#888">Forfeit</span>';
-      html += `<tr><td style="padding:4px;color:#ccc">${r.attempt}</td><td style="padding:4px">${reason}</td><td style="padding:4px;text-align:right;color:#ccc">${r.day_count}</td><td style="padding:4px;text-align:right;color:#ccc">$${r.balance.toLocaleString()}</td><td style="padding:4px;color:#555">${(r.ended_at||'').slice(0,10)}</td></tr>`;
+      const ret = ((r.balance - r.start_balance) / r.start_balance * 100).toFixed(1);
+      const retColor = ret >= 0 ? '#4caf82' : '#e05c5c';
+      html += `<tr><td style="padding:4px;color:#ccc">${r.attempt}</td><td style="padding:4px">${reason}</td><td style="padding:4px;text-align:right;color:#ccc">$${r.start_balance.toLocaleString()}</td><td style="padding:4px;text-align:right;color:#ccc">${r.target_pct}%</td><td style="padding:4px;text-align:right;color:#ccc">${r.drawdown_limit_pct}%</td><td style="padding:4px;text-align:right;color:#ccc">${r.max_sessions||'∞'}</td><td style="padding:4px;text-align:right;color:#ccc">${r.day_count}</td><td style="padding:4px;text-align:right;color:#ccc">$${r.balance.toLocaleString()}</td><td style="padding:4px;text-align:right;color:${retColor}">${ret>=0?'+':''}${ret}%</td></tr>`;
     });
-    html += '</table></div>';
+    html += '</table></div></div>';
   }
   panel.innerHTML = html;
 }
