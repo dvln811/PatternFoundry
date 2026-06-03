@@ -1070,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sec-log').classList.remove('collapsed');
     // Replace playback controls with close button
     const pb = document.querySelector('.playback');
-    pb.innerHTML = `<button onclick="window.location='/stats'" style="background:#1a1a1a;border:1px solid #f97316;color:#f97316;padding:6px 16px;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit">✕ Close Review</button><span class="pb-info" id="pb-info">Loading session…</span>`;
+    pb.innerHTML = `<button onclick="window.location='/stats'" style="background:#1a1a1a;border:1px solid #f97316;color:#f97316;padding:6px 16px;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit">✕ Close Review</button><button onclick="resetChartView()" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:6px 12px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">⊙ Reset</button><span class="pb-info" id="pb-info">Loading session…</span>`;
     // Load session data
     fetch(`/api/sessions/${REVIEW_MODE}`, {credentials:'include'}).then(r=>r.json()).then(async data => {
       if (data.error) { document.getElementById('pb-info').textContent = 'Session not found'; return; }
@@ -1090,6 +1090,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Store 1-min candles for TF switching and indicators
       window._historyBars = histCandles;
+      window._reviewSessionCandles = sessionCandles;
       const allBars = [...histCandles, ...sessionCandles];
 
       // Populate allTicks with one synthetic tick per 1-min candle (for TF change handler)
@@ -1145,22 +1146,26 @@ document.getElementById('chart-tf').addEventListener('change', () => {
   currentCandle = null;
 
   const histBars = window._historyBars || [];
-  const playedCandles = [];
-  let pb = null;
-  for (let i = 0; i < tickIdx; i++) {
-    const t = allTicks[i];
-    const ct = (Math.floor(t.time / 60)) * 60;
-    if (!pb || pb.time !== ct) {
-      if (pb) playedCandles.push(pb);
-      pb = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
-    } else {
-      pb.high = Math.max(pb.high, t.price); pb.low = Math.min(pb.low, t.price);
-      pb.close = t.price; pb.volume += t.volume;
+  let allSoFar;
+  if (REVIEW_MODE) {
+    allSoFar = [...histBars, ...(window._reviewSessionCandles || [])];
+  } else {
+    const playedCandles = [];
+    let pb = null;
+    for (let i = 0; i < tickIdx; i++) {
+      const t = allTicks[i];
+      const ct = (Math.floor(t.time / 60)) * 60;
+      if (!pb || pb.time !== ct) {
+        if (pb) playedCandles.push(pb);
+        pb = { time: ct, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+      } else {
+        pb.high = Math.max(pb.high, t.price); pb.low = Math.min(pb.low, t.price);
+        pb.close = t.price; pb.volume += t.volume;
+      }
     }
+    if (pb) playedCandles.push(pb);
+    allSoFar = [...histBars, ...playedCandles];
   }
-  if (pb) playedCandles.push(pb);
-
-  const allSoFar = [...histBars, ...playedCandles];
   if (allSoFar.length) {
     const bucketed = rebucketHistory(allSoFar, candleTF);
     window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData); setTimeout(function(){if(window.drawOffHoursShading)window.drawOffHoursShading()}, 100);
