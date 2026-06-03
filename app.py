@@ -488,6 +488,21 @@ def api_get_session_detail(session_id):
     return jsonify(s)
 
 
+@app.route('/api/trades')
+def api_get_trades():
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    account_id = request.args.get('account_id')
+    conn = _get_db()
+    if account_id:
+        rows = conn.execute('SELECT t.* FROM trades t JOIN sessions s ON t.session_id=s.id WHERE s.user_id=? AND s.account_id=? ORDER BY t.id', (uid, int(account_id))).fetchall()
+    else:
+        rows = conn.execute('SELECT t.* FROM trades t JOIN sessions s ON t.session_id=s.id WHERE s.user_id=? AND s.account_id IS NOT NULL ORDER BY t.id', (uid,)).fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
 @app.route('/api/account')
 def api_get_account():
     uid = _get_user_id()
