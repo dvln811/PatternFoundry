@@ -227,9 +227,9 @@ def get_sessions(user_id):
     active = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? AND status="active"', (user_id,)).fetchone()
     include_nulls = first and active and first['id'] != active['id']
     if include_nulls:
-        rows = conn.execute('SELECT id, date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
+        rows = conn.execute('SELECT id, date, character, trades, wins, pnl, account_id, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
     else:
-        rows = conn.execute('SELECT id, date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? AND account_id IS NOT NULL ORDER BY id ASC', (user_id,)).fetchall()
+        rows = conn.execute('SELECT id, date, character, trades, wins, pnl, account_id, created_at FROM sessions WHERE user_id=? AND account_id IS NOT NULL ORDER BY id ASC', (user_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 

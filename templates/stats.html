@@ -148,6 +148,7 @@ let allSessions = [];
 let selectedAccountId = null;
 let equityChartInstance = null;
 let aggChartInstance = null;
+let accountsMap = {};
 
 async function init() {
   // Load all sessions + accounts
@@ -169,6 +170,7 @@ async function init() {
   });
 
   renderAccountList(accounts);
+  accounts.forEach(a => { accountsMap[a.id] = a.starting; });
   if (archived.length > 0) document.getElementById('btn-purge').style.display = '';
   selectedAccountId = activeAcct.id;
   highlightAccount(selectedAccountId);
@@ -242,7 +244,44 @@ async function renderForAccount(accountId) {
 }
 
 function renderAggregated() {
-  renderEquityCurve('equity-chart-agg', allSessions, 'aggChartInstance');
+  const ctx = document.getElementById('equity-chart-agg').getContext('2d');
+  if (aggChartInstance) aggChartInstance.destroy();
+  if (allSessions.length === 0) { aggChartInstance = null; return; }
+  let running = 0;
+  const curve = allSessions.map(h => {
+    const base = accountsMap[h.account_id] || 0;
+    running += base > 0 ? ((h.pnl || 0) / base) * 100 : 0;
+    return running;
+  });
+  const color = running >= 0 ? '#4caf82' : '#e05c5c';
+  aggChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: curve.map((_, i) => i + 1),
+      datasets: [{
+        data: curve,
+        borderColor: color,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: true,
+        backgroundColor: color + '18',
+        tension: 0.2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ' ' + c.parsed.y.toFixed(2) + '%' } }
+      },
+      scales: {
+        x: { ticks: { color: '#bbb', maxTicksLimit: 10 }, grid: { color: '#1a1a1a' } },
+        y: { ticks: { color: '#bbb', callback: v => v.toFixed(1) + '%' }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
 }
 
 function renderEquityCurve(canvasId, sessions, instanceKey) {
