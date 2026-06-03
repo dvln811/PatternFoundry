@@ -1339,7 +1339,7 @@ function closeTrade(exitPrice, reason) {
   const { direction: dir, entry, qty } = position;
   const tpp = 1 / tickSize;
   const rawPnl = (dir === 'long' ? exitPrice - entry : entry - exitPrice) * tpp * tickValue * qty;
-  const commission = serverAccount.commission * qty;
+  const commission = tickValue * qty;  // 1 tick per contract round-trip
   const pnl = rawPnl - commission;
   account.balance    += pnl;
   account.sessionPnl += pnl;

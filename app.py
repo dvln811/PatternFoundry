@@ -184,6 +184,7 @@ def _resolve_spec(instrument: str):
             name=sj.get('name', instrument),
             price_range=tuple(sj.get('price_range', [5000, 7000])),
             tick=float(sj.get('tick', 0.25)),
+            tick_value=float(sj.get('tick_value', 12.50)),
             regime=mk(RegimeSpec, sj.get('regime')),
             drift=mk(DriftSpec, sj.get('drift')),
             volatility=mk(VolatilitySpec, sj.get('volatility')),
@@ -1002,7 +1003,7 @@ def sim_session():
         'ticks':        ticks,
         'instrument':   instrument,
         'tick_size':    profile.tick,
-        'tick_value':   1.25 if instrument in ('ES', 'NQ') else 0.01,
+        'tick_value':   getattr(profile, 'tick_value', 12.50),
         'session_date': str(target),
         'seed':         seed,
     })

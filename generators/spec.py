@@ -77,6 +77,7 @@ class CharacterSpec:
     name: str = 'Generic'
     price_range: tuple = (5000.0, 7000.0)
     tick: float = 0.25
+    tick_value: float = 12.50
     regime: RegimeSpec = field(default_factory=RegimeSpec)
     drift: DriftSpec = field(default_factory=DriftSpec)
     volatility: VolatilitySpec = field(default_factory=VolatilitySpec)
