@@ -197,7 +197,6 @@ rewrite everything from scratch in this repo.
 - **Chart Designer tick_value:** Add tick_value/margin fields to designer UI for custom characters
 - **Marketing:** Reddit/Discord presence, short demo video
 - **Session history:** Per-trade annotations, journal notes
-- **Google Search Console:** Check sitemap indexing status
 - **See board + /feature-ideas** for full roadmap
 
 ---
