@@ -804,11 +804,14 @@ function rebucketHistory(candles, tf) {
 
 async function loadSession() {
   stopPlay();
-  // In Iron Man mode, pick a random character
+  // In Iron Man mode, pick a random built-in character
   if (ironMan.active) {
     const sel = document.getElementById('sim-instrument');
-    const opts = sel.options;
-    if (opts.length > 0) sel.selectedIndex = Math.floor(Math.random() * opts.length);
+    const builtIn = [...sel.options].filter(o => o.dataset.kind === 'builtin');
+    if (builtIn.length > 0) {
+      const pick = builtIn[Math.floor(Math.random() * builtIn.length)];
+      sel.value = pick.value;
+    }
   }
   const inst     = document.getElementById('sim-instrument').value;
   const histDays = document.getElementById('sim-hist-days').value;
@@ -1009,10 +1012,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: false, capture: true });
   // Populate instrument dropdown from character list
   fetch('/api/character/list').then(r => r.json()).then(list => {
+    window._characterList = list;
     const sel = document.getElementById('sim-instrument');
-    sel.innerHTML = list.map(c => `<option value="${c.id}">${c.name}${c.kind === 'custom' ? ' (custom)' : ''}</option>`).join('');
+    sel.innerHTML = list.map(c => `<option value="${c.id}" data-kind="${c.kind}">${c.name}${c.kind === 'custom' ? ' (custom)' : ''}</option>`).join('');
   }).catch(() => {
-    document.getElementById('sim-instrument').innerHTML = '<option value="ES">ES</option>';
+    document.getElementById('sim-instrument').innerHTML = '<option value="ES" data-kind="builtin">ES</option>';
   });
 
   // Ctrl+drag zoom-to-selection

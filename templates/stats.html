@@ -114,7 +114,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
   <h2>Session History</h2>
   <div class="history-wrap">
     <table class="history-table" id="history-table">
-      <thead><tr><th>Date</th><th>Character</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Result</th></tr></thead>
+      <thead><tr><th>Date</th><th>Instrument</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Result</th></tr></thead>
       <tbody id="history-body"></tbody>
     </table>
   </div>
@@ -339,7 +339,7 @@ function renderActiveRun(run, sessions) {
     </div>`;
   if (sessions.length > 0) {
     html += `<div style="margin-top:12px;max-height:160px;overflow-y:auto"><table style="width:100%;font-size:.7rem;border-collapse:collapse">
-      <tr style="color:#888"><th style="text-align:left;padding:4px">Day</th><th style="text-align:left;padding:4px">Character</th><th style="text-align:right;padding:4px">Trades</th><th style="text-align:right;padding:4px">P/L</th><th style="text-align:right;padding:4px">Balance</th></tr>`;
+      <tr style="color:#888"><th style="text-align:left;padding:4px">Day</th><th style="text-align:left;padding:4px">Instrument</th><th style="text-align:right;padding:4px">Trades</th><th style="text-align:right;padding:4px">P/L</th><th style="text-align:right;padding:4px">Balance</th></tr>`;
     sessions.forEach(s => {
       const c = s.pnl >= 0 ? '#4caf82' : '#e05c5c';
       html += `<tr><td style="padding:4px;color:#ccc">${s.day_num}</td><td style="padding:4px;color:#ccc">${s.character||'-'}</td><td style="padding:4px;text-align:right;color:#ccc">${s.trades}</td><td style="padding:4px;text-align:right;color:${c}">${s.pnl>=0?'+':''}$${s.pnl.toFixed(0)}</td><td style="padding:4px;text-align:right;color:#ccc">$${s.balance_after.toFixed(0)}</td></tr>`;
