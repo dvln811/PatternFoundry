@@ -16,6 +16,7 @@ class CanvasOverlay {
         this._dragState = null;
         this._hoveredDrawing = null;
         this._hoveredHandle = null;
+        this.locked = false;
         this._handlers = {};
         this._rafId = null;
         this.onDrawingComplete = null;
@@ -142,6 +143,7 @@ class CanvasOverlay {
         const pt = this._localPt(e);
         if (window._simDragActive) return;
         if (!this.activeTool) {
+            if (this.locked) return;
             const { drawing, handle } = this._hitTest(pt.x, pt.y);
             if (drawing) {
                 e.preventDefault(); e.stopPropagation();
@@ -230,6 +232,7 @@ class CanvasOverlay {
             return;
         }
         if (!this.activeTool) {
+            if (this.locked) return;
             if (window._simDragActive) return;
             const { drawing, handle } = this._hitTest(pt.x, pt.y);
             this._hoveredDrawing = drawing;

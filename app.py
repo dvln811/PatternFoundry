@@ -433,8 +433,10 @@ def api_save_session():
     if not uid:
         return jsonify({'error': 'unauthorized'}), 401
     data = request.get_json(force=True)
-    acct = get_active_account(uid)
-    acct_id = acct['id'] if acct else None
+    acct_id = None
+    if not data.get('ironman'):
+        acct = get_active_account(uid)
+        acct_id = acct['id'] if acct else None
     import json as _json
     candles_json = _json.dumps(data['candles']) if data.get('candles') else None
     drawings_json = _json.dumps(data['drawings']) if data.get('drawings') else None

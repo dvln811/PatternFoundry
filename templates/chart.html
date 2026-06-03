@@ -476,6 +476,7 @@
         <button class="ind-add-btn" data-draw-tool="longpos" onclick="setDrawTool('longpos')" data-tip="Long Position" style="color:#4caf8288">▲ Long</button>
         <button class="ind-add-btn" data-draw-tool="shortpos" onclick="setDrawTool('shortpos')" data-tip="Short Position" style="color:#e05c5c88">▼ Short</button>
         <input type="color" id="draw-color" value="#f0c040" onchange="if(drawMgr)drawMgr.setColor(this.value)" style="width:24px;height:24px;border:1px solid #2a2a2a;border-radius:4px;background:#1a1a1a;cursor:pointer;padding:0">
+        <button class="ind-add-btn" id="btn-draw-lock" onclick="toggleDrawLock()" data-tip="Lock drawings">🔒</button>
         <button class="ind-add-btn" onclick="setDrawTool(null)" data-tip="Cancel">✕</button>
         <button class="ind-add-btn" onclick="if(drawMgr)drawMgr.clear()" data-tip="Clear All" style="color:#e05c5c;border-color:#e05c5c">Clear</button>
       </div>
@@ -665,6 +666,14 @@ function setDrawTool(tool) {
     b.style.background = (tool && b.dataset.drawTool === tool) ? '#f9731630' : '';
     b.style.borderColor = (tool && b.dataset.drawTool === tool) ? '#f97316' : '';
   });
+}
+
+function toggleDrawLock() {
+  if (!drawMgr) return;
+  drawMgr.locked = !drawMgr.locked;
+  const btn = document.getElementById('btn-draw-lock');
+  btn.style.background = drawMgr.locked ? '#f9731630' : '';
+  btn.style.borderColor = drawMgr.locked ? '#f97316' : '';
 }
 
 // ── Chart init ───────────────────────────────────────────────────────────
@@ -1393,10 +1402,13 @@ function saveSessionToHistory() {
     trade_list: account.trades,
     drawings: drawMgr ? drawMgr.drawings : [],
   };
+  if (ironMan.active) entry.ironman = true;
   fetch('/api/sessions', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry)});
-  // Persist rolling balance
-  fetch('/api/account/update-balance', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({balance: Math.round(account.balance * 100) / 100})});
+  // Persist rolling balance (skip for Iron Man — it has its own tracking)
+  if (!ironMan.active) {
+    fetch('/api/account/update-balance', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({balance: Math.round(account.balance * 100) / 100})});
+  }
   // Iron Man: submit session to challenge
   if (ironMan.active) {
     fetch('/api/ironman/session-complete', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
