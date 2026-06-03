@@ -276,6 +276,7 @@
       <!-- Session -->
       <div class="sidebar-section" id="sec-session">
         <h2 onclick="this.parentElement.classList.toggle('collapsed')">Session</h2>
+        <div id="ironman-badge" style="display:none;align-items:center;gap:5px;background:#1a1a1a;border:1px solid #f97316;border-radius:5px;padding:4px 8px;margin-bottom:6px;font-size:0.7rem;color:#f97316;font-weight:600"><span>🔥</span> IRON MAN</div>
         <div class="sec-body">
           <div class="field">
             <label>Instrument</label>
@@ -613,6 +614,7 @@ let candleTF = 60;
 let currentCandle = null;
 let account = { balance: 50000, startBal: 50000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
 let serverAccount = { id: null, commission: 2.25, balance: 50000 };
+let ironMan = { active: false, run: null };
 let sessionClosed = false;
 let position = null, pendingOrder = null;
 let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
@@ -628,6 +630,20 @@ let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
     const bEl = document.getElementById('a-bal');
     bEl.textContent = '$' + data.balance.toFixed(2);
     bEl.style.color = '#e0e0e0';
+  } catch(e) {}
+  // Check Iron Man status
+  try {
+    const r = await fetch('/api/ironman/status', {credentials:'include'});
+    const data = await r.json();
+    if (data.active) {
+      ironMan = { active: true, run: data.run };
+      account.balance = data.run.balance;
+      account.startBal = data.run.balance;
+      document.getElementById('a-bal').textContent = '$' + data.run.balance.toFixed(2);
+      document.getElementById('sim-instrument').disabled = true;
+      const badge = document.getElementById('ironman-badge');
+      if (badge) badge.style.display = 'flex';
+    }
   } catch(e) {}
 })();
 let setupMode = null;
@@ -788,6 +804,12 @@ function rebucketHistory(candles, tf) {
 
 async function loadSession() {
   stopPlay();
+  // In Iron Man mode, pick a random character
+  if (ironMan.active) {
+    const sel = document.getElementById('sim-instrument');
+    const opts = sel.options;
+    if (opts.length > 0) sel.selectedIndex = Math.floor(Math.random() * opts.length);
+  }
   const inst     = document.getElementById('sim-instrument').value;
   const histDays = document.getElementById('sim-hist-days').value;
   const seedVal  = document.getElementById('sim-seed').value.trim();
@@ -815,8 +837,8 @@ async function loadSession() {
   tickValue     = data.tick_value || 1.25;
 
   account = {
-    balance: serverAccount.balance || 50000,
-    startBal: serverAccount.balance || 50000,
+    balance: ironMan.active ? ironMan.run.balance : (serverAccount.balance || 50000),
+    startBal: ironMan.active ? ironMan.run.balance : (serverAccount.balance || 50000),
     sessionPnl: 0, trades: [], wins: 0, losses: 0,
   };
   sessionClosed = false;
@@ -1239,9 +1261,9 @@ function closeTrade(exitPrice, reason) {
 
 // ── Session history persistence ──────────────────────────────────────────
 function saveSessionToHistory() {
-  if (sessionClosed) return; // prevent double-save
+  if (sessionClosed) return;
   sessionClosed = true;
-  if (account.trades.length === 0) return; // no trades = nothing to record
+  if (account.trades.length === 0) return;
   const entry = {
     date: new Date().toISOString().slice(0, 10),
     character: document.getElementById('sim-instrument').value || 'Unknown',
@@ -1253,6 +1275,32 @@ function saveSessionToHistory() {
   // Persist rolling balance
   fetch('/api/account/update-balance', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
     body:JSON.stringify({balance: Math.round(account.balance * 100) / 100})});
+  // Iron Man: submit session to challenge
+  if (ironMan.active) {
+    fetch('/api/ironman/session-complete', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        pnl: entry.pnl,
+        character: entry.character,
+        seed: document.getElementById('sim-seed').value || null,
+        trades: entry.trades,
+        wins: entry.wins,
+        losses: entry.trades - entry.wins,
+      })
+    }).then(r => r.json()).then(res => {
+      if (res.ended) {
+        ironMan.active = false;
+        const badge = document.getElementById('ironman-badge');
+        if (badge) badge.style.display = 'none';
+        document.getElementById('sim-instrument').disabled = false;
+        const msg = res.ended === 'target_reached' ? '🏆 Iron Man target reached!' : '💀 Iron Man drawdown breached.';
+        document.getElementById('pb-info').textContent = msg;
+      } else {
+        ironMan.run.balance = res.balance;
+        ironMan.run.peak_balance = res.peak;
+        ironMan.run.day_count = res.day;
+      }
+    }).catch(() => {});
+  }
 }
 
 function closeSession() {
