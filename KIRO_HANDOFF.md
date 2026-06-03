@@ -13,7 +13,7 @@ rewrite everything from scratch in this repo.
 
 ## WORKFLOW RULES
 
-1. **Always commit and push after completing work.** Use `GIT_TERMINAL_PROMPT=0 git push` to avoid interactive prompt hangs.
+1. **Commit and push automatically after completing each task/change.** Use `GIT_TERMINAL_PROMPT=0 git push` to avoid interactive prompt hangs. Do not wait for user confirmation.
 2. Read this file at the start of every session.
 3. Check `git log --oneline -5` and `git status` before starting.
 4. Ask the user what they want to work on.
