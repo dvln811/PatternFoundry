@@ -1136,6 +1136,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Indicators work now since window._chartData is populated
       if (activeIndicators.length) recomputeIndicators();
 
+      // Restore drawings
+      if (data.drawings && data.drawings.length && drawMgr) drawMgr.fromJSON(data.drawings);
+
       chart.timeScale().fitContent();
       document.getElementById('chart-overlay').classList.add('hidden');
       document.getElementById('pb-info').textContent = `${data.character||'?'} — ${data.date} · ${data.trades} trades · P/L: $${(data.pnl||0).toFixed(2)}`;
