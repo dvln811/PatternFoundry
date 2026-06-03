@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry - Iron Man Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
+.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
+.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.docs-main{max-width:900px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main h4{color:#ccc;font-size:14px;font-weight:600;margin:20px 0 8px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul,.docs-main ol{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.docs-main code{background:#0a0a0a;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4caf82}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+.note{background:#111;border-left:3px solid #4caf82;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.note .note-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#4caf82;margin-bottom:4px}
+.note p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12.5px}
+table th{text-align:left;padding:10px 12px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:9px 12px;border-bottom:1px solid #1a1a1a;color:#bbb}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
+    <a href="/settings">Settings</a>
+    <a href="/docs" class="active">Docs</a>
+    {% if is_admin %}<a href="/admin">Admin</a>{% endif %}
+    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Iron Man Mode</h1>
+
+<h3>What Is Iron Man Mode?</h3>
+<p>Iron Man Mode is a structured trading challenge that tests your discipline and consistency. The goal is simple: <strong>grow your account by 10% without ever drawing down 20% from your peak balance</strong>. There are no time limits — only your ability to stay disciplined session after session.</p>
+
+<div class="tip">
+  <div class="tip-title">The Challenge</div>
+  <p>Start with a fixed balance. Grow it to the +10% target before your drawdown from peak hits -20%. One session at a time, no shortcuts.</p>
+</div>
+
+<h3>How It Works</h3>
+<ol>
+  <li><strong>Start a Run</strong> — Go to the Stats page and begin an Iron Man challenge. Your run starts with a $10,000 balance.</li>
+  <li><strong>Trade in the Simulator</strong> — When you have an active run, the simulator automatically enters Iron Man mode. You'll see a 🔥 <strong>IRON MAN</strong> badge in the Session panel.</li>
+  <li><strong>Random Instruments</strong> — You don't get to choose your instrument. The simulator picks one at random each session. This forces you to be adaptable.</li>
+  <li><strong>Sessions Auto-Submit</strong> — When you close a session, your P&L is automatically recorded to the challenge. No manual tracking needed.</li>
+  <li><strong>Run Until End</strong> — The challenge continues until you either hit the target or breach the drawdown limit.</li>
+</ol>
+
+<h3>End Conditions</h3>
+<table>
+  <tr><th>Outcome</th><th>Condition</th><th>Result</th></tr>
+  <tr><td>🏆 Target Reached</td><td>Balance reaches +10% of starting ($11,000)</td><td>Challenge won — recorded in history</td></tr>
+  <tr><td>💀 Drawdown Breach</td><td>Balance drops 20% below peak</td><td>Challenge failed — recorded in history</td></tr>
+  <tr><td>🏳️ Forfeit</td><td>You manually end the run</td><td>Challenge abandoned — recorded in history</td></tr>
+</table>
+
+<h3>Drawdown Calculation</h3>
+<p>Drawdown is measured from your <strong>peak balance</strong>, not your starting balance. For example:</p>
+<ul>
+  <li>You start at $10,000 and grow to $10,500 — your peak is now $10,500</li>
+  <li>The 20% drawdown limit is calculated from your <strong>starting balance</strong>: $10,000 × 20% = $2,000</li>
+  <li>If your balance drops $2,000 below your peak ($10,500 → $8,500), the challenge ends</li>
+</ul>
+
+<div class="note">
+  <div class="note-title">Key Detail</div>
+  <p>The drawdown percentage is measured relative to your starting balance, but tracked from your highest point. This means the higher you climb, the more room you have — but a big loss can still end the run.</p>
+</div>
+
+<h3>Simulator Behavior During Iron Man</h3>
+<p>When an Iron Man run is active, the simulator changes in several ways:</p>
+<ul>
+  <li><strong>🔥 Badge visible</strong> — An orange "IRON MAN" indicator appears in the Session panel</li>
+  <li><strong>Instrument locked</strong> — The instrument dropdown is disabled; a random character is assigned each session</li>
+  <li><strong>Challenge balance used</strong> — Your session starts with the Iron Man run balance, not your regular trading account</li>
+  <li><strong>Auto-submission</strong> — Closing a session automatically records the result to your active run</li>
+  <li><strong>Immediate feedback</strong> — If the session ends the challenge (target or drawdown), you're notified immediately</li>
+</ul>
+
+<h3>Tracking Progress</h3>
+<p>Your Iron Man progress is visible on the <strong>Stats page</strong>:</p>
+<ul>
+  <li>Active run display with current balance, day count, drawdown percentage, and progress bar</li>
+  <li>Per-session breakdown (character, trades, wins, P&L, balance after)</li>
+  <li>History of past attempts with outcomes</li>
+</ul>
+
+<h3>Tips for Success</h3>
+<ul>
+  <li><strong>Small, consistent gains</strong> — You only need +10%. Don't swing for the fences.</li>
+  <li><strong>Respect the drawdown</strong> — A 20% buffer feels large until you have two bad sessions in a row.</li>
+  <li><strong>Adapt to the instrument</strong> — Since characters are random, focus on reading price action rather than relying on instrument-specific habits.</li>
+  <li><strong>Know when to stop</strong> — If you're tilting, close the session early or forfeit. You can always start a new attempt.</li>
+</ul>
+
+<h3>Starting & Managing Runs</h3>
+<p>Iron Man runs are managed from the <strong>Stats page</strong>:</p>
+<ul>
+  <li><strong>Start</strong> — Click "Start Iron Man" in the Iron Man panel</li>
+  <li><strong>Forfeit</strong> — Click "Forfeit" to end the run voluntarily at any time</li>
+  <li><strong>History</strong> — All past attempts are listed with their outcome, duration, and final balance</li>
+</ul>
+
+</main>
+</body>
+</html>

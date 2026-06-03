@@ -241,6 +241,10 @@ def docs_orderbook():
 def docs_pricing():
     return render_template('docs_pricing.html')
 
+@app.route('/docs/ironman')
+def docs_ironman():
+    return render_template('docs_ironman.html')
+
 _BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
 os.makedirs(_BOARD_DIR, exist_ok=True)
 
