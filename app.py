@@ -344,12 +344,17 @@ def ironman_start():
     if active:
         conn.close()
         return jsonify({'error': 'already_active'}), 409
+    data = request.get_json(force=True) if request.is_json else {}
+    balance = float(data.get('balance', 10000))
+    target_pct = float(data.get('target_pct', 10.0))
+    drawdown_pct = float(data.get('drawdown_pct', 20.0))
+    max_sessions = int(data.get('max_sessions', 0))
     # Determine attempt number
     count = conn.execute(
         'SELECT COUNT(*) FROM ironman_runs WHERE user_id=?', (uid,)).fetchone()[0]
     conn.execute(
-        'INSERT INTO ironman_runs (user_id, attempt) VALUES (?, ?)',
-        (uid, count + 1))
+        'INSERT INTO ironman_runs (user_id, attempt, start_balance, balance, peak_balance, target_pct, drawdown_limit_pct, max_sessions) VALUES (?,?,?,?,?,?,?,?)',
+        (uid, count + 1, balance, balance, balance, target_pct, drawdown_pct, max_sessions))
     conn.commit()
     run = conn.execute(
         'SELECT * FROM ironman_runs WHERE user_id=? AND status="active" ORDER BY id DESC LIMIT 1',
@@ -393,6 +398,8 @@ def ironman_session_complete():
         end_reason = 'drawdown_breach'
     elif new_balance >= target_balance:
         end_reason = 'target_reached'
+    elif run['max_sessions'] and day_num >= run['max_sessions']:
+        end_reason = 'max_sessions_reached'
 
     if end_reason:
         conn.execute(
@@ -710,7 +717,7 @@ def character_tick_preview():
 def character_list():
     items = []
     for key, spec in CHARACTERS.items():
-        items.append({'id': key, 'name': spec.name, 'kind': 'builtin'})
+        items.append({'id': key, 'name': spec.name, 'kind': 'builtin', 'initial_margin': spec.initial_margin})
     chars_dir = os.path.join('library', 'characters')
     if os.path.isdir(chars_dir):
         for fn in sorted(os.listdir(chars_dir)):

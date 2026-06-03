@@ -104,12 +104,26 @@
       <label>Base Preset</label>
       <select id="preset" style="flex:1" onchange="loadPreset()">
         <option value="">-- select --</option>
-        <option value="ES">ES (calm futures)</option>
-        <option value="NQ">NQ (active)</option>
-        <option value="SPY">SPY (quiet)</option>
-        <option value="TSLA">TSLA (gappy)</option>
-        <option value="GME">GME (high-beta retail)</option>
-        <option value="CL">CL (choppy)</option>
+        <optgroup label="E-mini Futures">
+          <option value="ES">ES (E-mini S&P)</option>
+          <option value="NQ">NQ (E-mini Nasdaq)</option>
+          <option value="CL">CL (Crude Oil)</option>
+          <option value="RTY">RTY (E-mini Russell)</option>
+        </optgroup>
+        <optgroup label="Micro Futures">
+          <option value="MES">MES (Micro S&P)</option>
+          <option value="MNQ">MNQ (Micro Nasdaq)</option>
+          <option value="MCL">MCL (Micro Crude)</option>
+          <option value="M2K">M2K (Micro Russell)</option>
+        </optgroup>
+        <optgroup label="Stocks">
+          <option value="SPY">SPY (S&P 500 ETF)</option>
+          <option value="AAPL">AAPL (Apple)</option>
+          <option value="MSFT">MSFT (Microsoft)</option>
+          <option value="PLTR">PLTR (Palantir)</option>
+          <option value="TSLA">TSLA (Tesla)</option>
+          <option value="GME">GME (GameStop)</option>
+        </optgroup>
       </select>
     </div>
     <div class="field">
@@ -404,12 +418,23 @@ function getSlider(id) { const el = document.getElementById(id); return el ? par
 
 // ── Preset data ───────────────────────────────────────────────────────────────
 const PRESETS = {
-  ES:   { name:'ES (calm futures)',      lo:5000,  hi:7000,  tick:0.25, vc:1.0,  vt:2.0,  vi:4.0,  vg:1.5, cs:0.05, ts:0.15, tm:0.25, im:1.5,  gb:0.02,  wcr:2.0, wtr:0.5, wir:0.3, wgr:0.3, wa:0.3, rc:25, ru:20, rd:20, ri:3, vb:1000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.02, em:3.0, msb:1.0, msv:1.5, mir:0.015, misn:10, misx:80,  mip:0.90, mrr:0.06, mmr:0.03, mhb:0.12, mha:0.4, mhbt:3.5, mps:0.25, mpc:3, mmv:0.003 },
-  NQ:   { name:'NQ (active)',            lo:18000, hi:22000, tick:0.25, vc:2.5,  vt:5.0,  vi:10.0, vg:1.5, cs:0.1,  ts:0.3,  tm:0.5,  im:3.0,  gb:0.03,  wcr:1.8, wtr:1.0, wir:0.4, wgr:0.3, wa:0.3, rc:15, ru:18, rd:18, ri:4, vb:800,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.04, em:3.0, msb:1.0, msv:2.0, mir:0.025, misn:15, misx:150, mip:0.88, mrr:0.08, mmr:0.06, mhb:0.18, mha:0.7, mhbt:2.5, mps:0.30, mpc:4, mmv:0.002 },
-  SPY:  { name:'SPY (quiet)',            lo:520,   hi:580,   tick:0.01, vc:0.15, vt:0.35, vi:0.8,  vg:1.5, cs:0.01, ts:0.025,tm:0.04, im:0.2,  gb:0.008, wcr:2.2, wtr:0.7, wir:0.4, wgr:0.3, wa:0.3, rc:30, ru:25, rd:25, ri:2, vb:5000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.05, gn:0.002, gx:0.005, gi:0.0,   ep:0.005,em:3.0, msb:1.0, msv:1.0, mir:0.01,  misn:50, misx:500, mip:0.93, mrr:0.10, mmr:0.02, mhb:0.10, mha:0.3, mhbt:4.0, mps:0.20, mpc:2, mmv:0.004 },
-  TSLA: { name:'TSLA (gappy)',           lo:200,   hi:280,   tick:0.01, vc:0.2,  vt:0.45, vi:0.9,  vg:1.5, cs:0.03, ts:0.08, tm:0.08, im:0.4,  gb:0.0,   wcr:1.2, wtr:0.4, wir:0.25,wgr:0.3, wa:0.2, rc:20, ru:15, rd:15, ri:4, vb:3000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.12, gp:0.25, gn:0.005, gx:0.025, gi:0.005, ep:0.03, em:2.5, msb:2.0, msv:3.0, mir:0.03,  misn:20, misx:200, mip:0.94, mrr:0.12, mmr:0.07, mhb:0.20, mha:0.8, mhbt:2.0, mps:0.35, mpc:5, mmv:0.001 },
-  GME:  { name:'GME (high-beta retail)', lo:18,    hi:35,    tick:0.01, vc:0.04, vt:0.09, vi:0.25, vg:1.5, cs:0.008,ts:0.02, tm:0.02, im:0.08, gb:0.0,   wcr:1.5, wtr:0.5, wir:0.3, wgr:0.3, wa:0.2, rc:10, ru:8,  rd:8,  ri:4, vb:2500, vo:2.2, vm:0.8, vcl:1.3, vsp:0.15, gp:0.30, gn:0.01,  gx:0.05,  gi:0.005, ep:0.04, em:2.5, msb:3.0, msv:4.0, mir:0.01,  misn:10, misx:100, mip:0.70, mrr:0.20, mmr:0.10, mhb:0.25, mha:1.0, mhbt:1.5, mps:0.40, mpc:4, mmv:0.001 },
-  CL:   { name:'CL (choppy)',            lo:70,    hi:90,    tick:0.01, vc:0.15, vt:0.3,  vi:0.6,  vg:1.5, cs:0.015,ts:0.04, tm:0.05, im:0.2,  gb:0.0,   wcr:1.5, wtr:0.5, wir:0.4, wgr:0.3, wa:0.15,rc:30, ru:10, rd:10, ri:2, vb:600,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.08, gn:0.003, gx:0.015, gi:0.0,   ep:0.03, em:3.0, msb:1.5, msv:2.5, mir:0.02,  misn:10, misx:100, mip:0.85, mrr:0.05, mmr:0.04, mhb:0.14, mha:0.5, mhbt:3.0, mps:0.30, mpc:3, mmv:0.003 },
+  // E-mini Futures
+  ES:   { name:'ES (E-mini S&P)',        lo:5000,  hi:7000,  tick:0.25, vc:1.0,  vt:2.0,  vi:4.0,  vg:1.5, cs:0.05, ts:0.15, tm:0.25, im:1.5,  gb:0.02,  wcr:2.0, wtr:0.5, wir:0.3, wgr:0.3, wa:0.3, rc:25, ru:20, rd:20, ri:3, vb:1000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.02, em:3.0, msb:1.0, msv:1.5, mir:0.015, misn:10, misx:80,  mip:0.90, mrr:0.06, mmr:0.03, mhb:0.12, mha:0.4, mhbt:3.5, mps:0.25, mpc:3, mmv:0.003 },
+  NQ:   { name:'NQ (E-mini Nasdaq)',     lo:18000, hi:22000, tick:0.25, vc:2.5,  vt:5.0,  vi:10.0, vg:1.5, cs:0.1,  ts:0.3,  tm:0.5,  im:3.0,  gb:0.03,  wcr:1.8, wtr:1.0, wir:0.4, wgr:0.3, wa:0.3, rc:15, ru:18, rd:18, ri:4, vb:800,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.04, em:3.0, msb:1.0, msv:2.0, mir:0.025, misn:15, misx:150, mip:0.88, mrr:0.08, mmr:0.06, mhb:0.18, mha:0.7, mhbt:2.5, mps:0.30, mpc:4, mmv:0.002 },
+  CL:   { name:'CL (Crude Oil)',         lo:70,    hi:90,    tick:0.01, vc:0.15, vt:0.3,  vi:0.6,  vg:1.5, cs:0.015,ts:0.04, tm:0.05, im:0.2,  gb:0.0,   wcr:1.5, wtr:0.5, wir:0.4, wgr:0.3, wa:0.15,rc:30, ru:10, rd:10, ri:2, vb:600,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.08, gn:0.003, gx:0.015, gi:0.0,   ep:0.03, em:3.0, msb:1.5, msv:2.5, mir:0.02,  misn:10, misx:100, mip:0.85, mrr:0.05, mmr:0.04, mhb:0.14, mha:0.5, mhbt:3.0, mps:0.30, mpc:3, mmv:0.003 },
+  RTY:  { name:'RTY (E-mini Russell)',   lo:2000,  hi:2300,  tick:0.10, vc:1.8,  vt:3.5,  vi:7.0,  vg:1.5, cs:0.08, ts:0.2,  tm:0.35, im:2.0,  gb:0.0,   wcr:1.8, wtr:0.6, wir:0.3, wgr:0.3, wa:0.3, rc:18, ru:15, rd:15, ri:3, vb:500,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.03, em:3.0, msb:1.2, msv:2.0, mir:0.02,  misn:12, misx:100, mip:0.88, mrr:0.07, mmr:0.05, mhb:0.15, mha:0.5, mhbt:3.0, mps:0.28, mpc:3, mmv:0.003 },
+  // Micro Futures (same chart behavior as E-mini, different tick_value)
+  MES:  { name:'MES (Micro S&P)',        lo:5000,  hi:7000,  tick:0.25, vc:1.0,  vt:2.0,  vi:4.0,  vg:1.5, cs:0.05, ts:0.15, tm:0.25, im:1.5,  gb:0.02,  wcr:2.0, wtr:0.5, wir:0.3, wgr:0.3, wa:0.3, rc:25, ru:20, rd:20, ri:3, vb:1000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.02, em:3.0, msb:1.0, msv:1.5, mir:0.015, misn:10, misx:80,  mip:0.90, mrr:0.06, mmr:0.03, mhb:0.12, mha:0.4, mhbt:3.5, mps:0.25, mpc:3, mmv:0.003 },
+  MNQ:  { name:'MNQ (Micro Nasdaq)',     lo:18000, hi:22000, tick:0.25, vc:2.5,  vt:5.0,  vi:10.0, vg:1.5, cs:0.1,  ts:0.3,  tm:0.5,  im:3.0,  gb:0.03,  wcr:1.8, wtr:1.0, wir:0.4, wgr:0.3, wa:0.3, rc:15, ru:18, rd:18, ri:4, vb:800,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.04, em:3.0, msb:1.0, msv:2.0, mir:0.025, misn:15, misx:150, mip:0.88, mrr:0.08, mmr:0.06, mhb:0.18, mha:0.7, mhbt:2.5, mps:0.30, mpc:4, mmv:0.002 },
+  MCL:  { name:'MCL (Micro Crude)',      lo:70,    hi:90,    tick:0.01, vc:0.15, vt:0.3,  vi:0.6,  vg:1.5, cs:0.015,ts:0.04, tm:0.05, im:0.2,  gb:0.0,   wcr:1.5, wtr:0.5, wir:0.4, wgr:0.3, wa:0.15,rc:30, ru:10, rd:10, ri:2, vb:600,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.08, gn:0.003, gx:0.015, gi:0.0,   ep:0.03, em:3.0, msb:1.5, msv:2.5, mir:0.02,  misn:10, misx:100, mip:0.85, mrr:0.05, mmr:0.04, mhb:0.14, mha:0.5, mhbt:3.0, mps:0.30, mpc:3, mmv:0.003 },
+  M2K:  { name:'M2K (Micro Russell)',    lo:2000,  hi:2300,  tick:0.10, vc:1.8,  vt:3.5,  vi:7.0,  vg:1.5, cs:0.08, ts:0.2,  tm:0.35, im:2.0,  gb:0.0,   wcr:1.8, wtr:0.6, wir:0.3, wgr:0.3, wa:0.3, rc:18, ru:15, rd:15, ri:3, vb:500,  vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.0,  gn:0.005, gx:0.02,  gi:0.0,   ep:0.03, em:3.0, msb:1.2, msv:2.0, mir:0.02,  misn:12, misx:100, mip:0.88, mrr:0.07, mmr:0.05, mhb:0.15, mha:0.5, mhbt:3.0, mps:0.28, mpc:3, mmv:0.003 },
+  // Stocks
+  SPY:  { name:'SPY (S&P 500 ETF)',      lo:520,   hi:580,   tick:0.01, vc:0.15, vt:0.35, vi:0.8,  vg:1.5, cs:0.01, ts:0.025,tm:0.04, im:0.2,  gb:0.008, wcr:2.2, wtr:0.7, wir:0.4, wgr:0.3, wa:0.3, rc:30, ru:25, rd:25, ri:2, vb:5000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.05, gn:0.002, gx:0.005, gi:0.0,   ep:0.005,em:3.0, msb:1.0, msv:1.0, mir:0.01,  misn:50, misx:500, mip:0.93, mrr:0.10, mmr:0.02, mhb:0.10, mha:0.3, mhbt:4.0, mps:0.20, mpc:2, mmv:0.004 },
+  AAPL: { name:'AAPL (Apple)',           lo:195,   hi:230,   tick:0.01, vc:0.18, vt:0.4,  vi:0.9,  vg:1.5, cs:0.012,ts:0.03, tm:0.05, im:0.25, gb:0.01,  wcr:2.0, wtr:0.6, wir:0.4, wgr:0.3, wa:0.3, rc:25, ru:22, rd:22, ri:3, vb:4000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.08, gn:0.003, gx:0.01,  gi:0.0,   ep:0.01, em:3.0, msb:1.0, msv:1.2, mir:0.012, misn:30, misx:300, mip:0.92, mrr:0.08, mmr:0.03, mhb:0.11, mha:0.35,mhbt:3.8, mps:0.22, mpc:2, mmv:0.004 },
+  MSFT: { name:'MSFT (Microsoft)',       lo:410,   hi:460,   tick:0.01, vc:0.16, vt:0.38, vi:0.85, vg:1.5, cs:0.01, ts:0.028,tm:0.045,im:0.22, gb:0.01,  wcr:2.1, wtr:0.65,wir:0.4, wgr:0.3, wa:0.3, rc:28, ru:22, rd:22, ri:2, vb:3500, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.06, gn:0.002, gx:0.008, gi:0.0,   ep:0.008,em:3.0, msb:1.0, msv:1.0, mir:0.01,  misn:40, misx:400, mip:0.93, mrr:0.09, mmr:0.02, mhb:0.10, mha:0.3, mhbt:4.0, mps:0.20, mpc:2, mmv:0.004 },
+  PLTR: { name:'PLTR (Palantir)',        lo:100,   hi:140,   tick:0.01, vc:0.22, vt:0.5,  vi:1.1,  vg:1.5, cs:0.02, ts:0.06, tm:0.07, im:0.35, gb:0.005, wcr:1.5, wtr:0.5, wir:0.3, wgr:0.3, wa:0.15,rc:12, ru:12, rd:12, ri:4, vb:3000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.10, gp:0.15, gn:0.005, gx:0.02,  gi:0.0,   ep:0.03, em:2.2, msb:1.5, msv:2.5, mir:0.025, misn:15, misx:150, mip:0.88, mrr:0.10, mmr:0.06, mhb:0.16, mha:0.6, mhbt:2.5, mps:0.30, mpc:4, mmv:0.002 },
+  TSLA: { name:'TSLA (Tesla)',           lo:200,   hi:280,   tick:0.01, vc:0.2,  vt:0.45, vi:0.9,  vg:1.5, cs:0.03, ts:0.08, tm:0.08, im:0.4,  gb:0.0,   wcr:1.2, wtr:0.4, wir:0.25,wgr:0.3, wa:0.2, rc:20, ru:15, rd:15, ri:4, vb:3000, vo:2.2, vm:0.8, vcl:1.3, vsp:0.12, gp:0.25, gn:0.005, gx:0.025, gi:0.005, ep:0.03, em:2.5, msb:2.0, msv:3.0, mir:0.03,  misn:20, misx:200, mip:0.94, mrr:0.12, mmr:0.07, mhb:0.20, mha:0.8, mhbt:2.0, mps:0.35, mpc:5, mmv:0.001 },
+  GME:  { name:'GME (GameStop)',         lo:18,    hi:35,    tick:0.01, vc:0.04, vt:0.09, vi:0.25, vg:1.5, cs:0.008,ts:0.02, tm:0.02, im:0.08, gb:0.0,   wcr:1.5, wtr:0.5, wir:0.3, wgr:0.3, wa:0.2, rc:10, ru:8,  rd:8,  ri:4, vb:2500, vo:2.2, vm:0.8, vcl:1.3, vsp:0.15, gp:0.30, gn:0.01,  gx:0.05,  gi:0.005, ep:0.04, em:2.5, msb:3.0, msv:4.0, mir:0.01,  misn:10, misx:100, mip:0.70, mrr:0.20, mmr:0.10, mhb:0.25, mha:1.0, mhbt:1.5, mps:0.40, mpc:4, mmv:0.001 },
 };
 
 function loadPreset() {

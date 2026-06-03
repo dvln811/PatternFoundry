@@ -819,13 +819,14 @@ function rebucketHistory(candles, tf) {
 
 async function loadSession() {
   stopPlay();
-  // In Iron Man mode, pick a random built-in character
+  // In Iron Man mode, pick a random built-in character affordable by current balance
   if (ironMan.active) {
     const sel = document.getElementById('sim-instrument');
-    const builtIn = [...sel.options].filter(o => o.dataset.kind === 'builtin');
-    if (builtIn.length > 0) {
-      const pick = builtIn[Math.floor(Math.random() * builtIn.length)];
-      sel.value = pick.value;
+    const bal = ironMan.run.balance;
+    const affordable = (window._characterList || []).filter(c => c.kind === 'builtin' && c.initial_margin <= bal);
+    if (affordable.length > 0) {
+      const pick = affordable[Math.floor(Math.random() * affordable.length)];
+      sel.value = pick.id;
     }
   }
   const inst     = document.getElementById('sim-instrument').value;

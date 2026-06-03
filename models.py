@@ -96,6 +96,10 @@ def init_db():
         conn.execute('ALTER TABLE sessions ADD COLUMN ironman_run_id INTEGER')
     except Exception:
         pass
+    try:
+        conn.execute('ALTER TABLE ironman_runs ADD COLUMN max_sessions INTEGER DEFAULT 0')
+    except Exception:
+        pass
     # Per-trade data
     conn.execute('''CREATE TABLE IF NOT EXISTS trades (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
