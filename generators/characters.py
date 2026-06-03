@@ -3,6 +3,7 @@ from .spec import CharacterSpec, RegimeSpec, DriftSpec, VolatilitySpec, WickSpec
 
 ES_CALM = CharacterSpec(
     name='ES (calm futures)', price_range=(5000, 7000), tick=0.25, tick_value=12.50,
+    initial_margin=15900, maintenance_margin=14400,
     regime=RegimeSpec(mean_duration={'chop': 25, 'trend_up': 20, 'trend_down': 20, 'impulse': 3, 'gap_hold': 1}),
     drift=DriftSpec(chop_sigma=0.05, trend_sigma=0.15, trend_magnitude=0.25, impulse_magnitude=1.5, global_bias=0.02),
     volatility=VolatilitySpec(chop=1.0, trend=2.0, impulse=4.0),
@@ -14,6 +15,7 @@ ES_CALM = CharacterSpec(
 
 NQ_ACTIVE = CharacterSpec(
     name='NQ (active)', price_range=(18000, 22000), tick=0.25, tick_value=5.00,
+    initial_margin=21000, maintenance_margin=19000,
     regime=RegimeSpec(
         mean_duration={'chop': 15, 'trend_up': 18, 'trend_down': 18, 'impulse': 4, 'gap_hold': 1},
         transition={
@@ -33,6 +35,7 @@ NQ_ACTIVE = CharacterSpec(
 
 SPY_QUIET = CharacterSpec(
     name='SPY (quiet)', price_range=(520, 580), tick=0.01, tick_value=1.00,
+    initial_margin=275, maintenance_margin=138,
     regime=RegimeSpec(
         mean_duration={'chop': 30, 'trend_up': 25, 'trend_down': 25, 'impulse': 2, 'gap_hold': 1},
         transition={
@@ -52,6 +55,7 @@ SPY_QUIET = CharacterSpec(
 
 TSLA_GAPPY = CharacterSpec(
     name='TSLA (gappy)', price_range=(200, 280), tick=0.01, tick_value=1.00,
+    initial_margin=120, maintenance_margin=60,
     regime=RegimeSpec(
         mean_duration={'chop': 20, 'trend_up': 15, 'trend_down': 15, 'impulse': 4, 'gap_hold': 1},
         transition={
@@ -71,6 +75,7 @@ TSLA_GAPPY = CharacterSpec(
 
 GME_RETAIL = CharacterSpec(
     name='GME (high-beta retail)', price_range=(18, 35), tick=0.01, tick_value=1.00,
+    initial_margin=13, maintenance_margin=7,
     regime=RegimeSpec(
         mean_duration={'chop': 10, 'trend_up': 8, 'trend_down': 8, 'impulse': 4, 'gap_hold': 1},
         transition={
@@ -90,6 +95,7 @@ GME_RETAIL = CharacterSpec(
 
 CL_CHOPPY = CharacterSpec(
     name='CL (choppy)', price_range=(70, 90), tick=0.01, tick_value=10.00,
+    initial_margin=12000, maintenance_margin=10900,
     regime=RegimeSpec(
         mean_duration={'chop': 30, 'trend_up': 10, 'trend_down': 10, 'impulse': 2, 'gap_hold': 1},
         transition={

@@ -1008,6 +1008,8 @@ def sim_session():
         'instrument':   instrument,
         'tick_size':    profile.tick,
         'tick_value':   getattr(profile, 'tick_value', 12.50),
+        'initial_margin': getattr(profile, 'initial_margin', 0),
+        'maintenance_margin': getattr(profile, 'maintenance_margin', 0),
         'session_date': str(target),
         'seed':         seed,
     })

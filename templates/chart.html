@@ -614,6 +614,7 @@ window.addEventListener('beforeunload', (e) => {
 let allTicks = [], tickIdx = 0;
 let playTimer = null, isPlaying = false;
 let currentPrice = 0, tickSize = 0.25, tickValue = 1.25;
+let initialMargin = 0, maintenanceMargin = 0;
 let candleTF = 60;
 let currentCandle = null;
 let account = { balance: 50000, startBal: 50000, sessionPnl: 0, trades: [], wins: 0, losses: 0 };
@@ -852,6 +853,8 @@ async function loadSession() {
   currentCandle = null;
   tickSize      = data.tick_size  || 0.25;
   tickValue     = data.tick_value || 1.25;
+  initialMargin = data.initial_margin || 0;
+  maintenanceMargin = data.maintenance_margin || 0;
 
   account = {
     balance: ironMan.active ? ironMan.run.balance : (serverAccount.balance || 50000),
@@ -931,6 +934,20 @@ function processTick(tick) {
     if (dir === 'long'  && tick.price >= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
     if (dir === 'short' && tick.price >= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
     if (dir === 'short' && tick.price <= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
+    // Maintenance margin check
+    if (maintenanceMargin > 0) {
+      const tpp = 1 / tickSize;
+      const unrealized = (dir === 'long' ? tick.price - position.entry : position.entry - tick.price) * tpp * tickValue * position.qty;
+      const equity = account.balance + unrealized;
+      const required = maintenanceMargin * position.qty;
+      if (equity < required) {
+        closeTrade(tick.price, 'Margin Call');
+        document.getElementById('pb-info').textContent = '⚠ MARGIN CALL — Position liquidated (equity below maintenance margin)';
+        document.getElementById('pb-info').style.color = '#e05c5c';
+        setTimeout(() => { document.getElementById('pb-info').style.color = ''; }, 5000);
+        return;
+      }
+    }
     updateAccount(); updatePosition();
   }
 }
@@ -1090,6 +1107,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const sessionCandles = (data.candles||[]).map(c=>({time:c.t,open:c.o,high:c.h,low:c.l,close:c.c,volume:c.v||0}));
       tickSize = data.tick_size || 0.25;
       tickValue = data.tick_value || 1.25;
+      initialMargin = data.initial_margin || 0;
+      maintenanceMargin = data.maintenance_margin || 0;
 
       // Regenerate historical candles from seed/instrument/hist_days
       let histCandles = [];
@@ -1301,6 +1320,16 @@ function _clearSetupLines() {
 function confirmOrder() {
   if (!setupMode) return;
   const { direction: dir, entry, sl, tp, qty, orderType } = setupMode;
+  // Margin check
+  if (initialMargin > 0) {
+    const requiredMargin = qty * initialMargin;
+    if (requiredMargin > account.balance) {
+      document.getElementById('pb-info').textContent = `⚠ Order rejected: insufficient margin ($${requiredMargin.toLocaleString()} required, $${account.balance.toLocaleString()} available)`;
+      document.getElementById('pb-info').style.color = '#e05c5c';
+      setTimeout(() => { document.getElementById('pb-info').style.color = ''; }, 3000);
+      return;
+    }
+  }
   _clearSetupLines();
   const isMarket = orderType === 'market' || Math.abs(entry - currentPrice) < tickSize * 2;
   setupMode = null;
