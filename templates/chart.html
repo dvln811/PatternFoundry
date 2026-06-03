@@ -1402,7 +1402,10 @@ function saveSessionToHistory() {
     trade_list: account.trades,
     drawings: drawMgr ? drawMgr.drawings : [],
   };
-  if (ironMan.active) entry.ironman = true;
+  if (ironMan.active) {
+    entry.ironman = true;
+    entry.ironman_run_id = ironMan.run.id;
+  }
   fetch('/api/sessions', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry)});
   // Persist rolling balance (skip for Iron Man — it has its own tracking)
   if (!ironMan.active) {

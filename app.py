@@ -445,7 +445,8 @@ def api_save_session():
                  int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)), acct_id,
                  seed=data.get('seed'), hist_days=data.get('hist_days'),
                  tick_size=data.get('tick_size'), tick_value=data.get('tick_value'),
-                 candles=candles_json, trade_list=data.get('trade_list'), drawings=drawings_json)
+                 candles=candles_json, trade_list=data.get('trade_list'), drawings=drawings_json,
+                 ironman_run_id=data.get('ironman_run_id'))
     return jsonify({'saved': True, 'session_id': session_id})
 
 

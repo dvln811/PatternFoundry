@@ -92,6 +92,10 @@ def init_db():
             conn.execute(f'ALTER TABLE sessions ADD COLUMN {col[0]} {col[1]}')
         except Exception:
             pass
+    try:
+        conn.execute('ALTER TABLE sessions ADD COLUMN ironman_run_id INTEGER')
+    except Exception:
+        pass
     # Per-trade data
     conn.execute('''CREATE TABLE IF NOT EXISTS trades (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -192,10 +196,10 @@ def nuke_user_stats(user_id):
     conn.close()
 
 
-def save_session(user_id, date, character, trades, wins, pnl, account_id=None, seed=None, hist_days=None, tick_size=None, tick_value=None, candles=None, trade_list=None, drawings=None):
+def save_session(user_id, date, character, trades, wins, pnl, account_id=None, seed=None, hist_days=None, tick_size=None, tick_value=None, candles=None, trade_list=None, drawings=None, ironman_run_id=None):
     conn = _get_db()
-    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                 (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings))
+    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings, ironman_run_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                 (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings, ironman_run_id))
     session_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
     if trade_list:
         for t in trade_list:
