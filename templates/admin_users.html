@@ -75,7 +75,12 @@ tr:hover{background:#1a1a1a}
       {% endif %}
       <button name="action" value="nuke" class="btn btn-danger" onclick="return confirm('Nuke all stats for {{u.name}}? This cannot be undone.')">Nuke Stats</button>
     </form>
-    {% else %}<span style="color:#555;font-size:.72rem">You</span>{% endif %}
+    {% else %}<span style="color:#555;font-size:.72rem">You</span>
+    <form method="POST" action="/admin/users/action" style="display:inline">
+      <input type="hidden" name="user_id" value="{{ u.id }}">
+      <button name="action" value="nuke" class="btn btn-danger" onclick="return confirm('Nuke YOUR stats? This cannot be undone.')">Nuke Stats</button>
+    </form>
+    {% endif %}
   </td>
 </tr>
 {% endfor %}
