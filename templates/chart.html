@@ -898,7 +898,7 @@ function processTick(tick) {
       if (pendingLine) { candleSeries.removePriceLine(pendingLine); pendingLine = null; }
       if (slLine) { candleSeries.removePriceLine(slLine); slLine = null; }
       if (tpLine) { candleSeries.removePriceLine(tpLine); tpLine = null; }
-      position = { direction: po.direction, entry: po.entry, qty: po.qty, sl: po.sl, tp: po.tp };
+      position = { direction: po.direction, entry: po.entry, qty: po.qty, sl: po.sl, tp: po.tp, entryTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) };
       entryLine = candleSeries.createPriceLine({ price: po.entry, color: '#f0c040', lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: 'Entry' });
       slLine    = candleSeries.createPriceLine({ price: po.sl,    color: '#e05c5c', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'SL' });
       tpLine    = candleSeries.createPriceLine({ price: po.tp,    color: '#4caf82', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'TP' });
@@ -1202,7 +1202,7 @@ function confirmOrder() {
   const isMarket = orderType === 'market' || Math.abs(entry - currentPrice) < tickSize * 2;
   setupMode = null;
   if (isMarket) {
-    position = { direction: dir, entry: currentPrice, qty, sl, tp };
+    position = { direction: dir, entry: currentPrice, qty, sl, tp, entryTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) };
     entryLine = candleSeries.createPriceLine({ price: currentPrice, color: '#f0c040', lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: 'Entry' });
     slLine    = candleSeries.createPriceLine({ price: sl,           color: '#e05c5c', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'SL' });
     tpLine    = candleSeries.createPriceLine({ price: tp,           color: '#4caf82', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'TP' });
@@ -1250,7 +1250,7 @@ function closeTrade(exitPrice, reason) {
   account.balance    += pnl;
   account.sessionPnl += pnl;
   if (pnl > 0) account.wins++; else account.losses++;
-  account.trades.push({ dir, entry, exit: exitPrice, qty, pnl: Math.round(pnl * 100) / 100, reason });
+  account.trades.push({ dir, entry, exit: exitPrice, qty, pnl: Math.round(pnl * 100) / 100, reason, entryTime: position.entryTime || 0, exitTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) });
   if (entryLine) { candleSeries.removePriceLine(entryLine); entryLine = null; }
   if (slLine)    { candleSeries.removePriceLine(slLine);    slLine    = null; }
   if (tpLine)    { candleSeries.removePriceLine(tpLine);    tpLine    = null; }
@@ -1268,12 +1268,35 @@ function saveSessionToHistory() {
   if (sessionClosed) return;
   sessionClosed = true;
   if (account.trades.length === 0) return;
+  // Build 1-min session candles from ticks
+  const sessionCandles = [];
+  let c = null;
+  for (const t of allTicks) {
+    const ct = Math.floor(t.time / 60) * 60;
+    if (!c || c.t !== ct) {
+      if (c) sessionCandles.push(c);
+      c = { t: ct, o: t.price, h: t.price, l: t.price, c: t.price, v: t.volume };
+    } else {
+      c.h = Math.max(c.h, t.price);
+      c.l = Math.min(c.l, t.price);
+      c.c = t.price;
+      c.v += t.volume;
+    }
+  }
+  if (c) sessionCandles.push(c);
+
   const entry = {
     date: new Date().toISOString().slice(0, 10),
     character: document.getElementById('sim-instrument').value || 'Unknown',
     trades: account.trades.length,
     wins: account.wins,
     pnl: Math.round(account.sessionPnl * 100) / 100,
+    seed: document.getElementById('sim-seed').value || null,
+    hist_days: parseInt(document.getElementById('sim-hist-days').value) || 5,
+    tick_size: tickSize,
+    tick_value: tickValue,
+    candles: sessionCandles,
+    trade_list: account.trades,
   };
   fetch('/api/sessions', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry)});
   // Persist rolling balance
@@ -1313,12 +1336,29 @@ function closeSession() {
   }
   stopPlay();
   if (position) closeTrade(currentPrice, 'Session Close');
-  saveSessionToHistory();
-  document.getElementById('pb-info').textContent = 'Session closed ✓';
-  document.getElementById('btn-close-session').style.display = 'none';
-  document.getElementById('pb-play').disabled = true;
-  document.getElementById('btn-long').disabled = true;
-  document.getElementById('btn-short').disabled = true;
+  // Simulate remaining ticks to build full session chart
+  document.getElementById('pb-info').textContent = 'Simulating remainder…';
+  setTimeout(() => {
+    while (tickIdx < allTicks.length) {
+      const tick = allTicks[tickIdx++];
+      const ct = getCandleTime(tick.time);
+      if (!currentCandle || currentCandle.time !== ct) {
+        currentCandle = { time: ct, open: tick.price, high: tick.price, low: tick.price, close: tick.price, volume: tick.volume };
+      } else {
+        currentCandle.high = Math.max(currentCandle.high, tick.price);
+        currentCandle.low = Math.min(currentCandle.low, tick.price);
+        currentCandle.close = tick.price;
+        currentCandle.volume += tick.volume;
+      }
+      candleSeries.update({ time: currentCandle.time, open: currentCandle.open, high: currentCandle.high, low: currentCandle.low, close: currentCandle.close });
+    }
+    saveSessionToHistory();
+    document.getElementById('pb-info').textContent = 'Session closed ✓';
+    document.getElementById('btn-close-session').style.display = 'none';
+    document.getElementById('pb-play').disabled = true;
+    document.getElementById('btn-long').disabled = true;
+    document.getElementById('btn-short').disabled = true;
+  }, 50);
 }
 
 // ── Live SL/TP drag ──────────────────────────────────────────────────────

@@ -298,6 +298,10 @@ def feature_ideas():
 def stats():
     return render_template('stats.html')
 
+@app.route('/replay/<int:session_id>')
+def replay(session_id):
+    return render_template('replay.html', session_id=session_id)
+
 
 # ── Iron Man Mode API ─────────────────────────────────────────────────────────
 
@@ -434,9 +438,14 @@ def api_save_session():
     data = request.get_json(force=True)
     acct = get_active_account(uid)
     acct_id = acct['id'] if acct else None
-    save_session(uid, data.get('date', ''), data.get('character', ''),
-                 int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)), acct_id)
-    return jsonify({'saved': True})
+    import json as _json
+    candles_json = _json.dumps(data['candles']) if data.get('candles') else None
+    session_id = save_session(uid, data.get('date', ''), data.get('character', ''),
+                 int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)), acct_id,
+                 seed=data.get('seed'), hist_days=data.get('hist_days'),
+                 tick_size=data.get('tick_size'), tick_value=data.get('tick_value'),
+                 candles=candles_json, trade_list=data.get('trade_list'))
+    return jsonify({'saved': True, 'session_id': session_id})
 
 
 @app.route('/api/sessions')
@@ -448,6 +457,25 @@ def api_get_sessions():
     if account_id:
         return jsonify(get_account_sessions(int(account_id)))
     return jsonify(get_sessions(uid))
+
+
+@app.route('/api/sessions/<int:session_id>')
+def api_get_session_detail(session_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = _get_db()
+    session = conn.execute('SELECT * FROM sessions WHERE id=? AND user_id=?', (session_id, uid)).fetchone()
+    if not session:
+        conn.close()
+        return jsonify({'error': 'not_found'}), 404
+    trades = conn.execute('SELECT * FROM trades WHERE session_id=? ORDER BY id', (session_id,)).fetchall()
+    conn.close()
+    s = dict(session)
+    import json as _json
+    s['candles'] = _json.loads(s['candles']) if s.get('candles') else []
+    s['trade_list'] = [dict(t) for t in trades]
+    return jsonify(s)
 
 
 @app.route('/api/account')

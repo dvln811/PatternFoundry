@@ -86,6 +86,26 @@ def init_db():
         conn.execute('ALTER TABLE sessions ADD COLUMN account_id INTEGER')
     except Exception:
         pass
+    # Session replay columns
+    for col in [('seed', 'TEXT'), ('hist_days', 'INTEGER'), ('tick_size', 'REAL'), ('tick_value', 'REAL'), ('candles', 'TEXT')]:
+        try:
+            conn.execute(f'ALTER TABLE sessions ADD COLUMN {col[0]} {col[1]}')
+        except Exception:
+            pass
+    # Per-trade data
+    conn.execute('''CREATE TABLE IF NOT EXISTS trades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER NOT NULL,
+        direction TEXT,
+        qty INTEGER,
+        entry_price REAL,
+        entry_time INTEGER,
+        exit_price REAL,
+        exit_time INTEGER,
+        pnl REAL,
+        exit_reason TEXT,
+        FOREIGN KEY(session_id) REFERENCES sessions(id)
+    )''')
     conn.commit()
     conn.close()
 
@@ -142,12 +162,11 @@ def get_account_sessions(account_id):
     if not acct:
         conn.close()
         return []
-    # Include legacy sessions (NULL account_id) for the first account created by this user
     first = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? ORDER BY id ASC LIMIT 1', (acct['user_id'],)).fetchone()
     if first and first['id'] == account_id:
-        rows = conn.execute('SELECT date, character, trades, wins, pnl FROM sessions WHERE (account_id=? OR (account_id IS NULL AND user_id=?)) ORDER BY id ASC', (account_id, acct['user_id'])).fetchall()
+        rows = conn.execute('SELECT id, date, character, trades, wins, pnl FROM sessions WHERE (account_id=? OR (account_id IS NULL AND user_id=?)) ORDER BY id ASC', (account_id, acct['user_id'])).fetchall()
     else:
-        rows = conn.execute('SELECT date, character, trades, wins, pnl FROM sessions WHERE account_id=? ORDER BY id ASC', (account_id,)).fetchall()
+        rows = conn.execute('SELECT id, date, character, trades, wins, pnl FROM sessions WHERE account_id=? ORDER BY id ASC', (account_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -161,25 +180,29 @@ def purge_archived_accounts(user_id):
     conn.close()
 
 
-def save_session(user_id, date, character, trades, wins, pnl, account_id=None):
+def save_session(user_id, date, character, trades, wins, pnl, account_id=None, seed=None, hist_days=None, tick_size=None, tick_value=None, candles=None, trade_list=None):
     conn = _get_db()
-    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id) VALUES (?,?,?,?,?,?,?)',
-                 (user_id, date, character, trades, wins, pnl, account_id))
+    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                 (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles))
+    session_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
+    if trade_list:
+        for t in trade_list:
+            conn.execute('INSERT INTO trades (session_id, direction, qty, entry_price, entry_time, exit_price, exit_time, pnl, exit_reason) VALUES (?,?,?,?,?,?,?,?,?)',
+                         (session_id, t.get('dir'), t.get('qty'), t.get('entry'), t.get('entryTime'), t.get('exit'), t.get('exitTime'), t.get('pnl'), t.get('reason')))
     conn.commit()
     conn.close()
+    return session_id
 
 
 def get_sessions(user_id):
     conn = _get_db()
-    # NULL sessions belong to the first-ever account. If that account was purged, exclude them.
     first = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? ORDER BY id ASC LIMIT 1', (user_id,)).fetchone()
     active = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? AND status="active"', (user_id,)).fetchone()
-    # If the first account IS the active account, there are no older accounts — NULLs are orphans
     include_nulls = first and active and first['id'] != active['id']
     if include_nulls:
-        rows = conn.execute('SELECT date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
+        rows = conn.execute('SELECT id, date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? ORDER BY id ASC', (user_id,)).fetchall()
     else:
-        rows = conn.execute('SELECT date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? AND account_id IS NOT NULL ORDER BY id ASC', (user_id,)).fetchall()
+        rows = conn.execute('SELECT id, date, character, trades, wins, pnl, created_at FROM sessions WHERE user_id=? AND account_id IS NOT NULL ORDER BY id ASC', (user_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
