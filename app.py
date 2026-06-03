@@ -298,10 +298,6 @@ def feature_ideas():
 def stats():
     return render_template('stats.html')
 
-@app.route('/replay/<int:session_id>')
-def replay(session_id):
-    return render_template('replay.html', session_id=session_id)
-
 
 # ── Iron Man Mode API ─────────────────────────────────────────────────────────
 

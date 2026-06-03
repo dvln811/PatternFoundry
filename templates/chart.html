@@ -598,10 +598,13 @@ return pairs.map(p => ({
 
 <script>
 // ── State ────────────────────────────────────────────────────────────────
+const _replayParam = new URLSearchParams(window.location.search).get('replay');
+const REVIEW_MODE = _replayParam ? parseInt(_replayParam) : null;
+
 let chart, candleSeries, volSeries;
 
 window.addEventListener('beforeunload', (e) => {
-  if (allTicks.length > 0 && tickIdx > 0) {
+  if (!REVIEW_MODE && allTicks.length > 0 && tickIdx > 0) {
     e.preventDefault();
     e.returnValue = 'Active simulator session will be lost. Leave anyway?';
     return e.returnValue;
@@ -1054,6 +1057,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const t1 = ts.coordinateToTime(x1);
     if (t0 != null && t1 != null) ts.setVisibleRange({ from: t0, to: t1 });
   });
+
+  // ── Review Mode ────────────────────────────────────────────────────────
+  if (REVIEW_MODE) {
+    // Hide sidebar sections except session header
+    document.getElementById('sec-session').style.display = 'none';
+    document.getElementById('sec-account').style.display = 'none';
+    document.getElementById('sec-trade').style.display = 'none';
+    // Hide playback controls, show close button
+    const pb = document.querySelector('.playback');
+    pb.innerHTML = `<button onclick="window.location='/stats'" style="background:#1a1a1a;border:1px solid #f97316;color:#f97316;padding:6px 16px;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit">✕ Close Review</button><span class="pb-info" id="pb-info">Loading session…</span>`;
+    // Load session data
+    fetch(`/api/sessions/${REVIEW_MODE}`, {credentials:'include'}).then(r=>r.json()).then(data => {
+      if (data.error) { document.getElementById('pb-info').textContent = 'Session not found'; return; }
+      const candles = (data.candles||[]).map(c=>({time:c.t,open:c.o,high:c.h,low:c.l,close:c.c}));
+      candleSeries.setData(candles);
+      volSeries.setData((data.candles||[]).map(c=>({time:c.t,value:c.v||0,color:c.c>=c.o?'#4caf8266':'#e05c5c66'})));
+      // Buy/sell markers
+      const trades = data.trade_list || [];
+      const markers = [];
+      for (const t of trades) {
+        if (t.entry_time) markers.push({time:Math.floor(t.entry_time/60)*60,position:t.direction==='long'?'belowBar':'aboveBar',color:t.direction==='long'?'#4caf82':'#e05c5c',shape:t.direction==='long'?'arrowUp':'arrowDown',text:t.direction==='long'?'BUY':'SELL'});
+        if (t.exit_time) markers.push({time:Math.floor(t.exit_time/60)*60,position:t.direction==='long'?'aboveBar':'belowBar',color:'#f0c040',shape:'circle',text:(t.exit_reason||'Close').slice(0,6)});
+      }
+      markers.sort((a,b)=>a.time-b.time);
+      candleSeries.setMarkers(markers);
+      chart.timeScale().fitContent();
+      document.getElementById('pb-info').textContent = `${data.character||'?'} — ${data.date} · ${data.trades} trades · P/L: $${(data.pnl||0).toFixed(2)}`;
+    });
+  }
 });
 
 document.getElementById('pb-speed').addEventListener('change', () => { if (isPlaying) { stopPlay(); startPlay(); } });

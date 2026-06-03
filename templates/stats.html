@@ -229,7 +229,7 @@ async function renderForAccount(accountId) {
     const wr = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
     const pnl = (h.pnl >= 0 ? '+$' : '-$') + Math.abs(h.pnl || 0).toFixed(2);
     const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
-    return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl}</td><td>${tag}</td><td>${h.id ? `<a href="/replay/${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
+    return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
   }).join('');
 }
 
