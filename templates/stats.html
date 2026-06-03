@@ -143,6 +143,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+const fmtD = v => Math.abs(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
 let allSessions = [];
 let selectedAccountId = null;
 let equityChartInstance = null;
@@ -189,7 +190,7 @@ function renderAccountList(accounts) {
       ${statusTag}
       <span style="color:#888">$${a.starting.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
       <span style="color:#ccc">$${a.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
-      <span style="color:${color}">${pnl>=0?'+':''}$${Math.abs(pnl).toFixed(2)} (${pnl>=0?'+':''}${pct}%)</span>
+      <span style="color:${color}">${pnl>=0?'+':'-'}$${fmtD(pnl)} (${pnl>=0?'+':''}${pct}%)</span>
       <span style="color:#555;font-size:.6rem">${dateStr}</span>
     </div>`;
   }).join('');
@@ -220,7 +221,7 @@ async function renderForAccount(accountId) {
   document.getElementById('s-trades').textContent = totalTrades;
   document.getElementById('s-winrate').textContent = wr;
   const pnlEl = document.getElementById('s-pnl');
-  pnlEl.textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(2);
+  pnlEl.textContent = (totalPnl >= 0 ? '+$' : '-$') + fmtD(totalPnl);
   pnlEl.className = 'stat-val ' + (totalPnl >= 0 ? 'pos' : 'neg');
 
   // Equity curve for selected account
@@ -234,7 +235,7 @@ async function renderForAccount(accountId) {
   noHist.style.display = 'none';
   tbody.innerHTML = sessions.slice().reverse().map(h => {
     const wr = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
-    const pnl = (h.pnl >= 0 ? '+$' : '-$') + Math.abs(h.pnl || 0).toFixed(2);
+    const pnl = (h.pnl >= 0 ? '+$' : '-$') + fmtD(h.pnl || 0);
     const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
     return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
   }).join('');
@@ -334,13 +335,13 @@ function renderActiveRun(run, sessions) {
   const progress = Math.max(0, Math.min(100, ((run.balance - run.start_balance) / (targetBal - run.start_balance)) * 100));
   let html = `<h3>🦾 Iron Man Challenge — Attempt #${run.attempt}</h3>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0">
-      <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:${pnl>=0?'#4caf82':'#e05c5c'}">$${run.balance.toFixed(0)}</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Balance</div></div>
+      <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:${pnl>=0?'#4caf82':'#e05c5c'}">$${run.balance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Balance</div></div>
       <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:#e0e0e0">${run.day_count}</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Days</div></div>
       <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:${pnl>=0?'#4caf82':'#e05c5c'}">${pnl>=0?'+':''}${pnlPct}%</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">P/L</div></div>
       <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:${parseFloat(ddPct)>10?'#f97316':'#e0e0e0'}">${ddPct}%</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Drawdown</div></div>
     </div>
     <div style="margin:10px 0">
-      <div style="display:flex;justify-content:space-between;font-size:.6rem;color:#888;margin-bottom:3px"><span>$${run.start_balance.toFixed(0)}</span><span>Target: $${targetBal.toFixed(0)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:.6rem;color:#888;margin-bottom:3px"><span>$${run.start_balance.toLocaleString()}</span><span>Target: $${targetBal.toLocaleString()}</span></div>
       <div style="background:#1a1a1a;border-radius:3px;height:8px;overflow:hidden"><div style="height:100%;width:${Math.max(0,progress)}%;background:linear-gradient(90deg,#4caf82,#7cdfb0);border-radius:3px;transition:width .3s"></div></div>
       <div style="font-size:.55rem;color:#555;margin-top:2px">Drawdown limit: ${run.drawdown_limit_pct}% from peak</div>
     </div>`;
@@ -349,7 +350,7 @@ function renderActiveRun(run, sessions) {
       <tr style="color:#888"><th style="text-align:left;padding:4px">Day</th><th style="text-align:left;padding:4px">Instrument</th><th style="text-align:right;padding:4px">Trades</th><th style="text-align:right;padding:4px">P/L</th><th style="text-align:right;padding:4px">Balance</th></tr>`;
     sessions.forEach(s => {
       const c = s.pnl >= 0 ? '#4caf82' : '#e05c5c';
-      html += `<tr><td style="padding:4px;color:#ccc">${s.day_num}</td><td style="padding:4px;color:#ccc">${s.character||'-'}</td><td style="padding:4px;text-align:right;color:#ccc">${s.trades}</td><td style="padding:4px;text-align:right;color:${c}">${s.pnl>=0?'+':''}$${s.pnl.toFixed(0)}</td><td style="padding:4px;text-align:right;color:#ccc">$${s.balance_after.toFixed(0)}</td></tr>`;
+      html += `<tr><td style="padding:4px;color:#ccc">${s.day_num}</td><td style="padding:4px;color:#ccc">${s.character||'-'}</td><td style="padding:4px;text-align:right;color:#ccc">${s.trades}</td><td style="padding:4px;text-align:right;color:${c}">${s.pnl>=0?'+':'-'}$${fmtD(s.pnl)}</td><td style="padding:4px;text-align:right;color:#ccc">$${s.balance_after.toLocaleString()}</td></tr>`;
     });
     html += '</table></div>';
   }
@@ -383,7 +384,7 @@ function renderInactive(history) {
                      r.end_reason === 'drawdown_breach' ? '<span style="color:#e05c5c">✗ Drawdown</span>' :
                      r.end_reason === 'max_sessions_reached' ? '<span style="color:#f97316">⏱ Max Sessions</span>' :
                      '<span style="color:#888">Forfeit</span>';
-      html += `<tr><td style="padding:4px;color:#ccc">${r.attempt}</td><td style="padding:4px">${reason}</td><td style="padding:4px;text-align:right;color:#ccc">${r.day_count}</td><td style="padding:4px;text-align:right;color:#ccc">$${r.balance.toFixed(0)}</td><td style="padding:4px;color:#555">${(r.ended_at||'').slice(0,10)}</td></tr>`;
+      html += `<tr><td style="padding:4px;color:#ccc">${r.attempt}</td><td style="padding:4px">${reason}</td><td style="padding:4px;text-align:right;color:#ccc">${r.day_count}</td><td style="padding:4px;text-align:right;color:#ccc">$${r.balance.toLocaleString()}</td><td style="padding:4px;color:#555">${(r.ended_at||'').slice(0,10)}</td></tr>`;
     });
     html += '</table></div>';
   }
