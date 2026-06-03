@@ -146,7 +146,14 @@ def update_account_settings(account_id, balance, commission):
 
 def reset_account(user_id, balance=50000, commission=2.25):
     conn = _get_db()
-    conn.execute('UPDATE trading_accounts SET status="archived", archived_at=CURRENT_TIMESTAMP WHERE user_id=? AND status="active"', (user_id,))
+    # If active account has no sessions, just delete it instead of archiving
+    active = conn.execute('SELECT id FROM trading_accounts WHERE user_id=? AND status="active"', (user_id,)).fetchone()
+    if active:
+        has_sessions = conn.execute('SELECT 1 FROM sessions WHERE account_id=? LIMIT 1', (active['id'],)).fetchone()
+        if has_sessions:
+            conn.execute('UPDATE trading_accounts SET status="archived", archived_at=CURRENT_TIMESTAMP WHERE id=?', (active['id'],))
+        else:
+            conn.execute('DELETE FROM trading_accounts WHERE id=?', (active['id'],))
     conn.execute('INSERT INTO trading_accounts (user_id, starting_balance, balance, commission_per_contract) VALUES (?,?,?,?)',
                  (user_id, balance, balance, commission))
     conn.commit()
