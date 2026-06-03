@@ -436,11 +436,12 @@ def api_save_session():
     acct_id = acct['id'] if acct else None
     import json as _json
     candles_json = _json.dumps(data['candles']) if data.get('candles') else None
+    drawings_json = _json.dumps(data['drawings']) if data.get('drawings') else None
     session_id = save_session(uid, data.get('date', ''), data.get('character', ''),
                  int(data.get('trades', 0)), int(data.get('wins', 0)), float(data.get('pnl', 0)), acct_id,
                  seed=data.get('seed'), hist_days=data.get('hist_days'),
                  tick_size=data.get('tick_size'), tick_value=data.get('tick_value'),
-                 candles=candles_json, trade_list=data.get('trade_list'))
+                 candles=candles_json, trade_list=data.get('trade_list'), drawings=drawings_json)
     return jsonify({'saved': True, 'session_id': session_id})
 
 
@@ -470,6 +471,7 @@ def api_get_session_detail(session_id):
     s = dict(session)
     import json as _json
     s['candles'] = _json.loads(s['candles']) if s.get('candles') else []
+    s['drawings'] = _json.loads(s['drawings']) if s.get('drawings') else []
     s['trade_list'] = [dict(t) for t in trades]
     return jsonify(s)
 

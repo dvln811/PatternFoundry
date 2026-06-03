@@ -644,6 +644,8 @@ let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
       account.startBal = data.run.balance;
       document.getElementById('a-bal').textContent = '$' + data.run.balance.toFixed(2);
       document.getElementById('sim-instrument').disabled = true;
+      document.getElementById('sim-hist-days').value = '63';
+      document.getElementById('sim-hist-days').disabled = true;
       const badge = document.getElementById('ironman-badge');
       if (badge) badge.style.display = 'flex';
     }
@@ -1072,8 +1074,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const pb = document.querySelector('.playback');
     pb.innerHTML = `<button onclick="window.location='/stats'" style="background:#1a1a1a;border:1px solid #f97316;color:#f97316;padding:6px 16px;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit">✕ Close Review</button><button onclick="resetChartView()" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#bbb;padding:6px 12px;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:inherit">⊙ Reset</button><span class="pb-info" id="pb-info">Loading session…</span>`;
     // Load session data
+    document.getElementById('chart-overlay').classList.remove('hidden');
+    document.getElementById('load-text').textContent = 'Restoring session…';
     fetch(`/api/sessions/${REVIEW_MODE}`, {credentials:'include'}).then(r=>r.json()).then(async data => {
-      if (data.error) { document.getElementById('pb-info').textContent = 'Session not found'; return; }
+      if (data.error) { document.getElementById('load-text').textContent = 'Session not found'; return; }
       const sessionCandles = (data.candles||[]).map(c=>({time:c.t,open:c.o,high:c.h,low:c.l,close:c.c,volume:c.v||0}));
       tickSize = data.tick_size || 0.25;
       tickValue = data.tick_value || 1.25;
@@ -1133,6 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeIndicators.length) recomputeIndicators();
 
       chart.timeScale().fitContent();
+      document.getElementById('chart-overlay').classList.add('hidden');
       document.getElementById('pb-info').textContent = `${data.character||'?'} — ${data.date} · ${data.trades} trades · P/L: $${(data.pnl||0).toFixed(2)}`;
     });
   }
@@ -1383,6 +1388,7 @@ function saveSessionToHistory() {
     tick_value: tickValue,
     candles: sessionCandles,
     trade_list: account.trades,
+    drawings: drawMgr ? drawMgr.drawings : [],
   };
   fetch('/api/sessions', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify(entry)});
   // Persist rolling balance
@@ -1405,6 +1411,7 @@ function saveSessionToHistory() {
         const badge = document.getElementById('ironman-badge');
         if (badge) badge.style.display = 'none';
         document.getElementById('sim-instrument').disabled = false;
+        document.getElementById('sim-hist-days').disabled = false;
         const msg = res.ended === 'target_reached' ? '🏆 Iron Man target reached!' : '💀 Iron Man drawdown breached.';
         document.getElementById('pb-info').textContent = msg;
       } else {

@@ -87,7 +87,7 @@ def init_db():
     except Exception:
         pass
     # Session replay columns
-    for col in [('seed', 'TEXT'), ('hist_days', 'INTEGER'), ('tick_size', 'REAL'), ('tick_value', 'REAL'), ('candles', 'TEXT')]:
+    for col in [('seed', 'TEXT'), ('hist_days', 'INTEGER'), ('tick_size', 'REAL'), ('tick_value', 'REAL'), ('candles', 'TEXT'), ('drawings', 'TEXT')]:
         try:
             conn.execute(f'ALTER TABLE sessions ADD COLUMN {col[0]} {col[1]}')
         except Exception:
@@ -180,10 +180,10 @@ def purge_archived_accounts(user_id):
     conn.close()
 
 
-def save_session(user_id, date, character, trades, wins, pnl, account_id=None, seed=None, hist_days=None, tick_size=None, tick_value=None, candles=None, trade_list=None):
+def save_session(user_id, date, character, trades, wins, pnl, account_id=None, seed=None, hist_days=None, tick_size=None, tick_value=None, candles=None, trade_list=None, drawings=None):
     conn = _get_db()
-    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
-                 (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles))
+    conn.execute('INSERT INTO sessions (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                 (user_id, date, character, trades, wins, pnl, account_id, seed, hist_days, tick_size, tick_value, candles, drawings))
     session_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
     if trade_list:
         for t in trade_list:
