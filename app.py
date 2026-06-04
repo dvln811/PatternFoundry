@@ -34,7 +34,7 @@ _IS_LOCAL = os.environ.get('PF_LOCAL', '1') == '1'
 
 @app.after_request
 def _board_cors(response):
-    if request.path.startswith('/api/board'):
+    if request.path.startswith('/api/board') or request.path.startswith('/api/marketing-board'):
         response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-Board-Key'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
