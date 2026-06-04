@@ -786,6 +786,7 @@ async function runTickPreview() {
   _tickPreviewIdx = 0;
   _tickPreviewCandle = null;
   _tickMinuteCandles = [];
+  window._displayCandle = null;
   document.getElementById('tick-play-btn').textContent = '⏸ Playing';
 
   // Anchor: tick 1-min candles continue the historical sequence (contiguous bars)
@@ -820,19 +821,12 @@ function startTickPlayback() {
   _tickPreviewTimer = setInterval(() => {
     if (_tickPreviewIdx >= _tickPreviewData.length) { stopTickPreview(); return; }
     const t = _tickPreviewData[_tickPreviewIdx++];
+    const tf = parseInt(document.getElementById('tf').value);
     const minuteIdx = Math.floor((_tickPreviewIdx - 1) / 60);
     const candleTime = _lastHistTime + (minuteIdx + 1) * 60;
+    // Track 1-min candles internally
     if (!_tickPreviewCandle || _tickPreviewCandle.time !== candleTime) {
-      if (_tickPreviewCandle) {
-        _tickMinuteCandles.push(_tickPreviewCandle);
-        // Append completed candle
-        const tf = parseInt(document.getElementById('tf').value);
-        if (tf <= 60) {
-          window._chartData.push({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
-        } else {
-          renderCandles();
-        }
-      }
+      if (_tickPreviewCandle) _tickMinuteCandles.push(_tickPreviewCandle);
       _tickPreviewCandle = { time: candleTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
     } else {
       _tickPreviewCandle.high = Math.max(_tickPreviewCandle.high, t.price);
@@ -840,9 +834,19 @@ function startTickPlayback() {
       _tickPreviewCandle.close = t.price;
       _tickPreviewCandle.volume += t.volume;
     }
-    // Update current candle on chart
-    candleSeries.update({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
-    volSeries.update({ time: _tickPreviewCandle.time, value: _tickPreviewCandle.volume, color: _tickPreviewCandle.close >= _tickPreviewCandle.open ? '#4caf8266' : '#e05c5c66' });
+    // Update chart at selected TF (bucket time like the simulator does)
+    const displayTime = Math.floor(candleTime / tf) * tf;
+    if (!window._displayCandle || window._displayCandle.time !== displayTime) {
+      if (window._displayCandle) window._chartData.push({ time: window._displayCandle.time, open: window._displayCandle.open, high: window._displayCandle.high, low: window._displayCandle.low, close: window._displayCandle.close });
+      window._displayCandle = { time: displayTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+    } else {
+      window._displayCandle.high = Math.max(window._displayCandle.high, t.price);
+      window._displayCandle.low = Math.min(window._displayCandle.low, t.price);
+      window._displayCandle.close = t.price;
+      window._displayCandle.volume += t.volume;
+    }
+    candleSeries.update({ time: window._displayCandle.time, open: window._displayCandle.open, high: window._displayCandle.high, low: window._displayCandle.low, close: window._displayCandle.close });
+    volSeries.update({ time: window._displayCandle.time, value: window._displayCandle.volume, color: window._displayCandle.close >= window._displayCandle.open ? '#4caf8266' : '#e05c5c66' });
 
     // Update debug panel
     _el.price.textContent = t.price.toFixed(2);
@@ -888,6 +892,7 @@ function stopTickPreview() {
   _tickPreviewIdx = 0;
   _tickPreviewCandle = null;
   _tickMinuteCandles = [];
+  window._displayCandle = null;
   renderCandles(); // back to historical only
   document.getElementById('tick-play-btn').textContent = '▶ Play';
 }
