@@ -11,9 +11,9 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-he
 .pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
 .pf-header .brand img{height:28px}
 .pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
-.pf-header nav a{padding:5px 14px;border-radius:5px;font-size:.78rem;font-weight:600;text-decoration:none;color:#bbb;border:1px solid #2a2a2a;text-transform:uppercase}
-.pf-header nav a:hover{border-color:#4caf82;color:#ddd}
-.pf-header nav a.active{color:#4caf82;border-color:#4caf82}
+.pf-header nav a{padding:8px 14px;font-size:.78rem;font-weight:600;text-decoration:none;color:#888;border:none;background:none;text-transform:uppercase;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.pf-header nav a:hover{color:#ccc}
+.pf-header nav a.active{color:#f97316;border-bottom-color:#f97316}
 /* Full-width layout */
 .page-wrap{padding:24px 40px}
 h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
@@ -95,7 +95,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     <a href="/settings">Settings</a>
     <a href="/docs">Docs</a>
     {% if is_admin %}<a href="/admin">Admin</a>{% endif %}
-    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#4caf82';this.style.color='#4caf82'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
+    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#f97316';this.style.color='#f97316'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
     <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
   </nav>
 </header>
@@ -130,7 +130,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
         <div class="stat-card"><div class="stat-val" id="ov-worst-day">-</div><div class="stat-label">Worst Day</div></div>
       </div>
       <div id="ov-iron-badge" style="margin-top:10px;background:#111;border:1px solid #2a2a2a;border-left:3px solid #f97316;border-radius:5px;padding:10px 12px;display:none">
-        <div style="font-size:.65rem;color:#f97316;font-weight:600;text-transform:uppercase;margin-bottom:4px">🦾 Iron Man</div>
+        <div style="font-size:.65rem;color:#f97316;font-weight:600;text-transform:uppercase;margin-bottom:4px">Iron Man</div>
         <div id="ov-iron-content" style="font-size:.72rem;color:#ccc"></div>
       </div>
     </div>
@@ -690,7 +690,7 @@ function renderActiveRun(run, sessions) {
   const ddPct = (((run.peak_balance - run.balance) / run.start_balance) * 100).toFixed(2);
   const targetBal = run.start_balance * (1 + run.target_pct / 100);
   const progress = Math.max(0, Math.min(100, ((run.balance - run.start_balance) / (targetBal - run.start_balance)) * 100));
-  let html = `<h3>🦾 Iron Man Challenge — Attempt #${run.attempt}</h3>
+  let html = `<h3 style="color:#f97316;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em">Iron Man Challenge — Attempt #${run.attempt}</h3>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0">
       <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:${pnl>=0?'#4caf82':'#e05c5c'}">$${run.balance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Balance</div></div>
       <div style="text-align:center"><div style="font-size:1.1rem;font-weight:700;color:#e0e0e0">${run.day_count}</div><div style="font-size:.6rem;color:#888;text-transform:uppercase">Days</div></div>
@@ -717,7 +717,7 @@ function renderActiveRun(run, sessions) {
 
 function renderInactive(history) {
   const panel = document.getElementById('iron-panel');
-  let html = `<h3>🦾 Iron Man Challenge</h3>
+  let html = `<h3 style="color:#f97316;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em">Iron Man Challenge</h3>
     <p style="color:#ccc;font-size:.78rem;margin:10px 0">A persistent account challenge. Random instruments, no cherry-picking. Forfeit resets your run.</p>
     <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap">
       <button class="im-preset" onclick="imPreset(5000,20,10,0)" style="background:transparent;border:1px solid #2a2a2a;color:#ccc;padding:5px 10px;border-radius:4px;font-size:.68rem;cursor:pointer">Micro $5k</button>
