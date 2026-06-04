@@ -222,6 +222,20 @@ table tr:hover td{background:#151515}
   <li><strong>Maintenance Margin</strong> — Checked on every tick while a position is open. If your equity (balance + unrealized P&amp;L) falls below <code>quantity × maintenance_margin</code>, your position is automatically liquidated with a "Margin Call" notification.</li>
 </ul>
 
+<h3>Keyboard Shortcuts</h3>
+<table>
+  <tr><th>Key</th><th>Action</th></tr>
+  <tr><td><code>Space</code></td><td>Play / Pause simulation</td></tr>
+  <tr><td><code>+</code></td><td>Increase playback speed (next step)</td></tr>
+  <tr><td><code>-</code></td><td>Decrease playback speed (previous step)</td></tr>
+  <tr><td><code>B</code></td><td>Instant buy (market order with current panel settings, skips confirmation)</td></tr>
+  <tr><td><code>S</code></td><td>Instant sell (market order with current panel settings, skips confirmation)</td></tr>
+</table>
+<div class="note">
+  <div class="note-title">Note</div>
+  <p>Hotkeys are disabled when typing in input fields. B/S use whatever quantity, order type, SL, and TP values are set in the trade panel — they just skip the drag-to-confirm step.</p>
+</div>
+
 <h3>Tips</h3>
 <div class="tip">
   <div class="tip-title">Pro Tips</div>

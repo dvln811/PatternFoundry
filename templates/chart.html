@@ -2270,6 +2270,24 @@ function highlightCode() {
   document.getElementById('ci-highlight').innerHTML = h + '\n';
 }
 setTimeout(highlightCode, 100);
+
+// ── Keyboard Hotkeys ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  const key = e.key;
+  if (key === ' ') { e.preventDefault(); togglePlay(); }
+  else if (key === '+' || key === '=') { e.preventDefault(); changeSpeed(1); }
+  else if (key === '-') { e.preventDefault(); changeSpeed(-1); }
+  else if ((key === 'b' || key === 'B') && !document.getElementById('btn-long').disabled) { e.preventDefault(); placeTrade('long'); confirmOrder(); }
+  else if ((key === 's' || key === 'S') && !document.getElementById('btn-short').disabled) { e.preventDefault(); placeTrade('short'); confirmOrder(); }
+});
+function changeSpeed(dir) {
+  const sel = document.getElementById('pb-speed');
+  const idx = sel.selectedIndex + dir;
+  if (idx < 0 || idx >= sel.options.length) return;
+  sel.selectedIndex = idx;
+  sel.dispatchEvent(new Event('change'));
+}
 </script>
 </body>
 </html>
