@@ -493,7 +493,48 @@ function initChart() {
   });
   volSeries = chart.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: 'vol', color: '#4caf8266' });
   chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
-  new ResizeObserver(() => chart.applyOptions({ width: el.clientWidth, height: el.clientHeight })).observe(el);
+
+  // Off-hours shading overlay
+  if (window._pmCanvas && window._pmCanvas.parentNode) window._pmCanvas.parentNode.removeChild(window._pmCanvas);
+  const pmCanvas = document.createElement('canvas');
+  pmCanvas.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2';
+  pmCanvas.width = el.clientWidth; pmCanvas.height = el.clientHeight;
+  el.appendChild(pmCanvas);
+  window._pmCanvas = pmCanvas;
+
+  function drawOffHoursShading() {
+    const cv = window._pmCanvas; if (!cv) return;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const tf = parseInt(document.getElementById('tf').value) || 60;
+    if (tf > 3600) return;
+    const data = window._chartData;
+    if (!data || !data.length) return;
+    const ts = chart.timeScale();
+    ctx.fillStyle = 'rgba(100, 140, 200, 0.07)';
+    let runs = [];
+    let runStartIdx = null;
+    for (let i = 0; i < data.length; i++) {
+      const d = new Date(data[i].time * 1000);
+      const mins = d.getUTCHours() * 60 + d.getUTCMinutes();
+      const isRTH = mins >= 570 && mins < 960;
+      if (!isRTH && runStartIdx === null) runStartIdx = i;
+      if (isRTH && runStartIdx !== null) {
+        runs.push([runStartIdx, i - 1]);
+        runStartIdx = null;
+      }
+    }
+    if (runStartIdx !== null) runs.push([runStartIdx, data.length - 1]);
+    for (const [a, b] of runs) {
+      const x0 = ts.logicalToCoordinate(a);
+      const x1 = ts.logicalToCoordinate(b);
+      if (x0 == null || x1 == null) continue;
+      ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0) || 1, cv.height);
+    }
+  }
+  window.drawOffHoursShading = drawOffHoursShading;
+  chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
+  new ResizeObserver(() => { chart.applyOptions({ width: el.clientWidth, height: el.clientHeight }); pmCanvas.width = el.clientWidth; pmCanvas.height = el.clientHeight; drawOffHoursShading(); }).observe(el);
 
   chart.subscribeCrosshairMove((param) => {
     const ro = document.getElementById('chart-readout');
@@ -542,6 +583,7 @@ function renderCandles() {
   window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
   candleSeries.setData(window._chartData);
   volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
+  if (window.drawOffHoursShading) setTimeout(drawOffHoursShading, 50);
 }
 
 function onTfChange() {
