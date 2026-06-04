@@ -148,6 +148,22 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     </div>
   </div>
 
+  <!-- Recent Results | Top Instruments | Session Distribution -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px">
+    <div class="section" style="margin-bottom:0">
+      <h2>Recent Results</h2>
+      <div id="recent-results-strip" style="display:flex;gap:3px;flex-wrap:wrap"></div>
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <h2>Top Instruments</h2>
+      <div id="top-instruments"></div>
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <h2>Session Distribution</h2>
+      <div id="session-distribution"></div>
+    </div>
+  </div>
+
   <!-- Practice streak + heatmap side by side -->
   <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
     <div class="section">
@@ -297,6 +313,9 @@ async function init() {
   renderForAccount(selectedAccountId);
   renderAggregated();
   renderOverviewStats();
+  renderRecentResults();
+  renderTopInstruments();
+  renderSessionDistribution();
   renderStreak(allSessions);
   renderIronMan();
 }
@@ -324,6 +343,59 @@ function renderOverviewStats() {
     const best = Math.max(...days); bestEl.textContent = '$' + fmtD(best); bestEl.className = 'stat-val pos'; bestEl.closest('.stat-card').className = 'stat-card tint-pos';
     const worst = Math.min(...days); worstEl.textContent = (worst >= 0 ? '$' : '-$') + fmtD(worst); worstEl.className = 'stat-val ' + (worst >= 0 ? 'pos' : 'neg'); worstEl.closest('.stat-card').className = 'stat-card ' + (worst >= 0 ? 'tint-pos' : 'tint-neg');
   }
+}
+
+function renderRecentResults() {
+  const el = document.getElementById('recent-results-strip');
+  const recent = allSessions.slice(-20);
+  if (recent.length === 0) { el.innerHTML = '<span style="color:#555;font-size:.7rem">No sessions yet</span>'; return; }
+  el.innerHTML = recent.map(s => {
+    const pnl = s.pnl || 0;
+    const bg = pnl >= 0 ? '#4caf82' : '#e05c5c';
+    const title = `${s.date||'-'} · ${s.character||'-'} · ${pnl>=0?'':'-'}$${fmtD(pnl)}`;
+    return `<div title="${title}" style="width:14px;height:28px;border-radius:3px;background:${bg};opacity:${Math.min(1, 0.4 + Math.abs(pnl) / 500)}"></div>`;
+  }).join('');
+}
+
+function renderTopInstruments() {
+  const el = document.getElementById('top-instruments');
+  const map = {};
+  allSessions.forEach(s => {
+    const c = s.character || 'Unknown';
+    if (!map[c]) map[c] = { sessions: 0, wins: 0, trades: 0 };
+    map[c].sessions++; map[c].trades += (s.trades || 0); map[c].wins += (s.wins || 0);
+  });
+  const sorted = Object.entries(map).sort((a, b) => b[1].sessions - a[1].sessions).slice(0, 4);
+  if (sorted.length === 0) { el.innerHTML = '<span style="color:#555;font-size:.7rem">No data yet</span>'; return; }
+  const maxSess = sorted[0][1].sessions;
+  el.innerHTML = sorted.map(([name, d]) => {
+    const wr = d.trades > 0 ? ((d.wins / d.trades) * 100).toFixed(0) : 0;
+    const barW = (d.sessions / maxSess) * 100;
+    const barColor = wr >= 50 ? '#4caf82' : '#e05c5c';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="font-size:.68rem;color:#ccc;width:36px;flex-shrink:0">${name}</span>
+      <div style="flex:1;background:#1a1a1a;border-radius:3px;height:14px;overflow:hidden"><div style="width:${barW}%;height:100%;background:${barColor}30;border-right:2px solid ${barColor}"></div></div>
+      <span style="font-size:.6rem;color:#888;width:28px;text-align:right">${wr}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderSessionDistribution() {
+  const el = document.getElementById('session-distribution');
+  const days = [0, 0, 0, 0, 0, 0, 0];
+  allSessions.forEach(s => { if (s.date) { const d = new Date(s.date + 'T12:00:00').getDay(); days[d]++; } });
+  const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const max = Math.max(...days, 1);
+  el.innerHTML = `<div style="display:flex;align-items:flex-end;gap:6px;height:80px">` +
+    days.map((c, i) => {
+      const h = (c / max) * 100;
+      const color = c > 0 ? '#f97316' : '#2a2a2a';
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+        <span style="font-size:.55rem;color:#888">${c||''}</span>
+        <div style="width:100%;height:${Math.max(4, h)}%;background:${color};border-radius:3px;transition:height .3s"></div>
+        <span style="font-size:.55rem;color:#888">${labels[i]}</span>
+      </div>`;
+    }).join('') + '</div>';
 }
 
 function renderAccountList(accounts) {
