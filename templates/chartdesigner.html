@@ -552,7 +552,9 @@ function initChart() {
       ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0) || 1, cv.height);
     }
   }
-  chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
+  let _shadingTimer = null;
+  function throttledShading() { if (_shadingTimer) return; _shadingTimer = setTimeout(() => { _shadingTimer = null; drawOffHoursShading(); }, 200); }
+  chart.timeScale().subscribeVisibleTimeRangeChange(throttledShading);
   window.drawOffHoursShading = drawOffHoursShading;
   new ResizeObserver(() => { pmCanvas.width = el.clientWidth; pmCanvas.height = el.clientHeight; drawOffHoursShading(); }).observe(el);
 }
@@ -806,6 +808,16 @@ function startTickPlayback() {
   // Process multiple ticks per frame at higher speeds, keep interval ~60fps max
   const ticksPerFrame = Math.max(1, Math.round(speed));
   const interval = Math.max(16, Math.round(1000 / Math.min(speed, 60)));
+  const _el = {
+    price: document.getElementById('td-price'), bid: document.getElementById('td-bid'),
+    ask: document.getElementById('td-ask'), spread: document.getElementById('td-spread'),
+    imb: document.getElementById('td-imbalance'), vol: document.getElementById('td-vol'),
+    tickNum: document.getElementById('td-tick-num'), bar: document.getElementById('td-bar-fill'),
+    hawkes: document.getElementById('td-hawkes'), inst: document.getElementById('td-inst'),
+    instRem: document.getElementById('td-inst-rem'), instDir: document.getElementById('td-inst-dir'),
+    candleNum: document.getElementById('td-candle-num'),
+  };
+  const tickThresh = parseFloat(document.getElementById('p-tick').value) * 2;
 
   _tickPreviewTimer = setInterval(() => {
     let needsNewCandle = false;
@@ -829,7 +841,16 @@ function startTickPlayback() {
     }
     // Only do full re-render when a new candle opens (for TF rebucketing); otherwise just update last bar
     if (needsNewCandle) {
-      renderCandles();
+      const tf = parseInt(document.getElementById('tf').value);
+      if (tf <= 60) {
+        // At 1-min TF, just update the completed candle (already added via .update) and start new one
+        candleSeries.update({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
+        volSeries.update({ time: _tickPreviewCandle.time, value: _tickPreviewCandle.volume, color: _tickPreviewCandle.close >= _tickPreviewCandle.open ? '#4caf8266' : '#e05c5c66' });
+        window._chartData.push({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
+      } else {
+        // Higher TFs need rebucket — but only on candle boundaries (once per minute)
+        renderCandles();
+      }
     } else if (_tickPreviewCandle) {
       const tf = parseInt(document.getElementById('tf').value);
       if (tf <= 60) {
@@ -848,26 +869,26 @@ function startTickPlayback() {
       }
     }
     const t = _tickPreviewData[_tickPreviewIdx - 1];
-    document.getElementById('td-price').textContent = t.price.toFixed(2);
-    document.getElementById('td-bid').textContent = t.bid.toFixed(2);
-    document.getElementById('td-ask').textContent = t.ask.toFixed(2);
+    _el.price.textContent = t.price.toFixed(2);
+    _el.bid.textContent = t.bid.toFixed(2);
+    _el.ask.textContent = t.ask.toFixed(2);
     const spread = t.ask - t.bid;
-    document.getElementById('td-spread').textContent = spread.toFixed(2);
-    document.getElementById('td-spread').style.color = spread > parseFloat(document.getElementById('p-tick').value) * 2 ? '#e05c5c' : '#f0c040';
-    document.getElementById('td-imbalance').textContent = t.imbalance.toFixed(2);
-    document.getElementById('td-imbalance').style.color = t.imbalance > 0.5 ? '#4caf82' : t.imbalance < -0.5 ? '#e05c5c' : '#888';
-    document.getElementById('td-vol').textContent = t.volume;
-    document.getElementById('td-tick-num').textContent = `${_tickPreviewIdx}/${_tickPreviewData.length}`;
-    document.getElementById('td-bar-fill').style.width = (_tickPreviewIdx / _tickPreviewData.length * 100) + '%';
-    document.getElementById('td-hawkes').textContent = (t.hawkes || 0).toFixed(3);
-    document.getElementById('td-hawkes').style.color = (t.hawkes || 0) > 0.3 ? '#f97316' : '#888';
+    _el.spread.textContent = spread.toFixed(2);
+    _el.spread.style.color = spread > tickThresh ? '#e05c5c' : '#f0c040';
+    _el.imb.textContent = t.imbalance.toFixed(2);
+    _el.imb.style.color = t.imbalance > 0.5 ? '#4caf82' : t.imbalance < -0.5 ? '#e05c5c' : '#888';
+    _el.vol.textContent = t.volume;
+    _el.tickNum.textContent = `${_tickPreviewIdx}/${_tickPreviewData.length}`;
+    _el.bar.style.width = (_tickPreviewIdx / _tickPreviewData.length * 100) + '%';
+    _el.hawkes.textContent = (t.hawkes || 0).toFixed(3);
+    _el.hawkes.style.color = (t.hawkes || 0) > 0.3 ? '#f97316' : '#888';
     const instRem = t.inst_remaining || 0;
-    document.getElementById('td-inst').textContent = instRem > 0 ? 'ACTIVE' : 'quiet';
-    document.getElementById('td-inst').style.color = instRem > 0 ? '#a78bfa' : '#555';
-    document.getElementById('td-inst-rem').textContent = instRem;
-    document.getElementById('td-inst-dir').textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '-';
-    document.getElementById('td-inst-dir').style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
-    document.getElementById('td-candle-num').textContent = Math.ceil(_tickPreviewIdx / 60);
+    _el.inst.textContent = instRem > 0 ? 'ACTIVE' : 'quiet';
+    _el.inst.style.color = instRem > 0 ? '#a78bfa' : '#555';
+    _el.instRem.textContent = instRem;
+    _el.instDir.textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '-';
+    _el.instDir.style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
+    _el.candleNum.textContent = Math.ceil(_tickPreviewIdx / 60);
   }, interval);
 }
 
