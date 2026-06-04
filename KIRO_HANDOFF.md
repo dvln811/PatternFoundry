@@ -97,16 +97,16 @@ rewrite everything from scratch in this repo.
 - Values stored in CharacterSpec, passed to client via `/api/sim-session` response
 
 ### Key Features Working
-- **Simulator:** Session generation, tick playback (0.25x-200x), trade execution (market/limit/stop-limit), draggable SL/TP, DOM with real order book, indicators (7 built-in + custom scripting), drawing tools (14 types + text + right-click property editor + **lock button**), session save/load, multi-timeframe, Close Session button, persistent account balance, per-instrument commission, risk % display, **margin system** (initial check + maintenance auto-liquidation)
+- **Simulator:** Session generation, tick playback (0.25x-200x), trade execution (market/limit/stop-limit), draggable SL/TP, DOM with real order book, indicators (7 built-in + custom scripting), drawing tools (13 types + text + right-click property editor + **lock button**), session save/load, multi-timeframe, Close Session button, persistent account balance, per-instrument commission, risk % display, **margin system** (initial check + maintenance auto-liquidation), **hotkeys** (Space=play/pause, +/-=speed, B=buy, S=sell)
 - **Session Replay:** Full simulator in review mode — loads stored session candles + regenerated history, trade markers, TF switching, indicators, drawings restored
 - **Trading Accounts:** Server-side persistent, rolling balance, reset archives (empty accounts auto-deleted on reset), per-account session linking. Settings page: reset only (no mid-account balance edits)
 - **Chart Designer:** All 14 instruments as presets (grouped: E-mini, Micro, Stocks), CharacterSpec + MicroConfig sliders, generate + preview, tick engine glass-box view, save custom characters
 - **Iron Man Mode:** Configurable start params (balance, drawdown%, target%, max_sessions). Presets: Micro $5k, Standard $10k, Full $50k, Hardcore. Margin-filtered random instrument selection (only picks instruments the balance can afford). `ironman_run_id` on sessions table links replay sessions to specific runs. End conditions: drawdown breach, target reached, max sessions reached, forfeit.
-- **Stats Page:** Account selector with columns (Status, Starting, Balance, P/L with %, Date). Per-account stats cards, equity curves, session history with replay links, practice streak + heatmap, Iron Man panel. All dollar amounts formatted with thousands separators.
+- **Stats Page:** 3-tab layout (Overview / Account Details / Iron Man). Overview: EQ curve + quick stats sidebar, 12-month P&L grid, month calendar, top instruments, session distribution, recent sessions, streak + heatmap. Account Details: simplified account rows (Status/Balance/Date) + Starting/P&L cards, 8 stat cards, equity curve, drawdown, instrument breakdown, session history. Iron Man: configurable presets, active run progress, past attempts, aggregate metrics.
 - **Admin:** Nuke Stats button on Users page (wipes all user data — sessions, trades, Iron Man, accounts). Works for all users including admin's own account.
-- **Dashboard:** Live Yahoo Finance tickers, chart, news feed
+- **Dashboard:** Live Yahoo Finance tickers, chart, news feed. Sidebar: real stats (sessions, trades, win rate, P/L, best day, streak) + recent sessions.
 - **Auth:** Login/register/logout, first user = admin
-- **Board/Landing/Docs/SEO:** All working as before
+- **Board/Landing/Docs/SEO:** All working. Landing has 3-col screenshot grid. Docs: 8 pages (getting started, simulator, designer, indicators, orderbook, pricing, ironman, stats).
 
 ### Data Generation Pipeline
 1. `generators/` - v2 vectorized: CharacterSpec -> 9-stage pipeline -> session structure
@@ -174,27 +174,27 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-03 session 4)
+## Recent Work (2026-06-03 session 5)
 
-1. **Aggregated equity curve normalized to %** — Each session's P&L divided by its account's starting balance, plotted as cumulative % return. New `/api/trades` endpoint added for bulk trade fetching.
-2. **Stats page full redesign** — Full-width layout (no more 960px narrow column), 3 tabbed panels:
-   - **Overview:** Aggregated EQ curve (full width, 240px tall), monthly P&L cards + month calendar drill-down side by side, practice streak + heatmap side by side
-   - **Account Details:** Left panel (320px) with account selector + stat cards; right panel with equity curve, drawdown chart, instrument breakdown, session history
-   - **Iron Man:** Full-width config/active run/history panel
-3. **Enhanced stat cards** — Profit Factor, Avg Win, Avg Loss, Largest Win, Largest Loss, Max Consecutive Wins/Losses. All color-coded green/red with tinted card backgrounds.
-4. **Per-instrument breakdown table** — Win rate, P&L, avg trade, profit factor per instrument.
-5. **Monthly P&L** — Clickable cards per month (green/red tinted) with calendar drill-down showing per-day session results.
-6. **Drawdown chart** — Red area line showing drawdown from peak.
-7. **Iron Man aggregate metrics** — Runs, Pass Rate, Avg Return, Best/Worst Run, Total Sessions.
-8. **Iron Man Past Attempts** — Shows Start Balance, Target%, Max DD%, Max Sessions, Actual Sessions, Final Balance, Return%.
-9. **Aesthetic overhaul** — All money values colored green/red, cards tinted to match, no '+' prefix (only '-' for losses), smaller text sizes, overflow protection.
-10. **Stats section reorder** — Logical tab grouping replaced vertical scroll-through-everything layout.
+1. **Stats page space optimization** — Overview tab: EQ curve narrowed with Quick Stats sidebar (sessions, trades, win rate, P/L, best/worst day, Iron Man badge). Account Details: left panel widened to 380px, 8 stat cards in clean 2-col grid, Recent Sessions mini-list filler.
+2. **Overview tab new sections** — Between Monthly P&L and Practice Activity: Top Instruments (bar chart + win rate), Session Distribution (day-of-week bars), Recent Sessions (mini table). All in left column under monthly cards.
+3. **Monthly P&L always 12 months** — Shows all Jan–Dec, gray for untraded months, 4-column grid.
+4. **Month Detail calendar** — Day numbers top-left aligned, P&L pushed to bottom, larger font, less "empty center" feeling.
+5. **Account rows simplified** — 3 equal columns (Status | Balance | Date) + Starting Balance and P/L as dedicated cards below.
+6. **Nav bar restyled (all 19 pages)** — Orange underline for active tab (matching stats tab bar style), removed bordered button look.
+7. **Iron Man styling** — Removed 🦾 emoji, title now orange + uppercase + letter-spacing.
+8. **Dashboard stats** — Removed Quick Actions section (redundant with nav). "Your Stats" now fetches real data: sessions, trades, win rate, P/L, best day, streak, + recent sessions list.
+9. **Landing page** — "See It In Action" now 3-col grid (Simulator, Chart Designer, Stats). Stats screenshot added. Performance Analytics feature card copy enhanced.
+10. **Docs: Stats page** — New `/docs/stats` page + card in docs hub. Covers all 3 tabs, metrics explained, tips.
+11. **Docs: Iron Man updated** — Now documents configurable presets, custom params, margin-filtered instruments, 3-month history lock, max_sessions end condition.
+12. **Docs: Simulator updated** — Fixed instruments (14 + custom), history depth (day-based), added Gann Box + Text tools, removed fake keyboard shortcuts, added Close Session + Margin System sections.
+13. **Simulator hotkeys** — Implemented: Space (play/pause), +/- (speed step), B (instant buy), S (instant sell). B/S skip confirmation, use panel settings. Documented in docs.
 
 ---
 
 ## Next Steps
 
-- **Marketing:** Reddit/Discord presence, short demo video, content strategy
+- **MARKETING** — Reddit/Discord presence, short demo video, content strategy, launch plan
 - **Chart Designer tick_value:** Add tick_value/margin fields to designer UI for custom characters
 - **Session history:** Per-trade annotations, journal notes
 - **See board + /feature-ideas** for full roadmap
