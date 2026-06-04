@@ -31,10 +31,11 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
 @media(max-width:700px){.grid2{grid-template-columns:1fr}}
 .tag{display:inline-block;font-size:.65rem;padding:2px 6px;border-radius:8px;font-weight:600;margin-right:4px}
 .tag-twitter{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
-.tag-reddit{background:#ff450018;color:#ff4500;border:1px solid #ff450033}
-.tag-discord{background:#5865f218;color:#5865f2;border:1px solid #5865f233}
+.tag-hn{background:#ff660018;color:#ff6600;border:1px solid #ff660033}
+.tag-seo{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
 .tag-content{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
 .tag-youtube{background:#ff000018;color:#ff0000;border:1px solid #ff000033}
+.tag-product{background:#f9731618;color:#f97316;border:1px solid #f9731633}
 .avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
 </style>
 </head>
@@ -50,7 +51,7 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
   </nav>
 </header>
 <div class="wrap">
-<h1>Marketing Plan</h1>
+<h1>Marketing Plan <span style="font-size:.7rem;color:#888;font-weight:400;letter-spacing:0">(introvert-compatible)</span></h1>
 
 <div class="section">
   <h2>What We're Selling</h2>
@@ -80,56 +81,57 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
 
 <div class="section">
   <h2>Channel Strategy</h2>
+  <p style="font-size:.75rem;color:#888;margin-bottom:12px">Built for a builder who'd rather ship features than schmooze. Low-obligation, high-leverage channels only.</p>
   <table>
-    <thead><tr><th>Channel</th><th>Approach</th><th>Cadence</th><th>Goal</th></tr></thead>
+    <thead><tr><th>Channel</th><th>Approach</th><th>Cadence</th><th>Why It Works for Us</th></tr></thead>
     <tbody>
-      <tr><td><span class="tag tag-twitter">X/TWITTER</span></td><td>Data-led threads, reply to strategy posts, myth-bust common beliefs</td><td>1 thread/week + 2-3 replies/day</td><td>Build authority, drive profile visits</td></tr>
-      <tr><td><span class="tag tag-reddit">REDDIT</span></td><td>Case-study posts ("I practiced X sessions, here's what I learned"), helpful comments</td><td>1 post/month per sub</td><td>Organic discovery, trust via data</td></tr>
-      <tr><td><span class="tag tag-discord">DISCORD</span></td><td>Own server + participate in 3-4 trading servers. Be helpful, not promotional.</td><td>15 min/day lurking + 1-2 replies</td><td>Community, retention, word-of-mouth</td></tr>
-      <tr><td><span class="tag tag-content">CONTENT</span></td><td>Screenshots, screen captures, blog-style findings from using the simulator</td><td>As needed (reuse across channels)</td><td>Visual proof, shareable assets</td></tr>
-      <tr><td><span class="tag tag-youtube">YOUTUBE</span></td><td>Session walkthroughs, feature demos, "X sessions of Y" series</td><td>Defer until traction exists</td><td>Long-form discovery, SEO</td></tr>
+      <tr><td><span class="tag tag-twitter">X/TWITTER</span></td><td>Post threads with screenshots/data. No engagement farming — just put work out there.</td><td>1 post/week (batch-write Sunday)</td><td>Async. Post and walk away. No back-and-forth required.</td></tr>
+      <tr><td><span class="tag tag-hn">HACKER NEWS</span></td><td>Show HN post. Let the product speak. Answer technical questions only.</td><td>1 launch post + occasional Show HN updates</td><td>Rewards builders. Technical audience. No karma farming.</td></tr>
+      <tr><td><span class="tag tag-seo">SEO / CONTENT</span></td><td>Landing page keywords, docs pages, targeted blog posts for search queries.</td><td>1 page/month targeting specific keywords</td><td>Build once, compound forever. Zero social interaction.</td></tr>
+      <tr><td><span class="tag tag-content">SCREEN RECORDINGS</span></td><td>30-90 sec silent demos. No voiceover needed. Show the product being used.</td><td>2-3 clips ready for launch, then as features ship</td><td>Let the UI do the talking. Reusable across X, HN, landing page.</td></tr>
+      <tr><td><span class="tag tag-youtube">YOUTUBE</span></td><td>5-8 min feature walkthroughs. Defer until there's organic interest.</td><td>Only after traction exists</td><td>Long-tail SEO. Optional — only if energy allows.</td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="grid2">
 <div class="section">
-  <h2>Content Angles That Work</h2>
+  <h2>Content Angles</h2>
   <ul>
-    <li><strong style="color:#fff">"I practiced X sessions of Y — here's what happened"</strong><br><span style="color:#888;font-size:.75rem">Lead with findings/data. The tool is incidental.</span></li>
-    <li><strong style="color:#fff">"Why win rate alone is meaningless"</strong><br><span style="color:#888;font-size:.75rem">Show streak data, drawdown profiles. Myth-bust common beliefs.</span></li>
-    <li><strong style="color:#fff">"What 100 sessions taught me about my strategy"</strong><br><span style="color:#888;font-size:.75rem">Personal journey framing. Honest, includes losses.</span></li>
-    <li><strong style="color:#fff">"Practicing before paying for another prop firm eval"</strong><br><span style="color:#888;font-size:.75rem">Pain point angle — cost of failed evals vs free practice.</span></li>
-    <li><strong style="color:#fff">"The difference between knowing your setup and executing it"</strong><br><span style="color:#888;font-size:.75rem">Screen time / reps angle. Sports analogy (driving range).</span></li>
+    <li><strong style="color:#fff">"I practiced X sessions of Y — here's the data"</strong><br><span style="color:#888;font-size:.75rem">Screenshots of stats. Let numbers speak. Minimal narration.</span></li>
+    <li><strong style="color:#fff">"Built a free trading simulator — Show HN"</strong><br><span style="color:#888;font-size:.75rem">3 sentences + link. Technical audience will explore if it's good.</span></li>
+    <li><strong style="color:#fff">"Why win rate alone is meaningless"</strong><br><span style="color:#888;font-size:.75rem">Screenshot of streak/drawdown data. Myth-bust format works on X.</span></li>
+    <li><strong style="color:#fff">"Free alternative to $300 replay software"</strong><br><span style="color:#888;font-size:.75rem">SEO target. Landing page + comparison angle.</span></li>
+    <li><strong style="color:#fff">Silent screen recordings</strong><br><span style="color:#888;font-size:.75rem">30-sec clip: open sim, take a trade, see stats. No talking. No editing.</span></li>
   </ul>
 </div>
 <div class="section">
   <h2>Rules of Engagement</h2>
   <ul>
-    <li><strong style="color:#e05c5c">NEVER</strong> — cold DM, spam links, brand-new account self-promo</li>
-    <li><strong style="color:#e05c5c">NEVER</strong> — promise results, use "guru" language, fake scarcity</li>
-    <li><strong style="color:#4caf82">ALWAYS</strong> — lead with data/findings, not the product</li>
-    <li><strong style="color:#4caf82">ALWAYS</strong> — be genuinely helpful first, mention tool only when asked</li>
-    <li><strong style="color:#4caf82">ALWAYS</strong> — show honest results (wins AND losses)</li>
-    <li><strong style="color:#4caf82">ALWAYS</strong> — respond to every comment/question within 24h</li>
-    <li><strong style="color:#f5c542">PATIENCE</strong> — Week 1-2: lurk & learn. Week 3-4: participate. Week 5+: share.</li>
+    <li><strong style="color:#4caf82">PRINCIPLE</strong> — Build in public, don't perform in public</li>
+    <li><strong style="color:#4caf82">PRINCIPLE</strong> — The product IS the marketing. Ship good work, show it exists.</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — Lead with data/screenshots, not pitches</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — Show honest results (wins AND losses)</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — Force yourself to "engage" daily. Burnout kills projects.</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — Promise results, use guru language, fake scarcity</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — Cold DM, spam links, reply-guy behavior</li>
+    <li><strong style="color:#f5c542">ENERGY</strong> — If a channel feels draining, drop it. Ship a feature instead.</li>
   </ul>
 </div>
 </div>
 
 <div class="section">
-  <h2>Launch Sequence (6 Weeks)</h2>
+  <h2>Launch Sequence (4 Weeks)</h2>
   <table>
     <thead><tr><th>Week</th><th>Focus</th><th>Actions</th></tr></thead>
     <tbody>
-      <tr><td><strong>1</strong></td><td>Setup & Lurk</td><td>Create accounts (X, Reddit). Join Discord servers. Take screenshots. Observe culture.</td></tr>
-      <tr><td><strong>2</strong></td><td>Build Presence</td><td>X: Reply to 2-3 posts/day (no links). Reddit: Build karma with genuine comments. Discord: Read & observe.</td></tr>
-      <tr><td><strong>3</strong></td><td>First Content</td><td>X: Post first thread with data/screenshots. Reddit: First case-study post in r/Daytrading. Discord: First helpful reply.</td></tr>
-      <tr><td><strong>4</strong></td><td>Engage</td><td>X: Second thread + reply to responders. Reddit: Post in r/FuturesTrading. Discord: Post in #tools if appropriate.</td></tr>
-      <tr><td><strong>5</strong></td><td>Expand</td><td>Record 2-min screen capture. Post video on X + Reddit. Start DMs to engaged users (max 5/day).</td></tr>
-      <tr><td><strong>6</strong></td><td>Evaluate</td><td>Check /admin/users. Assess: signups? sessions run? returns? Adjust strategy based on what's working.</td></tr>
+      <tr><td><strong>1</strong></td><td>Assets</td><td>Take 5-6 clean screenshots. Record 2-3 silent screen captures (30-90 sec each). Set up X account if needed.</td></tr>
+      <tr><td><strong>2</strong></td><td>Launch</td><td>Post "Show HN" with 3-sentence description. Post first X thread with screenshot + link. Add recordings to landing page.</td></tr>
+      <tr><td><strong>3</strong></td><td>SEO</td><td>Write 1 targeted page ("free futures trading simulator"). Ensure Google has indexed the site. Check Search Console.</td></tr>
+      <tr><td><strong>4</strong></td><td>Evaluate</td><td>Check /admin/users. Check X impressions. If HN got traction, post a follow-up. If not, move on — ship features.</td></tr>
     </tbody>
   </table>
+  <p style="margin-top:12px;color:#888;font-size:.75rem">After week 4: maintain 1 X post/week if it feels sustainable. Otherwise, focus on SEO pages and let organic search do the work over months.</p>
 </div>
 
 <div class="grid2">
@@ -146,23 +148,21 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
 <div class="section">
   <h2>Success Metrics</h2>
   <ul>
-    <li><strong style="color:#fff">Week 2:</strong> X account has 50+ followers, 10+ replies sent</li>
-    <li><strong style="color:#fff">Week 4:</strong> First 10 user signups from organic channels</li>
-    <li><strong style="color:#fff">Week 6:</strong> 25+ registered users, 5+ with 10+ sessions completed</li>
-    <li><strong style="color:#fff">Month 2:</strong> 100 users, Discord has 20+ members, 1 Reddit post with 50+ upvotes</li>
-    <li><strong style="color:#fff">Month 3:</strong> Assess monetization path (premium features vs donations vs sponsorship)</li>
+    <li><strong style="color:#fff">Week 2:</strong> HN post submitted. X account has first thread posted.</li>
+    <li><strong style="color:#fff">Week 4:</strong> 10+ signups from organic channels (HN, X, or search)</li>
+    <li><strong style="color:#fff">Month 2:</strong> 50+ registered users. At least 1 SEO page ranking.</li>
+    <li><strong style="color:#fff">Month 3:</strong> 100+ users. Assess if X cadence is sustainable or pivot to SEO-only.</li>
   </ul>
-  <p style="margin-top:12px;color:#888;font-size:.75rem">Track via /admin/users. Add Plausible analytics after 20+ active users.</p>
+  <p style="margin-top:12px;color:#888;font-size:.75rem">Track via /admin/users. Add Plausible analytics ($9/mo) after 50+ active users.</p>
 </div>
 </div>
 
 <div class="section">
   <h2>Monetization (Future — Not Now)</h2>
-  <p style="color:#888">The product is <strong style="color:#fff">free</strong> during growth phase. Focus on user acquisition and retention first. Monetization options to explore once we have 100+ active users:</p>
+  <p style="color:#888">The product is <strong style="color:#fff">free</strong> during growth phase. Focus on building something people want first. Monetization options once 100+ active users exist:</p>
   <ul style="margin-top:8px">
     <li><strong style="color:#fff">Premium tier ($9.99/mo)</strong> — Custom instruments, advanced stats, priority feature requests</li>
     <li><strong style="color:#fff">Prop firm partnerships</strong> — Referral deals for practice → eval pipeline</li>
-    <li><strong style="color:#fff">Educational content</strong> — Paid courses/guides using the simulator</li>
     <li><strong style="color:#fff">Keep it free + donations</strong> — Kofi/GitHub Sponsors if community is strong enough</li>
   </ul>
 </div>
