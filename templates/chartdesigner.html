@@ -805,9 +805,7 @@ async function runTickPreview() {
 function startTickPlayback() {
   if (_tickPreviewTimer) clearInterval(_tickPreviewTimer);
   const speed = parseFloat(document.getElementById('tick-speed').value);
-  // Process multiple ticks per frame at higher speeds, keep interval ~60fps max
-  const ticksPerFrame = Math.max(1, Math.round(speed));
-  const interval = Math.max(16, Math.round(1000 / Math.min(speed, 60)));
+  const interval = Math.max(16, Math.round(1000 / speed));
   const _el = {
     price: document.getElementById('td-price'), bid: document.getElementById('td-bid'),
     ask: document.getElementById('td-ask'), spread: document.getElementById('td-spread'),
@@ -820,55 +818,33 @@ function startTickPlayback() {
   const tickThresh = parseFloat(document.getElementById('p-tick').value) * 2;
 
   _tickPreviewTimer = setInterval(() => {
-    let needsNewCandle = false;
-    for (let f = 0; f < ticksPerFrame; f++) {
-      if (_tickPreviewIdx >= _tickPreviewData.length) { stopTickPreview(); return; }
-      const t = _tickPreviewData[_tickPreviewIdx++];
-      const minuteIdx = Math.floor((_tickPreviewIdx - 1) / 60);
-      const candleTime = _lastHistTime + (minuteIdx + 1) * 60;
-      if (!_tickPreviewCandle || _tickPreviewCandle.time !== candleTime) {
-        if (_tickPreviewCandle) {
-          _tickMinuteCandles.push(_tickPreviewCandle);
-          needsNewCandle = true;
-        }
-        _tickPreviewCandle = { time: candleTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
-      } else {
-        _tickPreviewCandle.high = Math.max(_tickPreviewCandle.high, t.price);
-        _tickPreviewCandle.low = Math.min(_tickPreviewCandle.low, t.price);
-        _tickPreviewCandle.close = t.price;
-        _tickPreviewCandle.volume += t.volume;
-      }
-    }
-    // Only do full re-render when a new candle opens (for TF rebucketing); otherwise just update last bar
-    if (needsNewCandle) {
-      const tf = parseInt(document.getElementById('tf').value);
-      if (tf <= 60) {
-        // At 1-min TF, just update the completed candle (already added via .update) and start new one
-        candleSeries.update({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
-        volSeries.update({ time: _tickPreviewCandle.time, value: _tickPreviewCandle.volume, color: _tickPreviewCandle.close >= _tickPreviewCandle.open ? '#4caf8266' : '#e05c5c66' });
-        window._chartData.push({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
-      } else {
-        // Higher TFs need rebucket — but only on candle boundaries (once per minute)
-        renderCandles();
-      }
-    } else if (_tickPreviewCandle) {
-      const tf = parseInt(document.getElementById('tf').value);
-      if (tf <= 60) {
-        candleSeries.update({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
-        volSeries.update({ time: _tickPreviewCandle.time, value: _tickPreviewCandle.volume, color: _tickPreviewCandle.close >= _tickPreviewCandle.open ? '#4caf8266' : '#e05c5c66' });
-      } else {
-        // For higher TFs, update the last bucketed bar in-place
-        const cd = window._chartData;
-        if (cd && cd.length) {
-          const last = cd[cd.length - 1];
-          last.high = Math.max(last.high, _tickPreviewCandle.high);
-          last.low = Math.min(last.low, _tickPreviewCandle.low);
-          last.close = _tickPreviewCandle.close;
-          candleSeries.update(last);
+    if (_tickPreviewIdx >= _tickPreviewData.length) { stopTickPreview(); return; }
+    const t = _tickPreviewData[_tickPreviewIdx++];
+    const minuteIdx = Math.floor((_tickPreviewIdx - 1) / 60);
+    const candleTime = _lastHistTime + (minuteIdx + 1) * 60;
+    if (!_tickPreviewCandle || _tickPreviewCandle.time !== candleTime) {
+      if (_tickPreviewCandle) {
+        _tickMinuteCandles.push(_tickPreviewCandle);
+        // Append completed candle
+        const tf = parseInt(document.getElementById('tf').value);
+        if (tf <= 60) {
+          window._chartData.push({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
+        } else {
+          renderCandles();
         }
       }
+      _tickPreviewCandle = { time: candleTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+    } else {
+      _tickPreviewCandle.high = Math.max(_tickPreviewCandle.high, t.price);
+      _tickPreviewCandle.low = Math.min(_tickPreviewCandle.low, t.price);
+      _tickPreviewCandle.close = t.price;
+      _tickPreviewCandle.volume += t.volume;
     }
-    const t = _tickPreviewData[_tickPreviewIdx - 1];
+    // Update current candle on chart
+    candleSeries.update({ time: _tickPreviewCandle.time, open: _tickPreviewCandle.open, high: _tickPreviewCandle.high, low: _tickPreviewCandle.low, close: _tickPreviewCandle.close });
+    volSeries.update({ time: _tickPreviewCandle.time, value: _tickPreviewCandle.volume, color: _tickPreviewCandle.close >= _tickPreviewCandle.open ? '#4caf8266' : '#e05c5c66' });
+
+    // Update debug panel
     _el.price.textContent = t.price.toFixed(2);
     _el.bid.textContent = t.bid.toFixed(2);
     _el.ask.textContent = t.ask.toFixed(2);
