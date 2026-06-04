@@ -42,7 +42,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 .stats-grid-sm .stat-val{font-size:.8rem}
 .stat-label{font-size:.58rem;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
 /* Charts */
-.equity-chart{background:#111;border:1px solid #2a2a2a;border-radius:6px;height:200px;position:relative}
+.equity-chart{background:#111;border:1px solid #2a2a2a;border-radius:6px;height:180px;position:relative}
 /* Tables */
 .history-wrap{max-height:400px;overflow-y:auto;border:1px solid #2a2a2a;border-radius:6px}
 .history-table{width:100%;border-collapse:collapse;font-size:.72rem}
@@ -68,12 +68,12 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 .cal-cell.l1{background:#1b3a2a}.cal-cell.l2{background:#2d6b47}.cal-cell.l3{background:#4caf82}.cal-cell.l4{background:#7cdfb0}
 /* Monthly calendar */
 .month-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.month-cal-hdr{font-size:.55rem;color:#555;text-align:center;padding:4px 0;text-transform:uppercase}
-.month-cal-day{aspect-ratio:1;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.6rem;color:#555;background:#0a0a0a;border:1px solid #1a1a1a}
+.month-cal-hdr{font-size:.6rem;color:#666;text-align:center;padding:6px 0;text-transform:uppercase;font-weight:600}
+.month-cal-day{aspect-ratio:1;border-radius:4px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:4px 6px;font-size:.72rem;color:#555;background:#0a0a0a;border:1px solid #1a1a1a;min-height:38px}
 .month-cal-day.has-data{color:#ccc}
 .month-cal-day.day-pos{background:#4caf8218;border-color:#4caf8240;color:#4caf82}
 .month-cal-day.day-neg{background:#e05c5c18;border-color:#e05c5c40;color:#e05c5c}
-.month-cal-day .day-pnl{font-size:.5rem;font-weight:600;margin-top:1px}
+.month-cal-day .day-pnl{font-size:.58rem;font-weight:600;margin-top:auto}
 /* Iron Man */
 .iron-box{background:#111;border:1px solid #2a2a2a;border-left:3px solid #f97316;border-radius:6px;padding:20px}
 .iron-box h3{color:#e0e0e0;font-size:.85rem;font-weight:700;margin-bottom:8px}
@@ -113,10 +113,27 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 <!-- ═══════════════════════ TAB 1: OVERVIEW ═══════════════════════ -->
 <div class="tab-panel active" id="tab-overview">
-  <!-- Aggregated Equity Curve - full width -->
-  <div class="section">
-    <h2>Equity Curve — All Accounts (Normalized %)</h2>
-    <div class="equity-chart" style="height:240px"><canvas id="equity-chart-agg"></canvas></div>
+  <!-- Top row: EQ curve (left ~65%) + Quick Stats panel (right ~35%) -->
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;margin-bottom:24px">
+    <div class="section" style="margin-bottom:0">
+      <h2>Equity Curve — All Accounts (Normalized %)</h2>
+      <div class="equity-chart" style="height:200px"><canvas id="equity-chart-agg"></canvas></div>
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <h2>Quick Stats</h2>
+      <div id="overview-quick-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="stat-card"><div class="stat-val" id="ov-total-sessions">0</div><div class="stat-label">Sessions</div></div>
+        <div class="stat-card"><div class="stat-val" id="ov-total-trades">0</div><div class="stat-label">Trades</div></div>
+        <div class="stat-card"><div class="stat-val" id="ov-winrate">-</div><div class="stat-label">Win Rate</div></div>
+        <div class="stat-card"><div class="stat-val" id="ov-pnl">$0</div><div class="stat-label">Total P/L</div></div>
+        <div class="stat-card"><div class="stat-val" id="ov-best-day">-</div><div class="stat-label">Best Day</div></div>
+        <div class="stat-card"><div class="stat-val" id="ov-worst-day">-</div><div class="stat-label">Worst Day</div></div>
+      </div>
+      <div id="ov-iron-badge" style="margin-top:10px;background:#111;border:1px solid #2a2a2a;border-left:3px solid #f97316;border-radius:5px;padding:10px 12px;display:none">
+        <div style="font-size:.65rem;color:#f97316;font-weight:600;text-transform:uppercase;margin-bottom:4px">🦾 Iron Man</div>
+        <div id="ov-iron-content" style="font-size:.72rem;color:#ccc"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Two column: Monthly P&L cards | Month calendar -->
@@ -131,8 +148,8 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     </div>
   </div>
 
-  <!-- Practice streak + heatmap -->
-  <div class="grid-2col">
+  <!-- Practice streak + heatmap side by side -->
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start">
     <div class="section">
       <h2>Practice Streak</h2>
       <div class="streak-row">
@@ -150,7 +167,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
 <!-- ═══════════════════════ TAB 2: ACCOUNT DETAILS ═══════════════════════ -->
 <div class="tab-panel" id="tab-account">
-  <div class="grid-2col-narrow">
+  <div style="display:grid;grid-template-columns:380px 1fr;gap:24px">
     <!-- Left: Account selector + stat cards -->
     <div>
       <div class="section">
@@ -169,7 +186,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
         <div class="stat-card"><div class="stat-val" id="s-pnl">$0</div><div class="stat-label">Cumulative P/L</div></div>
       </div>
 
-      <div class="stats-grid-sm" id="stats-grid-2">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px" id="stats-grid-2">
         <div class="stat-card"><div class="stat-val" id="s-pf">-</div><div class="stat-label">Profit Factor</div></div>
         <div class="stat-card"><div class="stat-val" id="s-avgwin">-</div><div class="stat-label">Avg Win</div></div>
         <div class="stat-card"><div class="stat-val" id="s-avgloss">-</div><div class="stat-label">Avg Loss</div></div>
@@ -177,6 +194,13 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
         <div class="stat-card"><div class="stat-val" id="s-largest-loss">-</div><div class="stat-label">Largest Loss</div></div>
         <div class="stat-card"><div class="stat-val" id="s-consec-wins">-</div><div class="stat-label">Max Consec. Wins</div></div>
         <div class="stat-card"><div class="stat-val" id="s-consec-losses">-</div><div class="stat-label">Max Consec. Losses</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-avg-trade">-</div><div class="stat-label">Avg Trade</div></div>
+      </div>
+
+      <!-- Recent sessions mini-list to fill remaining space -->
+      <div class="section" id="recent-sessions-section" style="display:none">
+        <h2>Recent Sessions</h2>
+        <div id="recent-sessions-list" style="font-size:.68rem"></div>
       </div>
     </div>
 
@@ -268,8 +292,34 @@ async function init() {
   highlightAccount(selectedAccountId);
   renderForAccount(selectedAccountId);
   renderAggregated();
+  renderOverviewStats();
   renderStreak(allSessions);
   renderIronMan();
+}
+
+function renderOverviewStats() {
+  const total = allSessions.length;
+  const trades = allSessions.reduce((s, h) => s + (h.trades || 0), 0);
+  const wins = allSessions.reduce((s, h) => s + (h.wins || 0), 0);
+  const pnl = allSessions.reduce((s, h) => s + (h.pnl || 0), 0);
+  const wr = trades > 0 ? ((wins / trades) * 100).toFixed(1) + '%' : '-';
+  document.getElementById('ov-total-sessions').textContent = total;
+  document.getElementById('ov-total-trades').textContent = trades;
+  document.getElementById('ov-winrate').textContent = wr;
+  const pnlEl = document.getElementById('ov-pnl');
+  pnlEl.textContent = (pnl >= 0 ? '$' : '-$') + fmtD(pnl);
+  pnlEl.className = 'stat-val ' + (pnl >= 0 ? 'pos' : 'neg');
+  pnlEl.closest('.stat-card').className = 'stat-card ' + (pnl >= 0 ? 'tint-pos' : 'tint-neg');
+  // Best/worst day
+  const byDay = {};
+  allSessions.forEach(s => { const d = s.date || ''; if (d) byDay[d] = (byDay[d] || 0) + (s.pnl || 0); });
+  const days = Object.values(byDay);
+  const bestEl = document.getElementById('ov-best-day');
+  const worstEl = document.getElementById('ov-worst-day');
+  if (days.length > 0) {
+    const best = Math.max(...days); bestEl.textContent = '$' + fmtD(best); bestEl.className = 'stat-val pos'; bestEl.closest('.stat-card').className = 'stat-card tint-pos';
+    const worst = Math.min(...days); worstEl.textContent = (worst >= 0 ? '$' : '-$') + fmtD(worst); worstEl.className = 'stat-val ' + (worst >= 0 ? 'pos' : 'neg'); worstEl.closest('.stat-card').className = 'stat-card ' + (worst >= 0 ? 'tint-pos' : 'tint-neg');
+  }
 }
 
 function renderAccountList(accounts) {
@@ -347,6 +397,21 @@ async function renderForAccount(accountId) {
   setCard('s-largest-loss', largestLossVal, losses.length > 0 ? 'neg' : '');
   setCard('s-consec-wins', maxConsecW || '-', '');
   setCard('s-consec-losses', maxConsecL || '-', '');
+  // Avg trade
+  const avgTradeVal = trades.length > 0 ? trades.reduce((s,t)=>s+t.pnl,0) / trades.length : 0;
+  setCard('s-avg-trade', trades.length > 0 ? ((avgTradeVal >= 0 ? '$' : '-$') + fmtD(avgTradeVal)) : '-', avgTradeVal >= 0 ? 'pos' : 'neg');
+
+  // Recent sessions mini-list (left panel filler)
+  const recentSection = document.getElementById('recent-sessions-section');
+  const recentList = document.getElementById('recent-sessions-list');
+  const recent = sessions.slice(-5).reverse();
+  if (recent.length > 0) {
+    recentSection.style.display = '';
+    recentList.innerHTML = recent.map(s => {
+      const c = (s.pnl||0) >= 0 ? '#4caf82' : '#e05c5c';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-bottom:1px solid #1a1a1a"><span style="color:#aaa">${s.date||'-'} · ${s.character||'-'}</span><span style="color:${c};font-weight:600">${s.pnl>=0?'':'-'}$${fmtD(s.pnl||0)}</span></div>`;
+    }).join('');
+  } else { recentSection.style.display = 'none'; }
 
   // Equity curve
   document.getElementById('eq-title').textContent = 'Selected Account';
@@ -506,8 +571,23 @@ async function renderIronMan() {
   try {
     const res = await fetch('/api/ironman/status', {credentials:'include'});
     const data = await res.json();
-    if (data.active) renderActiveRun(data.run, data.sessions);
-    else renderInactive(data.history || []);
+    if (data.active) {
+      renderActiveRun(data.run, data.sessions);
+      // Overview badge
+      const badge = document.getElementById('ov-iron-badge');
+      badge.style.display = '';
+      const r = data.run; const p = r.balance - r.start_balance; const pp = ((p/r.start_balance)*100).toFixed(1);
+      document.getElementById('ov-iron-content').innerHTML = `Attempt #${r.attempt} · Day ${r.day_count}<br><span style="color:${p>=0?'#4caf82':'#e05c5c'};font-weight:700">${pp}%</span> <span style="color:#555">($${r.balance.toLocaleString()})</span>`;
+    } else {
+      renderInactive(data.history || []);
+      const hist = data.history || [];
+      if (hist.length > 0) {
+        const badge = document.getElementById('ov-iron-badge');
+        badge.style.display = '';
+        const passed = hist.filter(r => r.end_reason === 'target_reached').length;
+        document.getElementById('ov-iron-content').innerHTML = `${hist.length} run${hist.length>1?'s':''} · ${passed} passed · <a href="#" onclick="switchTab('ironman');return false" style="color:#f97316;text-decoration:none">View →</a>`;
+      }
+    }
   } catch(e) {
     panel.innerHTML = '<p style="color:#e05c5c;font-size:.75rem">Failed to load Iron Man status.</p>';
   }
