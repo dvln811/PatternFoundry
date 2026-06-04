@@ -176,14 +176,19 @@ rewrite everything from scratch in this repo.
 
 ## Recent Work (2026-06-03 session 4)
 
-1. **Aggregated equity curve normalized to %** — Each session's P&L is divided by its account's starting balance, plotted as cumulative % return. Fixes misleading raw-dollar aggregation across different-sized accounts.
-2. **Stats page reordered** — Agg EQ → Account → Stats Cards → Selected EQ → Instrument Breakdown → Monthly P&L → Drawdown → Session History → Iron Man → Practice Streak + Activity
-3. **Enhanced stat cards** — Second row: Profit Factor, Avg Win, Avg Loss, Largest Win, Largest Loss, Max Consecutive Wins, Max Consecutive Losses. Computed from trade-level data via new `/api/trades` endpoint.
-4. **Per-instrument breakdown table** — Win rate, P&L, avg trade, profit factor per instrument for the selected account.
-5. **Monthly P&L bar chart** — Green/red bars grouped by YYYY-MM with dollar tooltips.
-6. **Drawdown chart** — Red area line showing drawdown from peak equity over time.
-7. **Iron Man aggregate metrics** — Mini card grid above Past Attempts: Runs, Pass Rate, Avg Return, Best Run, Worst Run, Total Sessions.
-8. **Iron Man Past Attempts enhanced** — Now shows: Start Balance, Target%, Max DD%, Max Sessions, Actual Sessions, Final Balance, Return%.
+1. **Aggregated equity curve normalized to %** — Each session's P&L divided by its account's starting balance, plotted as cumulative % return. New `/api/trades` endpoint added for bulk trade fetching.
+2. **Stats page full redesign** — Full-width layout (no more 960px narrow column), 3 tabbed panels:
+   - **Overview:** Aggregated EQ curve (full width, 240px tall), monthly P&L cards + month calendar drill-down side by side, practice streak + heatmap side by side
+   - **Account Details:** Left panel (320px) with account selector + stat cards; right panel with equity curve, drawdown chart, instrument breakdown, session history
+   - **Iron Man:** Full-width config/active run/history panel
+3. **Enhanced stat cards** — Profit Factor, Avg Win, Avg Loss, Largest Win, Largest Loss, Max Consecutive Wins/Losses. All color-coded green/red with tinted card backgrounds.
+4. **Per-instrument breakdown table** — Win rate, P&L, avg trade, profit factor per instrument.
+5. **Monthly P&L** — Clickable cards per month (green/red tinted) with calendar drill-down showing per-day session results.
+6. **Drawdown chart** — Red area line showing drawdown from peak.
+7. **Iron Man aggregate metrics** — Runs, Pass Rate, Avg Return, Best/Worst Run, Total Sessions.
+8. **Iron Man Past Attempts** — Shows Start Balance, Target%, Max DD%, Max Sessions, Actual Sessions, Final Balance, Return%.
+9. **Aesthetic overhaul** — All money values colored green/red, cards tinted to match, no '+' prefix (only '-' for losses), smaller text sizes, overflow protection.
+10. **Stats section reorder** — Logical tab grouping replaced vertical scroll-through-everything layout.
 
 ---
 
