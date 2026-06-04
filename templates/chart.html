@@ -764,30 +764,23 @@ function initChart() {
     if (!data || !data.length) return;
     const ts = chart.timeScale();
     ctx.fillStyle = 'rgba(100, 140, 200, 0.07)';
-    let runX0 = null, runX1 = null;
+    let runs = [], runStartIdx = null;
     for (let i = 0; i < data.length; i++) {
       const d = new Date(data[i].time * 1000);
       const mins = d.getUTCHours() * 60 + d.getUTCMinutes();
       const isRTH = mins >= 570 && mins < 960;
-      const x = ts.timeToCoordinate(data[i].time);
-      if (!isRTH) {
-        if (x != null) {
-          if (runX0 === null) runX0 = x;
-          runX1 = x;
-        }
-      } else {
-        if (runX0 !== null && runX1 !== null) {
-          ctx.fillRect(Math.min(runX0, runX1), 0, Math.abs(runX1 - runX0) || 1, cv.height);
-        }
-        runX0 = null; runX1 = null;
-      }
+      if (!isRTH && runStartIdx === null) runStartIdx = i;
+      if (isRTH && runStartIdx !== null) { runs.push([runStartIdx, i - 1]); runStartIdx = null; }
     }
-    if (runX0 !== null && runX1 !== null) {
-      ctx.fillRect(Math.min(runX0, runX1), 0, Math.abs(runX1 - runX0) || 1, cv.height);
+    if (runStartIdx !== null) runs.push([runStartIdx, data.length - 1]);
+    for (const [a, b] of runs) {
+      const x0 = ts.logicalToCoordinate(a);
+      const x1 = ts.logicalToCoordinate(b);
+      if (x0 == null || x1 == null) continue;
+      ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0) || 1, cv.height);
     }
   }
   chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
-  chart.timeScale().subscribeVisibleLogicalRangeChange(drawOffHoursShading);
   window.drawOffHoursShading = drawOffHoursShading;
   new ResizeObserver(() => { pmCanvas.width = chartEl.clientWidth; pmCanvas.height = chartEl.clientHeight; drawOffHoursShading(); }).observe(chartEl);
 }

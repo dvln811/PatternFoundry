@@ -906,70 +906,31 @@ def sim_session():
         while target.weekday() >= 5:
             target += timedelta(days=1)
 
-    # Generate 5-min history (78 candles/day)
-    num_5min = num_hist_days * 78
+    # Generate full-session history (288 bars/day = 24hrs at 5-min)
+    num_5min = num_hist_days * 288
     historical_df = None
     for _pct, df_result, _ts in dg.generate_historical_data(num_5min, profile=profile, seed=seed):
         if df_result is not None:
             historical_df = df_result
 
-    # Restamp history backwards from session open
+    from generators import apply_session_structure, extract_gap_cfg
+    gap_cfg = extract_gap_cfg(profile) if hasattr(profile, 'gap') else {'prob': getattr(profile, 'gap_prob', 0), 'min_size': 0.002, 'max_size': 0.005}
+    structured = apply_session_structure(historical_df, gap_cfg, tf_seconds=300, seed=seed)
+
+    # Shift timestamps so last candle ends just before session's pre-market
     premarket_open = pd.Timestamp(f'{target} 06:00:00', tz='UTC')
     session_open   = pd.Timestamp(f'{target} 09:30:00', tz='UTC')
-    total = len(historical_df)
-    new_ts = []
-    ts = premarket_open - pd.Timedelta(minutes=5)
-    bars_today = 0
-    for _ in range(total):
-        new_ts.append(ts)
-        bars_today += 1
-        ts -= pd.Timedelta(minutes=5)
-        # After 78 bars (one RTH session), jump to previous trading day's close
-        if bars_today >= 78:
-            bars_today = 0
-            prev = ts.normalize() - pd.Timedelta(days=1)
-            while prev.weekday() >= 5:
-                prev -= pd.Timedelta(days=1)
-            ts = prev + pd.Timedelta(hours=15, minutes=55)
-    new_ts.reverse()
-    historical_df = historical_df.copy()
-    historical_df['Timestamp'] = new_ts
+    target_last = int(premarket_open.timestamp()) - 300
+    time_offset = target_last - structured[-1]['time']
+    for c in structured:
+        c['time'] += time_offset
 
-    # Tiered resolution: older as 5-min, recent 2 weeks via tick paths → 1-min
-    TICK_LIMIT = 780
-    older_df  = historical_df.iloc[:-TICK_LIMIT] if len(historical_df) > TICK_LIMIT else None
-    recent_df = historical_df.iloc[-TICK_LIMIT:] if len(historical_df) > TICK_LIMIT else historical_df
-
-    hist_1min = []
-    if older_df is not None:
-        for _, row in older_df.iterrows():
-            hist_1min.append({
-                'time': int(row['Timestamp'].timestamp()),
-                'open': round(float(row['Open']), 2), 'high': round(float(row['High']), 2),
-                'low': round(float(row['Low']), 2),   'close': round(float(row['Close']), 2),
-                'volume': int(row['Volume']),
-            })
-
-    # Aggregate tick path of recent 5-min candles into 1-min bars
-    hist_ticks = dg.generate_tick_path(recent_df, tick_size=profile.tick, seconds_per_candle=300)
-    bucket = None
-    for t in hist_ticks:
-        ct = (t['time'] // 60) * 60
-        if not bucket or bucket['time'] != ct:
-            if bucket: hist_1min.append(bucket)
-            bucket = {'time': ct, 'open': t['price'], 'high': t['price'],
-                      'low': t['price'], 'close': t['price'], 'volume': t['volume']}
-        else:
-            bucket['close'] = t['price']
-            bucket['high']  = max(bucket['high'], t['price'])
-            bucket['low']   = min(bucket['low'],  t['price'])
-            bucket['volume'] += t['volume']
-    if bucket: hist_1min.append(bucket)
+    hist_1min = structured
 
     # Pre-market session (6:00–9:25, dampened vol)
-    memory_hi = historical_df['High'].max()
-    memory_lo = historical_df['Low'].min()
-    last_ts   = historical_df['Timestamp'].iloc[-1]
+    memory_hi = max(c['high'] for c in structured)
+    memory_lo = min(c['low'] for c in structured)
+    last_prices = [c['close'] for c in structured[-50:]]
 
     pm_profile = dg.InstrumentProfile(
         price_range=profile.price_range, tick=profile.tick,
@@ -978,8 +939,9 @@ def sim_session():
         wick_ratio_chop=profile.wick_ratio_chop, gap_prob=profile.gap_prob,
         volume_base=int(profile.volume_base * 0.25), name=profile.name + ' PM',
     )
+    last_ts = pd.Timestamp(structured[-1]['time'], unit='s', tz='UTC')
     dg.NUM_SESSION_CANDLES = 210
-    pm_df = dg.simulate_session_candles(historical_df['Close'].tolist(), memory_hi, memory_lo, last_ts, profile=pm_profile)
+    pm_df = dg.simulate_session_candles(last_prices, memory_hi, memory_lo, last_ts, profile=pm_profile)
     dg.NUM_SESSION_CANDLES = 390
 
     pm_df = pm_df.copy()
