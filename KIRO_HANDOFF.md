@@ -30,7 +30,7 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Current State (as of 2026-06-03)
+## Current State (as of 2026-06-04)
 
 ### Deployed & Live
 - **Site:** https://patternfoundry.net (Fly.io, auto-deploys from GitHub on push to main)
@@ -66,7 +66,8 @@ rewrite everything from scratch in this repo.
 | `/admin/users` | `admin_users.html` | User management + Nuke Stats button |
 | `/admin/feedback` | `admin_feedback.html` | View feedback submissions |
 | `/board` | `board.html` | Kanban board (auto-syncs to server on Fly) |
-| `/marketing` | `marketing.html` | Marketing plan |
+| `/marketing` | `marketing.html` | Marketing plan (strategy, channels, launch sequence) |
+| `/marketing/board` | `marketing_board.html` | Marketing Kanban board (5 cols, channel-based cards) |
 | `/feature-ideas` | `feature_ideas.html` | Design docs for upcoming features |
 
 ### Instruments (14 total)
@@ -113,7 +114,7 @@ rewrite everything from scratch in this repo.
 2. `data_generator.py` - Legacy: simulate_session_candles + generate_tick_path
 3. `tick_engine.py` - Microstructure: 4 agent types, Hawkes clustering, order book, liquidity pools
 4. `order_book.py` - Simulated LOB
-5. `/api/sim-session` - Combines history (5-min) + pre-market + RTH session + tick paths
+5. `/api/sim-session` - Full 24hr history via `apply_session_structure` (288 bars/day) + pre-market + RTH session + tick paths
 
 ### Trading Account System
 - **Table:** `trading_accounts` (user_id, starting_balance, balance, commission_per_contract, status, created_at, archived_at)
@@ -155,6 +156,7 @@ rewrite everything from scratch in this repo.
 | `static/custom-indicator.js` | Custom indicator execution engine |
 | `templates/chart.html` | Simulator SPA (~2200 lines) |
 | `templates/chartdesigner.html` | Chart Designer SPA (14 presets) |
+| `templates/marketing_board.html` | Marketing Kanban board (5 cols, channel-based) |
 | `templates/stats.html` | Stats + Iron Man config |
 | `templates/settings.html` | Account reset only |
 | `templates/admin_users.html` | User management + nuke button |
@@ -174,27 +176,24 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-03 session 5)
+## Recent Work (2026-06-04 session 6)
 
-1. **Stats page space optimization** — Overview tab: EQ curve narrowed with Quick Stats sidebar (sessions, trades, win rate, P/L, best/worst day, Iron Man badge). Account Details: left panel widened to 380px, 8 stat cards in clean 2-col grid, Recent Sessions mini-list filler.
-2. **Overview tab new sections** — Between Monthly P&L and Practice Activity: Top Instruments (bar chart + win rate), Session Distribution (day-of-week bars), Recent Sessions (mini table). All in left column under monthly cards.
-3. **Monthly P&L always 12 months** — Shows all Jan–Dec, gray for untraded months, 4-column grid.
-4. **Month Detail calendar** — Day numbers top-left aligned, P&L pushed to bottom, larger font, less "empty center" feeling.
-5. **Account rows simplified** — 3 equal columns (Status | Balance | Date) + Starting Balance and P/L as dedicated cards below.
-6. **Nav bar restyled (all 19 pages)** — Orange underline for active tab (matching stats tab bar style), removed bordered button look.
-7. **Iron Man styling** — Removed 🦾 emoji, title now orange + uppercase + letter-spacing.
-8. **Dashboard stats** — Removed Quick Actions section (redundant with nav). "Your Stats" now fetches real data: sessions, trades, win rate, P/L, best day, streak, + recent sessions list.
-9. **Landing page** — "See It In Action" now 3-col grid (Simulator, Chart Designer, Stats). Stats screenshot added. Performance Analytics feature card copy enhanced.
-10. **Docs: Stats page** — New `/docs/stats` page + card in docs hub. Covers all 3 tabs, metrics explained, tips.
-11. **Docs: Iron Man updated** — Now documents configurable presets, custom params, margin-filtered instruments, 3-month history lock, max_sessions end condition.
-12. **Docs: Simulator updated** — Fixed instruments (14 + custom), history depth (day-based), added Gann Box + Text tools, removed fake keyboard shortcuts, added Close Session + Margin System sections.
-13. **Simulator hotkeys** — Implemented: Space (play/pause), +/- (speed step), B (instant buy), S (instant sell). B/S skip confirmation, use panel settings. Documented in docs.
+1. **Off-hours shading fix (backend)** — `/api/sim-session` now uses `apply_session_structure()` with `tf_seconds=300` to generate full 24hr candles (288/day) instead of RTH-only (78/day). Off-hours bars have dampened body/volume. History has proper overnight/london/pre-market candles for shading.
+2. **Off-hours shading fix (frontend)** — Both `chart.html` and `chartdesigner.html` now use `logicalToCoordinate(index)` instead of `timeToCoordinate(timestamp)` for reliable off-hours shading across all bars regardless of scroll position.
+3. **Chart Designer tick playback performance** — Rewrote `startTickPlayback()` to batch ticks per frame (speed/10 per 16ms frame) with single `candleSeries.update()` per frame. Cached DOM refs for debug panel. Removed full `renderCandles()`/`setData()` per tick.
+4. **Chart Designer TF bucketing** — Tick candles now bucket to selected TF using `Math.floor(time/tf)*tf` (same as simulator's `getCandleTime`). Tracks `window._displayCandle` at TF level. Fixes issue where 30-min TF showed per-minute bars during playback.
+5. **Chart Designer: history truncated at RTH** — `character_generate()` now truncates output at last RTH boundary so generated history stops at 09:29. Tick engine handles RTH playback.
+6. **Chart Designer: tick-preview no dampening** — `/api/character/tick-preview` no longer uses `apply_session_structure`. Generates raw candles stamped as RTH (09:30+) with full volatility. Tick engine gets undampened data.
+7. **Chart Designer: tick timestamp anchoring** — Frontend anchors `_lastHistTime` to 09:29 so tick candles start at 09:30 (proper RTH timestamps in the shading).
+8. **Chart Designer: shading throttle removed** — `drawOffHoursShading` called directly on visible range change (no 200ms throttle), matching simulator behavior.
+9. **Marketing Board** — New `/marketing/board` page: 5-column Kanban (Backlog, This Week, Next Week, Ongoing, Done), channel-based badges (twitter/reddit/discord/content/youtube/product), seeded with 20 actionable marketing cards. API: `/api/marketing-board/save` + `/api/marketing-board/load`.
+10. **Marketing Plan rewrite** — `/marketing` completely rewritten: positioning ("the driving range for traders"), target audience (prop firm candidates, futures beginners), channel strategy with cadence, content angles, rules of engagement, 6-week launch sequence, competitive landscape, success metrics, monetization path.
 
 ---
 
 ## Next Steps
 
-- **MARKETING** — Reddit/Discord presence, short demo video, content strategy, launch plan
+- **MARKETING EXECUTION** — Follow the 6-week launch plan. See `/marketing/board` for actionable tasks. Week 1: screenshots, create accounts, lurk.
 - **Chart Designer tick_value:** Add tick_value/margin fields to designer UI for custom characters
 - **Session history:** Per-trade annotations, journal notes
 - **See board + /feature-ideas** for full roadmap
