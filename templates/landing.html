@@ -164,7 +164,7 @@ h1,h2,h3,h4{text-transform:uppercase}
     <div class="feature-card"><h3>Realistic Generation</h3><p>Institutional-grade price simulation with realistic order flow, liquidity dynamics, and session structure.</p></div>
     <div class="feature-card"><h3>Multiple Instruments</h3><p>Practice across forex, crypto, indices, and commodities - all with authentic characteristics.</p></div>
     <div class="feature-card"><h3>Chart Designer</h3><p>Create custom chart scenarios to drill specific patterns and setups you want to master.</p></div>
-    <div class="feature-card"><h3>Performance Analytics</h3><p>Track your win rate, risk/reward, and improvement over time with detailed statistics.</p></div>
+    <div class="feature-card"><h3>Performance Analytics</h3><p>Equity curves, drawdown charts, per-instrument breakdowns, monthly P&L calendars, win streaks, and Iron Man challenge mode. Know exactly where your edge is.</p></div>
     <div class="feature-card"><h3>Instant Sessions</h3><p>No waiting for data downloads. Generate a fresh session in under a second.</p></div>
     <div class="feature-card"><h3>Dark Professional UI</h3><p>A clean, distraction-free interface designed for focused deliberate practice.</p></div>
   </div>
@@ -206,7 +206,7 @@ h1,h2,h3,h4{text-transform:uppercase}
 
 <section style="max-width:1000px;margin:0 auto;padding:60px 40px">
   <h2 style="text-align:center;font-size:1.4rem;font-weight:700;margin-bottom:32px;text-transform:uppercase;letter-spacing:.05em">See It In Action</h2>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
     <div>
       <div id="drop-sim" class="drop-zone" onclick="if(!event.dataTransfer)openLightbox(0)" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
         <img src="/static/screenshots/simulator.png" onerror="this.style.display='none';this.nextElementSibling.style.display=''" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
@@ -220,6 +220,13 @@ h1,h2,h3,h4{text-transform:uppercase}
         <span style="color:#555;font-size:.8rem;display:none">Drop chart designer screenshot here</span>
       </div>
       <div style="text-align:center;margin-top:8px;font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em">Chart Designer</div>
+    </div>
+    <div>
+      <div id="drop-stats" class="drop-zone" onclick="if(!event.dataTransfer)openLightbox(2)" style="border:2px dashed #2a2a2a;border-radius:8px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0e0e0e;cursor:pointer;transition:border-color .2s">
+        <img src="/static/screenshots/stats.png" onerror="this.style.display='none';this.nextElementSibling.style.display=''" style="width:100%;height:100%;object-fit:cover;border-radius:6px">
+        <span style="color:#555;font-size:.8rem;display:none">Drop stats screenshot here</span>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em">Performance Stats</div>
     </div>
   </div>
 </section>
@@ -322,7 +329,7 @@ document.querySelectorAll('.drop-zone').forEach(zone => {
     e.preventDefault(); zone.style.borderColor = '#2a2a2a';
     const file = e.dataTransfer.files[0];
     if (!file || !file.type.startsWith('image/')) return;
-    const slot = zone.id === 'drop-sim' ? 'simulator' : 'designer';
+    const slot = zone.id === 'drop-sim' ? 'simulator' : zone.id === 'drop-designer' ? 'designer' : 'stats';
     const formData = new FormData();
     formData.append('file', file);
     formData.append('slot', slot);
@@ -340,7 +347,7 @@ document.querySelectorAll('.drop-zone').forEach(zone => {
   <button onclick="closeLightbox()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer">&times;</button>
 </div>
 <script>
-const lbImages=['/static/screenshots/simulator.png','/static/screenshots/designer.png'];
+const lbImages=['/static/screenshots/simulator.png','/static/screenshots/designer.png','/static/screenshots/stats.png'];
 let lbIdx=0;
 function openLightbox(idx){lbIdx=idx;document.getElementById('lb-img').src=lbImages[lbIdx]+'?t='+Date.now();document.getElementById('lightbox').style.display='flex'}
 function closeLightbox(){document.getElementById('lightbox').style.display='none'}

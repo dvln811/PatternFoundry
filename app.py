@@ -247,6 +247,10 @@ def docs_pricing():
 def docs_ironman():
     return render_template('docs_ironman.html')
 
+@app.route('/docs/stats')
+def docs_stats():
+    return render_template('docs_stats.html')
+
 _BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
 os.makedirs(_BOARD_DIR, exist_ok=True)
 
@@ -777,7 +781,7 @@ def upload_screenshot():
         return jsonify({'error': 'unauthorized'}), 403
     file = request.files.get('file')
     slot = request.form.get('slot', 'simulator')
-    if not file or slot not in ('simulator', 'designer'):
+    if not file or slot not in ('simulator', 'designer', 'stats'):
         return jsonify({'error': 'invalid'}), 400
     path = os.path.join('static', 'screenshots', f'{slot}.png')
     file.save(path)
