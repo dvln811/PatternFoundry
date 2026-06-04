@@ -294,6 +294,40 @@ def marketing():
         return redirect('/')
     return render_template('marketing.html')
 
+@app.route('/marketing/board')
+def marketing_board():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('marketing_board.html', board_api_key=os.environ.get('BOARD_API_KEY', ''))
+
+@app.route('/api/marketing-board/save', methods=['POST', 'OPTIONS'])
+def marketing_board_save():
+    if request.method == 'OPTIONS':
+        return '', 204
+    api_key = request.headers.get('X-Board-Key', '')
+    valid_key = os.environ.get('BOARD_API_KEY', '')
+    has_key = valid_key and api_key == valid_key
+    if not has_key and not _IS_LOCAL and not (current_user.is_authenticated and current_user.is_admin):
+        return jsonify({'error': 'unauthorized'}), 403
+    data = request.get_json()
+    path = os.path.join(_BOARD_DIR, 'pf_marketing_board.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2)
+    return jsonify({'saved': True})
+
+@app.route('/api/marketing-board/load')
+def marketing_board_load():
+    api_key = request.headers.get('X-Board-Key', '')
+    valid_key = os.environ.get('BOARD_API_KEY', '')
+    has_key = valid_key and api_key == valid_key
+    if not has_key and not _IS_LOCAL and not (current_user.is_authenticated and current_user.is_admin):
+        return jsonify({'error': 'unauthorized'}), 403
+    path = os.path.join(_BOARD_DIR, 'pf_marketing_board.json')
+    if os.path.isfile(path):
+        with open(path, encoding='utf-8') as f:
+            return jsonify(json.load(f))
+    return jsonify({}), 404
+
 @app.route('/feature-ideas')
 def feature_ideas():
     if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):

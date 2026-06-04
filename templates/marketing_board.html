@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry - Marketing Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0;z-index:100}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:8px 14px;font-size:.78rem;font-weight:600;text-decoration:none;color:#888;border:none;background:none;text-transform:uppercase;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.pf-header nav a:hover{color:#ccc}
+.pf-header nav a.active{color:#f97316;border-bottom-color:#f97316}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:12px 16px;flex:1;overflow:hidden;min-height:0}
+.column{background:#111;border:1px solid #2a2a2a;border-radius:6px;display:flex;flex-direction:column;min-height:0;transition:border-color .15s}
+.column.drag-over{border-color:#4caf82;box-shadow:0 0 8px rgba(76,175,130,.2)}
+.col-header{padding:10px 12px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between}
+.col-header h3{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#888;font-weight:600}
+.col-header .count{font-size:.65rem;color:#555;margin-left:6px}
+.col-add{background:none;border:1px solid #2a2a2a;color:#888;font-size:16px;width:22px;height:22px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.col-add:hover{border-color:#4caf82;color:#4caf82}
+.cards{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:8px 8px 8px 14px;cursor:pointer;border-left:3px solid #555;position:relative;transition:border-color .15s,opacity .15s}
+.card:hover{border-color:#3a3a3a;border-left-color:inherit}
+.card.dragging{opacity:.35}
+.card[data-priority="low"]{border-left-color:#4a9eff}
+.card[data-priority="med"]{border-left-color:#f5c542}
+.card[data-priority="high"]{border-left-color:#f97316}
+.card[data-priority="crit"]{border-left-color:#e05c5c}
+.drag-handle{position:absolute;left:3px;top:50%;transform:translateY(-50%);color:#444;font-size:.7rem;cursor:grab;user-select:none;padding:2px}
+.drag-handle:active{cursor:grabbing}
+.card-title{font-size:.78rem;font-weight:500;color:#e0e0e0;margin-left:6px}
+.card-notes-preview{font-size:.68rem;color:#666;margin-top:4px;margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.card-footer{display:flex;align-items:center;gap:5px;margin-top:6px;margin-left:6px}
+.badge{font-size:.58rem;padding:2px 6px;border-radius:8px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.badge-twitter{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
+.badge-reddit{background:#ff450018;color:#ff4500;border:1px solid #ff450033}
+.badge-discord{background:#5865f218;color:#5865f2;border:1px solid #5865f233}
+.badge-content{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
+.badge-product{background:#f9731618;color:#f97316;border:1px solid #f9731633}
+.badge-youtube{background:#ff000018;color:#ff0000;border:1px solid #ff000033}
+.card-del{position:absolute;top:6px;right:6px;background:none;border:none;color:#444;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;display:none}
+.card:hover .card-del{display:block}
+.card-del:hover{color:#e05c5c;background:#2a2a2a}
+.empty-col{color:#444;font-size:.7rem;text-align:center;padding:24px 0}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(3px);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-header{padding:16px 20px 12px;border-bottom:1px solid #2a2a2a;background:linear-gradient(135deg,#1a1a1a,#1f1510);border-radius:8px 8px 0 0}
+.modal-header h2{font-size:.85rem;color:#f97316;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.modal-body label{font-size:.68rem;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;display:block}
+.modal-body input,.modal-body textarea,.modal-body select{background:#111;border:1px solid #333;border-radius:4px;color:#ddd;padding:8px 10px;font-size:.8rem;font-family:inherit;width:100%}
+.modal-body input:focus,.modal-body textarea:focus,.modal-body select:focus{outline:none;border-color:#f97316}
+.modal-body textarea{min-height:100px;resize:vertical}
+.modal-row{display:flex;gap:10px}
+.modal-row>div{flex:1}
+.modal-created{font-size:.62rem;color:#555;margin-top:2px}
+.comments-section{border-top:1px solid #2a2a2a;padding-top:10px}
+.comments-list{max-height:140px;overflow-y:auto;margin-bottom:8px}
+.comment{padding:5px 0;border-bottom:1px solid #1f1f1f;font-size:.72rem}
+.comment .c-date{color:#555;font-size:.6rem;margin-right:6px}
+.comment .c-text{color:#ccc}
+.comment-input{display:flex;gap:6px}
+.comment-input input{flex:1;font-size:.72rem;padding:6px 8px}
+.comment-input button{padding:6px 12px;background:transparent;border:1px solid #4caf82;color:#4caf82;border-radius:4px;font-size:.7rem;font-weight:600;cursor:pointer}
+.comment-input button:hover{background:#3d9e70}
+.modal-footer{padding:12px 20px 16px;display:flex;gap:8px;justify-content:flex-end}
+.modal-footer button{padding:7px 18px;border-radius:5px;font-size:.75rem;font-weight:600;cursor:pointer;border:none}
+.btn-save{background:transparent;border:1px solid #f97316;color:#f97316}
+.btn-save:hover{background:#f9731618}
+.btn-close{background:#2a2a2a;color:#aaa}
+.btn-close:hover{background:#333;color:#ddd}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
+</style></head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/"><img src="/static/logo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/marketing">Plan</a>
+    <a href="/marketing/board" class="active">Board</a>
+    <a href="/board">Dev Board</a>
+    <a href="/admin">Admin</a>
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
+  </nav>
+</header>
+<div style="padding:4px 16px 0;display:flex;gap:8px;align-items:center">
+  <button onclick="uploadBoard()" style="background:transparent;border:1px solid #4caf82;color:#4caf82;padding:3px 10px;border-radius:3px;font-size:0.68rem;font-weight:600;cursor:pointer">↑ Upload</button>
+  <button onclick="downloadBoard()" style="background:transparent;border:1px solid #a78bfa;color:#a78bfa;padding:3px 10px;border-radius:3px;font-size:0.68rem;font-weight:600;cursor:pointer">↓ Download</button>
+  <span id="board-status" style="font-size:0.65rem;color:#888;margin-left:6px"></span>
+</div>
+<div class="board" id="board"></div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2>Edit Card</h2></div>
+    <div class="modal-body">
+      <div><label>Title</label><input type="text" id="m-title"></div>
+      <div><label>Notes</label><textarea id="m-notes"></textarea></div>
+      <div class="modal-row">
+        <div><label>Priority</label><select id="m-priority"><option value="low">Low</option><option value="med">Medium</option><option value="high">High</option><option value="crit">Critical</option></select></div>
+        <div><label>Channel</label><select id="m-channel"><option value="twitter">Twitter/X</option><option value="reddit">Reddit</option><option value="discord">Discord</option><option value="content">Content</option><option value="youtube">YouTube</option><option value="product">Product</option></select></div>
+      </div>
+      <div class="modal-created" id="m-created"></div>
+      <div class="comments-section">
+        <label>Comments</label>
+        <div class="comments-list" id="m-comments"></div>
+        <div class="comment-input">
+          <input type="text" id="m-new-comment" placeholder="Add a comment...">
+          <button onclick="addComment()">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-close" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+<script>
+const COLS=['Backlog','This Week','Next Week','Ongoing','Done'];
+const LS_KEY='pf_marketing_board';
+const _IS_FLY = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function defaultData(){return{
+  'Backlog':[
+    {id:uid(),title:'Record 2-min screen capture demo',notes:'Screen record: load simulator, take a trade, show stats. Keep under 2 min. No voiceover needed.\nReuse on X, Reddit, Discord.',ch:'content',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Post in r/FuturesTrading',notes:'Angle: practice simulator for futures. Title idea: "Built a free trading simulator with real microstructure — here\'s what practicing 100 sessions taught me"',ch:'reddit',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Post in r/PropFirmChallenge',notes:'Angle: "How I practice before paying $100+ for another eval"\nFocus on cost of failed evals vs free simulation.',ch:'reddit',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'First YouTube video',notes:'5-8 min walkthrough. Title: "I practiced 100 trades on a free simulator. Here\'s what happened."\nDefer until some traction exists.',ch:'youtube',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Set up Plausible analytics',notes:'$9/mo. Add script tag to landing.html.\nDo after 20+ users. Before that, /admin/users is enough.',ch:'product',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Write blog post: "What 100 sessions of the ORB taught me"',notes:'Use real session data from the simulator.\nFormat as thread or Reddit post first, blog later.',ch:'content',priority:'med',created:'2026-06-04',comments:[]},
+  ],
+  'This Week':[
+    {id:uid(),title:'Take 4-5 good screenshots of the app',notes:'Simulator mid-session, Chart Designer, Stats page, Iron Man mode.\nClean browser, full-screen. Pick honest results (wins AND losses).',ch:'content',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Create Reddit account for marketing',notes:'Username: something neutral (not "PatternFoundry").\nJoin: r/Daytrading, r/FuturesTrading, r/PropFirmChallenge\nLurk 3-5 days, build karma with genuine comments.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Join 3 trading Discord servers (lurk mode)',notes:'Topstep, Apex Trader, any active futures/daytrading server.\nDO NOT POST for the first week. Just read and observe.',ch:'discord',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'X: Reply to 2-3 posts today',notes:'Search: "backtest" OR "win rate" OR "strategy testing" OR "prop firm challenge"\nReply with genuine observations. NO links, NO product mention.\nJust be knowledgeable.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Create Discord invite link & add to website',notes:'Permanent invite, unlimited uses.\nAdd to: landing page footer, dashboard sidebar.',ch:'discord',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Seed Discord with initial content',notes:'#tutorials: Getting Started walkthrough\n#results-sharing: Post 1-2 of your own session results\nEmpty server = ghost town. Seed it first.',ch:'discord',priority:'med',created:'2026-06-04',comments:[]},
+  ],
+  'Next Week':[
+    {id:uid(),title:'Post in r/Daytrading (case study format)',notes:'Title: "I built a free trading practice simulator — here\'s what 50 sessions of deliberate practice showed me"\nLead with DATA, not the tool. Link in comments only if asked.\nPost Tuesday/Wednesday morning.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'X: Post first thread (6 tweets)',notes:'Topic: "Why paper trading doesn\'t work (and what does)"\n1/ Hook 2/ The problem 3/ What\'s missing 4/ The approach 5/ Screenshot 6/ Link\nPin to profile after posting.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Make first Discord comment (helpful, not promotional)',notes:'Find a conversation where someone asks about practice/backtesting.\nReply with genuine insight. NO links, NO product mention.',ch:'discord',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'X: Post second thread (myth-bust)',notes:'Topic: "Why win rate alone is meaningless without drawdown context"\nInclude screenshot of simulator stats showing streak data.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
+  ],
+  'Ongoing':[
+    {id:uid(),title:'X: Post 1 thread per week',notes:'Rotate topics:\n- A specific session result with commentary\n- "What I learned from X sessions of Y"\n- A myth-bust about trading stats\n- A product update screenshot\nBatch-write on Sunday evening.',ch:'twitter',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Reddit: 1 post per month per sub',notes:'Subs: r/Daytrading, r/FuturesTrading, r/PropFirmChallenge\nAlways case-study format. Respond to all comments within 24h.',ch:'reddit',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Discord: 15 min/day participation',notes:'Read new messages, reply to 1-2 conversations.\nAnswer questions about practice/statistics.\nDon\'t post in #tools until week 3-4.',ch:'discord',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Monitor signups & usage',notes:'Check /admin/users for new registrations.\n0 signups after 2 weeks → content not reaching people\nSignups but no sessions → onboarding friction\nSessions but no returns → value not clear',ch:'product',priority:'med',created:'2026-06-04',comments:[]},
+  ],
+  'Done':[]
+}}
+
+function load(){try{const d=JSON.parse(localStorage.getItem(LS_KEY));if(d&&d['Backlog']!==undefined)return d}catch(e){}return defaultData()}
+function save(){
+  localStorage.setItem(LS_KEY,JSON.stringify(data));
+  if(_IS_FLY) fetch('/api/marketing-board/save',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(data)}).catch(()=>{});
+}
+
+let data=load();
+let dragSrc=null;
+let modalRef=null;
+
+function render(){
+  const board=document.getElementById('board');board.innerHTML='';
+  COLS.forEach(col=>{
+    const cards=data[col]||[];
+    const div=document.createElement('div');div.className='column';div.dataset.col=col;
+    div.innerHTML=`<div class="col-header"><h3>${col}<span class="count">${cards.length}</span></h3><button class="col-add" onclick="addCard('${col}')">+</button></div><div class="cards" data-col="${col}">${cards.length?'':'<div class="empty-col">No cards</div>'}</div>`;
+    const container=div.querySelector('.cards');
+    cards.forEach((card,i)=>container.appendChild(makeCard(card,col,i)));
+    div.addEventListener('dragover',e=>{e.preventDefault();div.classList.add('drag-over')});
+    div.addEventListener('dragleave',e=>{if(!div.contains(e.relatedTarget))div.classList.remove('drag-over')});
+    div.addEventListener('drop',e=>{e.preventDefault();div.classList.remove('drag-over');drop(col,e)});
+    board.appendChild(div);
+  });
+}
+
+function makeCard(card,col,idx){
+  const el=document.createElement('div');
+  el.className='card';el.draggable=true;el.dataset.priority=card.priority;el.dataset.col=col;el.dataset.idx=idx;
+  const notesPreview=card.notes?`<div class="card-notes-preview">${esc(card.notes.split('\n')[0].slice(0,60))}</div>`:'';
+  el.innerHTML=`<span class="drag-handle">⠿</span><button class="card-del" onclick="event.stopPropagation();delCard('${col}',${idx})">✕</button><div class="card-title">${esc(card.title)}</div>${notesPreview}<div class="card-footer"><span class="badge badge-${card.ch||'content'}">${card.ch||'content'}</span></div>`;
+  el.addEventListener('click',e=>{if(e.target.classList.contains('card-del'))return;openModal(col,idx)});
+  el.addEventListener('dragstart',e=>{dragSrc={col,idx};el.classList.add('dragging');e.dataTransfer.effectAllowed='move'});
+  el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+  return el;
+}
+
+function drop(targetCol,e){
+  if(!dragSrc)return;
+  const card=data[dragSrc.col].splice(dragSrc.idx,1)[0];
+  const container=document.querySelector(`.cards[data-col="${targetCol}"]`);
+  const cardEls=[...container.querySelectorAll('.card')];
+  let insertIdx=data[targetCol].length;
+  for(let i=0;i<cardEls.length;i++){
+    const r=cardEls[i].getBoundingClientRect();
+    if(e.clientY<r.top+r.height/2){insertIdx=i;break}
+  }
+  if(dragSrc.col===targetCol&&dragSrc.idx<insertIdx)insertIdx=Math.max(0,insertIdx-1);
+  data[targetCol].splice(insertIdx,0,card);
+  dragSrc=null;save();render();
+}
+
+function addCard(col){
+  const card={id:uid(),title:'',notes:'',ch:'content',priority:'low',created:new Date().toISOString().slice(0,10),comments:[]};
+  data[col].push(card);save();render();
+  openModal(col,data[col].length-1);
+}
+
+function delCard(col,idx){if(confirm('Delete this card?')){data[col].splice(idx,1);save();render()}}
+
+function openModal(col,idx){
+  modalRef={col,idx};
+  const card=data[col][idx];
+  document.getElementById('m-title').value=card.title||'';
+  document.getElementById('m-notes').value=card.notes||'';
+  document.getElementById('m-priority').value=card.priority||'low';
+  document.getElementById('m-channel').value=card.ch||'content';
+  document.getElementById('m-created').textContent=card.created?'Created: '+card.created:'';
+  document.getElementById('m-new-comment').value='';
+  renderComments(card.comments||[]);
+  document.getElementById('modal-overlay').classList.add('active');
+  document.getElementById('m-title').focus();
+}
+
+function renderComments(comments){
+  const el=document.getElementById('m-comments');
+  if(!comments.length){el.innerHTML='<div style="color:#555;font-size:.65rem;padding:4px">No comments</div>';return}
+  el.innerHTML=comments.map(c=>`<div class="comment"><span class="c-date">${c.date}</span><span class="c-text">${esc(c.text)}</span></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function addComment(){
+  if(!modalRef)return;
+  const input=document.getElementById('m-new-comment');
+  const text=input.value.trim();if(!text)return;
+  const card=data[modalRef.col][modalRef.idx];
+  if(!card.comments)card.comments=[];
+  card.comments.push({text,date:new Date().toISOString().slice(0,10)});
+  input.value='';renderComments(card.comments);save();
+}
+
+function saveModal(){
+  if(!modalRef)return;
+  const card=data[modalRef.col][modalRef.idx];
+  card.title=document.getElementById('m-title').value.trim()||'Untitled';
+  card.notes=document.getElementById('m-notes').value.trim();
+  card.priority=document.getElementById('m-priority').value;
+  card.ch=document.getElementById('m-channel').value;
+  save();render();closeModal();
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('active');modalRef=null}
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalRef)closeModal()});
+document.getElementById('m-new-comment').addEventListener('keydown',e=>{if(e.key==='Enter')addComment()});
+
+const REMOTE = _IS_FLY ? '' : 'https://patternfoundry.net';
+const BOARD_KEY = '{{ board_api_key or "" }}';
+
+function uploadBoard(){
+  fetch(REMOTE+'/api/marketing-board/save',{method:'POST',headers:{'Content-Type':'application/json','X-Board-Key':BOARD_KEY},body:JSON.stringify(data)})
+    .then(r=>{if(r.ok)status('↑ Uploaded ✓');else status('Upload failed');})
+    .catch(()=>status('Upload failed'));
+}
+function downloadBoard(){
+  fetch(REMOTE+'/api/marketing-board/load',{headers:{'X-Board-Key':BOARD_KEY}}).then(r=>{if(!r.ok)throw r;return r.json();})
+    .then(d=>{data=d;localStorage.setItem(LS_KEY,JSON.stringify(data));render();status('↓ Downloaded ✓');})
+    .catch(()=>status('Download failed'));
+}
+function status(msg){const el=document.getElementById('board-status');el.textContent=msg;setTimeout(()=>el.textContent='',3000);}
+
+if(_IS_FLY){
+  fetch('/api/marketing-board/load',{credentials:'include'}).then(r=>{if(r.ok)return r.json();throw r;})
+    .then(d=>{data=d;localStorage.setItem(LS_KEY,JSON.stringify(data));render();})
+    .catch(()=>{render();});
+} else {
+  render();
+}
+</script>
+<div id="board-tooltip" style="display:none;position:fixed;z-index:9999;background:#0e1217;border:1px solid #f97316;border-radius:6px;padding:10px 12px;max-width:300px;font-size:.72rem;color:#ddd;white-space:pre-wrap;line-height:1.4;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.5)"></div>
+</body>
+</html>

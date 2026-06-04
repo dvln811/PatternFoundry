@@ -29,90 +29,145 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
 .highlight{color:#4caf82;font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:.65rem;padding:2px 6px;border-radius:8px;font-weight:600;margin-right:4px}
+.tag-twitter{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
+.tag-reddit{background:#ff450018;color:#ff4500;border:1px solid #ff450033}
+.tag-discord{background:#5865f218;color:#5865f2;border:1px solid #5865f233}
+.tag-content{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
+.tag-youtube{background:#ff000018;color:#ff0000;border:1px solid #ff000033}
 .avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
 </style>
 </head>
 <body>
 <header class="pf-header">
-  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <a href="/" class="brand"><img src="/static/logo.png" alt="">PatternFoundry</a>
   <nav>
-    <a href="/">Dashboard</a>
-    <a href="/simulator">Simulator</a>
-    <a href="/chartdesigner">Chart Designer</a>
-    <a href="/stats">Stats</a>
-    <a href="/settings">Settings</a>
-    <a href="/docs">Docs</a>
-    {% if is_admin %}<a href="/admin" class="active">Admin</a>{% endif %}
-    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#f97316';this.style.color='#f97316'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
+    <a href="/marketing" class="active">Plan</a>
+    <a href="/marketing/board">Board</a>
+    <a href="/board">Dev Board</a>
+    <a href="/admin">Admin</a>
       <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
   </nav>
 </header>
 <div class="wrap">
 <h1>Marketing Plan</h1>
+
+<div class="section">
+  <h2>What We're Selling</h2>
+  <p>PatternFoundry is a <strong style="color:#fff">free trading practice simulator</strong> with realistic microstructure, 14 instruments, persistent performance tracking, and an Iron Man challenge mode. The product thesis: deliberate practice with instant feedback builds trading skill faster than paper trading on live markets.</p>
+  <p style="margin-top:8px"><strong style="color:#4caf82">Core value proposition:</strong> Unlimited practice sessions with real market microstructure, zero risk, zero cost. Track your progress across hundreds of sessions. Know your actual win rate, drawdown profile, and streak patterns before putting real money at risk.</p>
+</div>
+
 <div class="grid2">
 <div class="section">
   <h2>Target Audience</h2>
   <ul>
-    <li>Beginner traders looking to practice without risk</li>
-    <li>Intermediate traders refining pattern recognition</li>
-    <li>Trading educators needing simulation tools</li>
-    <li>Prop firm candidates preparing for evaluations</li>
-    <li>Crypto/forex enthusiasts wanting 24/7 practice</li>
+    <li><strong style="color:#fff">Prop firm candidates</strong> — Want to practice before paying $100-$300 for another eval</li>
+    <li><strong style="color:#fff">Beginner futures traders</strong> — Learning ES/NQ/CL price action without losing money</li>
+    <li><strong style="color:#fff">Screen time seekers</strong> — Traders who want more "reps" outside market hours</li>
+    <li><strong style="color:#fff">Strategy testers</strong> — Want to practice a specific setup across many sessions</li>
+    <li><strong style="color:#fff">Data-driven traders</strong> — Want to track actual stats (win rate, drawdown, streaks) over time</li>
   </ul>
 </div>
 <div class="section">
-  <h2>Channels</h2>
-  <ul>
-    <li>Twitter/X - trading community engagement</li>
-    <li>YouTube - tutorial & demo content</li>
-    <li>Reddit - r/daytrading, r/forex, r/algotrading</li>
-    <li>Discord - trading communities & partnerships</li>
-    <li>SEO - "trading simulator", "practice trading"</li>
-    <li>Product Hunt - launch campaign</li>
-  </ul>
+  <h2>Positioning</h2>
+  <p><strong style="color:#fff">"The driving range for traders."</strong></p>
+  <p style="margin-top:8px">We're not a backtest platform. We're not a paper trading account. We're a practice environment with instant session generation, realistic order book dynamics, and honest performance tracking.</p>
+  <p style="margin-top:8px"><strong style="color:#888">NOT:</strong> "AI trading signals" / "get funded fast" / "guaranteed profits"</p>
+  <p><strong style="color:#4caf82">YES:</strong> "Practice deliberately. Know your actual stats. Improve before risking real capital."</p>
 </div>
 </div>
 
 <div class="section">
-  <h2>Pricing Tiers</h2>
+  <h2>Channel Strategy</h2>
   <table>
-    <thead><tr><th>Feature</th><th>Free</th><th>Practice - $9.99/mo</th><th>Edge - $19.99/mo</th></tr></thead>
+    <thead><tr><th>Channel</th><th>Approach</th><th>Cadence</th><th>Goal</th></tr></thead>
     <tbody>
-      <tr><td>Sessions per day</td><td>3</td><td>Unlimited</td><td>Unlimited</td></tr>
-      <tr><td>Instruments</td><td>2</td><td>All 6</td><td>All 6</td></tr>
-      <tr><td>Chart Designer</td><td>-</td><td class="highlight">✓</td><td class="highlight">✓</td></tr>
-      <tr><td>Performance Analytics</td><td>-</td><td>Basic</td><td class="highlight">Advanced</td></tr>
-      <tr><td>Custom Patterns</td><td>-</td><td>-</td><td class="highlight">✓</td></tr>
-      <tr><td>API Access</td><td>-</td><td>-</td><td class="highlight">✓</td></tr>
+      <tr><td><span class="tag tag-twitter">X/TWITTER</span></td><td>Data-led threads, reply to strategy posts, myth-bust common beliefs</td><td>1 thread/week + 2-3 replies/day</td><td>Build authority, drive profile visits</td></tr>
+      <tr><td><span class="tag tag-reddit">REDDIT</span></td><td>Case-study posts ("I practiced X sessions, here's what I learned"), helpful comments</td><td>1 post/month per sub</td><td>Organic discovery, trust via data</td></tr>
+      <tr><td><span class="tag tag-discord">DISCORD</span></td><td>Own server + participate in 3-4 trading servers. Be helpful, not promotional.</td><td>15 min/day lurking + 1-2 replies</td><td>Community, retention, word-of-mouth</td></tr>
+      <tr><td><span class="tag tag-content">CONTENT</span></td><td>Screenshots, screen captures, blog-style findings from using the simulator</td><td>As needed (reuse across channels)</td><td>Visual proof, shareable assets</td></tr>
+      <tr><td><span class="tag tag-youtube">YOUTUBE</span></td><td>Session walkthroughs, feature demos, "X sessions of Y" series</td><td>Defer until traction exists</td><td>Long-form discovery, SEO</td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="grid2">
 <div class="section">
-  <h2>Content Calendar</h2>
+  <h2>Content Angles That Work</h2>
   <ul>
-    <li><strong>Week 1:</strong> Launch announcement + Product Hunt</li>
-    <li><strong>Week 2:</strong> "How to read candlestick patterns" blog post</li>
-    <li><strong>Week 3:</strong> YouTube demo video - full session walkthrough</li>
-    <li><strong>Week 4:</strong> Twitter thread - "5 mistakes new traders make"</li>
-    <li><strong>Week 5:</strong> Reddit AMA in r/daytrading</li>
-    <li><strong>Week 6:</strong> Case study - user testimonial</li>
-    <li><strong>Week 7:</strong> Partnership announcement with trading educator</li>
-    <li><strong>Week 8:</strong> Feature release - Chart Designer launch</li>
+    <li><strong style="color:#fff">"I practiced X sessions of Y — here's what happened"</strong><br><span style="color:#888;font-size:.75rem">Lead with findings/data. The tool is incidental.</span></li>
+    <li><strong style="color:#fff">"Why win rate alone is meaningless"</strong><br><span style="color:#888;font-size:.75rem">Show streak data, drawdown profiles. Myth-bust common beliefs.</span></li>
+    <li><strong style="color:#fff">"What 100 sessions taught me about my strategy"</strong><br><span style="color:#888;font-size:.75rem">Personal journey framing. Honest, includes losses.</span></li>
+    <li><strong style="color:#fff">"Practicing before paying for another prop firm eval"</strong><br><span style="color:#888;font-size:.75rem">Pain point angle — cost of failed evals vs free practice.</span></li>
+    <li><strong style="color:#fff">"The difference between knowing your setup and executing it"</strong><br><span style="color:#888;font-size:.75rem">Screen time / reps angle. Sports analogy (driving range).</span></li>
   </ul>
 </div>
 <div class="section">
-  <h2>Competitive Analysis</h2>
+  <h2>Rules of Engagement</h2>
   <ul>
-    <li><strong>TradingView Paper Trading:</strong> Full platform, complex - we're simpler & focused</li>
-    <li><strong>Investopedia Simulator:</strong> Delayed data, no pattern focus</li>
-    <li><strong>Forex Tester:</strong> Desktop-only, expensive ($299) - we're web & affordable</li>
-    <li><strong>NinjaTrader Replay:</strong> Steep learning curve - we're instant-start</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — cold DM, spam links, brand-new account self-promo</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — promise results, use "guru" language, fake scarcity</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — lead with data/findings, not the product</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — be genuinely helpful first, mention tool only when asked</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — show honest results (wins AND losses)</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — respond to every comment/question within 24h</li>
+    <li><strong style="color:#f5c542">PATIENCE</strong> — Week 1-2: lurk & learn. Week 3-4: participate. Week 5+: share.</li>
   </ul>
-  <p style="margin-top:12px;color:#888;font-size:.75rem"><strong style="color:#4caf82">Our edge:</strong> Instant generated sessions, pattern-focused, zero setup, dark modern UI, affordable pricing.</p>
 </div>
 </div>
+
+<div class="section">
+  <h2>Launch Sequence (6 Weeks)</h2>
+  <table>
+    <thead><tr><th>Week</th><th>Focus</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1</strong></td><td>Setup & Lurk</td><td>Create accounts (X, Reddit). Join Discord servers. Take screenshots. Observe culture.</td></tr>
+      <tr><td><strong>2</strong></td><td>Build Presence</td><td>X: Reply to 2-3 posts/day (no links). Reddit: Build karma with genuine comments. Discord: Read & observe.</td></tr>
+      <tr><td><strong>3</strong></td><td>First Content</td><td>X: Post first thread with data/screenshots. Reddit: First case-study post in r/Daytrading. Discord: First helpful reply.</td></tr>
+      <tr><td><strong>4</strong></td><td>Engage</td><td>X: Second thread + reply to responders. Reddit: Post in r/FuturesTrading. Discord: Post in #tools if appropriate.</td></tr>
+      <tr><td><strong>5</strong></td><td>Expand</td><td>Record 2-min screen capture. Post video on X + Reddit. Start DMs to engaged users (max 5/day).</td></tr>
+      <tr><td><strong>6</strong></td><td>Evaluate</td><td>Check /admin/users. Assess: signups? sessions run? returns? Adjust strategy based on what's working.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grid2">
+<div class="section">
+  <h2>Competitive Landscape</h2>
+  <ul>
+    <li><strong style="color:#fff">TradingView Paper Trading</strong> — Live market only, no extra "reps" outside hours. Complex platform.</li>
+    <li><strong style="color:#fff">Forex Tester / Soft4FX</strong> — Desktop, $200-$300, replay historical data. No generation.</li>
+    <li><strong style="color:#fff">NinjaTrader Replay</strong> — Complex setup, futures-specific, steep learning curve.</li>
+    <li><strong style="color:#fff">Prop Firm Sims</strong> — Tied to expensive evals. Same live-market limitation.</li>
+  </ul>
+  <p style="margin-top:12px;color:#888;font-size:.75rem"><strong style="color:#4caf82">Our edge:</strong> Free. Instant sessions anytime. Realistic microstructure. 14 instruments. Persistent stats. Iron Man challenge. Zero setup — open browser, start trading.</p>
+</div>
+<div class="section">
+  <h2>Success Metrics</h2>
+  <ul>
+    <li><strong style="color:#fff">Week 2:</strong> X account has 50+ followers, 10+ replies sent</li>
+    <li><strong style="color:#fff">Week 4:</strong> First 10 user signups from organic channels</li>
+    <li><strong style="color:#fff">Week 6:</strong> 25+ registered users, 5+ with 10+ sessions completed</li>
+    <li><strong style="color:#fff">Month 2:</strong> 100 users, Discord has 20+ members, 1 Reddit post with 50+ upvotes</li>
+    <li><strong style="color:#fff">Month 3:</strong> Assess monetization path (premium features vs donations vs sponsorship)</li>
+  </ul>
+  <p style="margin-top:12px;color:#888;font-size:.75rem">Track via /admin/users. Add Plausible analytics after 20+ active users.</p>
+</div>
+</div>
+
+<div class="section">
+  <h2>Monetization (Future — Not Now)</h2>
+  <p style="color:#888">The product is <strong style="color:#fff">free</strong> during growth phase. Focus on user acquisition and retention first. Monetization options to explore once we have 100+ active users:</p>
+  <ul style="margin-top:8px">
+    <li><strong style="color:#fff">Premium tier ($9.99/mo)</strong> — Custom instruments, advanced stats, priority feature requests</li>
+    <li><strong style="color:#fff">Prop firm partnerships</strong> — Referral deals for practice → eval pipeline</li>
+    <li><strong style="color:#fff">Educational content</strong> — Paid courses/guides using the simulator</li>
+    <li><strong style="color:#fff">Keep it free + donations</strong> — Kofi/GitHub Sponsors if community is strong enough</li>
+  </ul>
+</div>
+
+<p style="text-align:center;margin-top:24px;font-size:.72rem;color:#555">See <a href="/marketing/board" style="color:#f97316">Marketing Board</a> for actionable tasks and progress tracking.</p>
 </div>
 </body>
 </html>
