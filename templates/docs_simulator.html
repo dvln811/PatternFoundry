@@ -75,9 +75,9 @@ table tr:hover td{background:#151515}
 <h3>Generating a Session</h3>
 <p>To start a new simulation session:</p>
 <ol>
-  <li><strong>Select an Instrument</strong> - Choose from available instruments (e.g., ES, NQ, CL, GC, EUR/USD). Each instrument has appropriate tick sizes, point values, and margin requirements.</li>
-  <li><strong>Set History Depth</strong> - Specify how many candles of historical data to generate before the live session begins (50–500 candles). More history gives you context for analysis.</li>
-  <li><strong>Seed (Optional)</strong> - Enter a numeric seed to reproduce a specific session. Leave blank for a random seed. Sharing seeds with other traders lets you compare performance on identical price action.</li>
+  <li><strong>Select an Instrument</strong> — Choose from 14 built-in instruments (ES, NQ, CL, RTY, MES, MNQ, MCL, M2K, SPY, AAPL, MSFT, PLTR, TSLA, GME) or any custom characters you've created in the Chart Designer. Each instrument has appropriate tick sizes, point values, and margin requirements.</li>
+  <li><strong>Set History Depth</strong> — Select how much historical chart data to generate before the live session begins: 1 day, 1 week, 1 month, 3 months, 6 months, 1 year, or 2 years.</li>
+  <li><strong>Seed (Optional)</strong> — Enter a numeric seed to reproduce a specific session. Leave blank for a random seed. Sharing seeds with other traders lets you compare performance on identical price action.</li>
   <li>Click <strong>Generate</strong> to create the session.</li>
 </ol>
 <div class="note">
@@ -184,11 +184,13 @@ table tr:hover td{background:#151515}
   <tr><td><strong>Rectangle</strong></td><td>Price/time zone highlight</td><td>Click corner, drag to opposite corner</td></tr>
   <tr><td><strong>Ellipse</strong></td><td>Circular/elliptical highlight</td><td>Click center, drag to set radius</td></tr>
   <tr><td><strong>Fibonacci Retracement</strong></td><td>Fib levels between swing high/low</td><td>Click swing start, drag to swing end</td></tr>
+  <tr><td><strong>Gann Box</strong></td><td>Gann time/price grid overlay</td><td>Click start corner, drag to end corner</td></tr>
   <tr><td><strong>Gann Fan</strong></td><td>Gann angle lines from a pivot point</td><td>Click pivot point, drag to set angle</td></tr>
+  <tr><td><strong>Text</strong></td><td>Free-form text annotation</td><td>Click position, type your label</td></tr>
   <tr><td><strong>Long Position</strong></td><td>Visual long trade with entry, SL, TP</td><td>Click entry, set SL and TP levels</td></tr>
   <tr><td><strong>Short Position</strong></td><td>Visual short trade with entry, SL, TP</td><td>Click entry, set SL and TP levels</td></tr>
 </table>
-<p>All drawings can be selected, moved, resized, and deleted. Right-click a drawing to access its properties (color, style, line width).</p>
+<p>All drawings can be selected, moved, resized, and deleted. Right-click a drawing to access its properties (color, style, line width). Use the <strong>lock button</strong> in the toolbar to prevent accidental modifications to your drawings.</p>
 
 <h3>Indicators</h3>
 <p>Built-in technical indicators available from the indicators menu:</p>
@@ -204,28 +206,29 @@ table tr:hover td{background:#151515}
 </table>
 <p>Click the indicator name in the legend to toggle visibility. Click the gear icon to edit parameters. Click &times; to remove.</p>
 
-<h3>Keyboard Shortcuts &amp; Tips</h3>
-<table>
-  <tr><th>Shortcut</th><th>Action</th></tr>
-  <tr><td><span class="kbd">Space</span></td><td>Play / Pause simulation</td></tr>
-  <tr><td><span class="kbd">&rarr;</span></td><td>Step forward one candle</td></tr>
-  <tr><td><span class="kbd">+</span> / <span class="kbd">-</span></td><td>Increase / decrease playback speed</td></tr>
-  <tr><td><span class="kbd">B</span></td><td>Place market buy order</td></tr>
-  <tr><td><span class="kbd">S</span></td><td>Place market sell order</td></tr>
-  <tr><td><span class="kbd">Esc</span></td><td>Cancel current drawing / deselect tool</td></tr>
-  <tr><td><span class="kbd">Delete</span></td><td>Remove selected drawing</td></tr>
-  <tr><td><span class="kbd">Ctrl+Z</span></td><td>Undo last action</td></tr>
-  <tr><td><span class="kbd">Ctrl+S</span></td><td>Save session</td></tr>
-  <tr><td><span class="kbd">1</span>–<span class="kbd">9</span></td><td>Switch timeframes (1=1m, 2=5m, 3=15m, etc.)</td></tr>
-  <tr><td><span class="kbd">D</span></td><td>Toggle DOM panel</td></tr>
-  <tr><td><span class="kbd">F</span></td><td>Fit chart to screen</td></tr>
-</table>
+<h3>Closing a Session</h3>
+<p>When you're done trading, click the <strong>✓ Close Session</strong> button in the playback bar. This finalizes the session and:</p>
+<ul>
+  <li>Saves your session data (candles, trades, drawings) to the server</li>
+  <li>Updates your trading account balance with the realized P&amp;L</li>
+  <li>Records the session in your Stats page history</li>
+  <li>Makes the session available for replay via the Stats → Session History table</li>
+</ul>
+
+<h3>Margin System</h3>
+<p>The simulator enforces realistic margin requirements:</p>
+<ul>
+  <li><strong>Initial Margin</strong> — Checked when you place an order. If <code>quantity × initial_margin > balance</code>, the order is rejected with a margin message.</li>
+  <li><strong>Maintenance Margin</strong> — Checked on every tick while a position is open. If your equity (balance + unrealized P&amp;L) falls below <code>quantity × maintenance_margin</code>, your position is automatically liquidated with a "Margin Call" notification.</li>
+</ul>
+
+<h3>Tips</h3>
 <div class="tip">
   <div class="tip-title">Pro Tips</div>
   <p>&bull; Use the scroll wheel to zoom in/out on the time axis. Hold <span class="kbd">Ctrl</span> + scroll to zoom the price axis.<br>
-  &bull; Double-click a candle to center the chart on that point in time.<br>
-  &bull; Right-click the chart background for a context menu with quick actions.<br>
-  &bull; The session auto-saves every 60 seconds if you have a saved session loaded.</p>
+  &bull; Use slower speeds (0.25x–1x) when learning to read order flow and tape. Use faster speeds (10x–50x) for swing trading practice.<br>
+  &bull; Right-click a drawing to edit its color, style, and line width.<br>
+  &bull; Commissions are 1 tick per contract round-trip, calculated automatically.</p>
 </div>
 </main>
 </body>

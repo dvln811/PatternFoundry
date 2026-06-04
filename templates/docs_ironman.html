@@ -61,32 +61,44 @@ table tr:hover td{background:#151515}
 <h1>Iron Man Mode</h1>
 
 <h3>What Is Iron Man Mode?</h3>
-<p>Iron Man Mode is a structured trading challenge that tests your discipline and consistency. The goal is simple: <strong>grow your account by 10% without ever drawing down 20% from your peak balance</strong>. There are no time limits — only your ability to stay disciplined session after session.</p>
+<p>Iron Man Mode is a structured trading challenge that tests your discipline and consistency. Configure your starting balance, profit target, and maximum drawdown — then trade your way to the goal without breaching your limits. One session at a time, random instruments, no shortcuts.</p>
 
 <div class="tip">
   <div class="tip-title">The Challenge</div>
-  <p>Start with a fixed balance. Grow it to the +10% target before your drawdown from peak hits -20%. One session at a time, no shortcuts.</p>
+  <p>Start with a chosen balance. Grow it to your target percentage before drawing down past your limit from peak. Instruments are randomly assigned each session — you must adapt.</p>
 </div>
 
 <h3>How It Works</h3>
 <ol>
-  <li><strong>Start a Run</strong> — Go to the Stats page and begin an Iron Man challenge. Your run starts with a $10,000 balance.</li>
-  <li><strong>Trade in the Simulator</strong> — When you have an active run, the simulator automatically enters Iron Man mode. You'll see a 🔥 <strong>IRON MAN</strong> badge in the Session panel.</li>
-  <li><strong>Random Instruments</strong> — You don't get to choose your instrument. The simulator picks one at random each session. This forces you to be adaptable.</li>
+  <li><strong>Configure & Start</strong> — Go to the Stats page → Iron Man tab. Choose a preset (Micro $5k, Standard $10k, Full $50k, Hardcore) or configure custom parameters: starting balance, target %, max drawdown %, and optional max sessions.</li>
+  <li><strong>Trade in the Simulator</strong> — When you have an active run, the simulator automatically enters Iron Man mode. You'll see a <strong>IRON MAN</strong> badge in the Session panel.</li>
+  <li><strong>Random Instruments</strong> — You don't get to choose. The simulator picks a random instrument whose initial margin your balance can afford. This forces adaptability.</li>
+  <li><strong>Locked History</strong> — Chart history is limited to 3 months (63 days) during Iron Man sessions.</li>
   <li><strong>Sessions Auto-Submit</strong> — When you close a session, your P&L is automatically recorded to the challenge. No manual tracking needed.</li>
-  <li><strong>Run Until End</strong> — The challenge continues until you either hit the target or breach the drawdown limit.</li>
+  <li><strong>Run Until End</strong> — The challenge continues until you hit the target, breach drawdown, reach max sessions, or forfeit.</li>
 </ol>
+
+<h3>Presets</h3>
+<table>
+  <tr><th>Preset</th><th>Balance</th><th>Target %</th><th>Max Drawdown %</th><th>Max Sessions</th></tr>
+  <tr><td>Micro $5k</td><td>$5,000</td><td>20%</td><td>10%</td><td>Unlimited</td></tr>
+  <tr><td>Standard $10k</td><td>$10,000</td><td>20%</td><td>10%</td><td>Unlimited</td></tr>
+  <tr><td>Full $50k</td><td>$50,000</td><td>20%</td><td>10%</td><td>Unlimited</td></tr>
+  <tr><td>Hardcore</td><td>$25,000</td><td>10%</td><td>20%</td><td>30</td></tr>
+</table>
+<p>You can also set fully custom values for any parameter.</p>
 
 <h3>End Conditions</h3>
 <table>
   <tr><th>Outcome</th><th>Condition</th><th>Result</th></tr>
-  <tr><td>🏆 Target Reached</td><td>Balance reaches +10% of starting ($11,000)</td><td>Challenge won — recorded in history</td></tr>
-  <tr><td>💀 Drawdown Breach</td><td>Balance drops 20% below peak</td><td>Challenge failed — recorded in history</td></tr>
+  <tr><td>🏆 Target Reached</td><td>Balance reaches your target % above starting</td><td>Challenge won — recorded in history</td></tr>
+  <tr><td>💀 Drawdown Breach</td><td>Balance drops below peak by your drawdown limit %</td><td>Challenge failed — recorded in history</td></tr>
+  <tr><td>⏱ Max Sessions</td><td>You reach the max sessions limit (if configured)</td><td>Challenge ended — recorded in history</td></tr>
   <tr><td>🏳️ Forfeit</td><td>You manually end the run</td><td>Challenge abandoned — recorded in history</td></tr>
 </table>
 
 <h3>Drawdown Calculation</h3>
-<p>Drawdown is measured from your <strong>peak balance</strong>, not your starting balance. For example:</p>
+<p>Drawdown is measured from your <strong>peak balance</strong>, not your starting balance. For example with a 20% drawdown limit on a $10,000 start:</p>
 <ul>
   <li>You start at $10,000 and grow to $10,500 — your peak is now $10,500</li>
   <li>The 20% drawdown limit is calculated from your <strong>starting balance</strong>: $10,000 × 20% = $2,000</li>
@@ -101,35 +113,39 @@ table tr:hover td{background:#151515}
 <h3>Simulator Behavior During Iron Man</h3>
 <p>When an Iron Man run is active, the simulator changes in several ways:</p>
 <ul>
-  <li><strong>🔥 Badge visible</strong> — An orange "IRON MAN" indicator appears in the Session panel</li>
-  <li><strong>Instrument locked</strong> — The instrument dropdown is disabled; a random instrument is assigned each session</li>
+  <li><strong>Badge visible</strong> — An orange "IRON MAN" indicator appears in the Session panel</li>
+  <li><strong>Instrument locked</strong> — A random instrument is assigned each session, filtered by margin (only instruments your balance can afford)</li>
   <li><strong>Challenge balance used</strong> — Your session starts with the Iron Man run balance, not your regular trading account</li>
+  <li><strong>History limited</strong> — Chart history is locked to 3 months regardless of your normal settings</li>
   <li><strong>Auto-submission</strong> — Closing a session automatically records the result to your active run</li>
-  <li><strong>Immediate feedback</strong> — If the session ends the challenge (target or drawdown), you're notified immediately</li>
+  <li><strong>Immediate feedback</strong> — If the session ends the challenge (target, drawdown, or max sessions), you're notified immediately</li>
+  <li><strong>No account impact</strong> — Iron Man sessions do not affect your regular trading account balance</li>
 </ul>
 
 <h3>Tracking Progress</h3>
-<p>Your Iron Man progress is visible on the <strong>Stats page</strong>:</p>
+<p>Your Iron Man progress is visible on the <strong>Stats page → Iron Man tab</strong>:</p>
 <ul>
-  <li>Active run display with current balance, day count, drawdown percentage, and progress bar</li>
-  <li>Per-session breakdown (instrument, trades, wins, P&L, balance after)</li>
-  <li>History of past attempts with outcomes</li>
+  <li>Active run display with current balance, day count, P/L %, drawdown %, and progress bar toward target</li>
+  <li>Per-session breakdown (day, instrument, trades, P&L, balance after)</li>
+  <li>Aggregate metrics: total runs, pass rate, average return, best/worst run</li>
+  <li>Past attempts history table with parameters, sessions completed, and final return %</li>
 </ul>
 
 <h3>Tips for Success</h3>
 <ul>
-  <li><strong>Small, consistent gains</strong> — You only need +10%. Don't swing for the fences.</li>
-  <li><strong>Respect the drawdown</strong> — A 20% buffer feels large until you have two bad sessions in a row.</li>
+  <li><strong>Small, consistent gains</strong> — With a 10-20% target, you don't need home runs. Steady progress wins.</li>
+  <li><strong>Respect the drawdown</strong> — A 10% buffer disappears fast with two bad sessions in a row.</li>
   <li><strong>Adapt to the instrument</strong> — Since instruments are random, focus on reading price action rather than relying on instrument-specific habits.</li>
   <li><strong>Know when to stop</strong> — If you're tilting, close the session early or forfeit. You can always start a new attempt.</li>
+  <li><strong>Start with Micro</strong> — The $5k preset limits you to micro contracts, which are more forgiving while you build consistency.</li>
 </ul>
 
 <h3>Starting & Managing Runs</h3>
-<p>Iron Man runs are managed from the <strong>Stats page</strong>:</p>
+<p>Iron Man runs are managed from the <strong>Stats page → Iron Man tab</strong>:</p>
 <ul>
-  <li><strong>Start</strong> — Click "Start Iron Man" in the Iron Man panel</li>
-  <li><strong>Forfeit</strong> — Click "Forfeit" to end the run voluntarily at any time</li>
-  <li><strong>History</strong> — All past attempts are listed with their outcome, duration, and final balance</li>
+  <li><strong>Start</strong> — Choose a preset or configure custom parameters, then click "Start Challenge"</li>
+  <li><strong>Forfeit</strong> — Click "Forfeit Run" to end the run voluntarily at any time</li>
+  <li><strong>History</strong> — All past attempts are listed with their outcome, parameters, duration, and final balance</li>
 </ul>
 
 </main>
