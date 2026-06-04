@@ -54,7 +54,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 .empty-state{color:#555;font-size:.78rem;text-align:center;padding:40px}
 /* Account list */
 .acct-list{max-height:200px;overflow-y:auto;border:1px solid #2a2a2a;border-radius:6px;background:#111}
-.acct-item{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a1a1a;font-size:.7rem}
+.acct-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid #1a1a1a;font-size:.7rem}
 .acct-item:last-child{border-bottom:none}
 .acct-item:hover{background:#1a1a1a}
 .acct-item.active{background:#1a2a1f;border-left:3px solid #4caf82}
@@ -138,9 +138,9 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 
   <!-- Two column: Monthly P&L cards | Month calendar -->
   <div class="grid-2col">
-    <div class="section" id="monthly-section" style="display:none">
+    <div class="section" id="monthly-section">
       <h2>Monthly P&L</h2>
-      <div id="monthly-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px"></div>
+      <div id="monthly-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     </div>
     <div class="section" id="month-cal-section">
       <h2>Month Detail</h2>
@@ -172,11 +172,15 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
     <div>
       <div class="section">
         <h2>Account</h2>
-        <div style="display:flex;justify-content:space-between;padding:4px 10px;font-size:.55rem;color:#555;text-transform:uppercase;letter-spacing:.05em">
-          <span>Status</span><span>Starting</span><span>Balance</span><span>P/L</span><span>Date</span>
+        <div style="display:grid;grid-template-columns:60px 1fr 80px;padding:4px 10px;font-size:.55rem;color:#555;text-transform:uppercase;letter-spacing:.05em">
+          <span>Status</span><span>Balance</span><span>Date</span>
         </div>
         <div class="acct-list" id="acct-list"><div style="padding:10px;color:#555;font-size:.72rem">Loading...</div></div>
         <button class="btn-purge" id="btn-purge" onclick="purgeArchived()" style="margin-top:8px;display:none">Purge All Archived</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+          <div class="stat-card"><div class="stat-val" id="s-starting">-</div><div class="stat-label">Starting Balance</div></div>
+          <div class="stat-card"><div class="stat-val" id="s-acct-pnl">-</div><div class="stat-label">P/L</div></div>
+        </div>
       </div>
 
       <div class="stats-grid" id="stats-grid" style="grid-template-columns:repeat(2,1fr)">
@@ -325,16 +329,11 @@ function renderOverviewStats() {
 function renderAccountList(accounts) {
   const el = document.getElementById('acct-list');
   el.innerHTML = accounts.map(a => {
-    const pnl = a.balance - a.starting;
-    const color = pnl >= 0 ? '#4caf82' : '#e05c5c';
-    const pct = a.starting > 0 ? ((pnl / a.starting) * 100).toFixed(1) : '0.0';
     const statusTag = a.status === 'active' ? '<span style="color:#4caf82;font-size:.55rem;font-weight:600">ACTIVE</span>' : '<span style="color:#555;font-size:.55rem">archived</span>';
     const dateStr = a.date ? a.date.slice(0, 10) : '-';
-    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})">
+    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})" style="display:grid;grid-template-columns:60px 1fr 80px;align-items:center">
       ${statusTag}
-      <span style="color:#888">$${a.starting.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
       <span style="color:#ccc">$${a.balance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
-      <span style="color:${color}">${pnl>=0?'':'-'}$${fmtD(pnl)} (${pct}%)</span>
       <span style="color:#555;font-size:.55rem">${dateStr}</span>
     </div>`;
   }).join('');
@@ -372,6 +371,15 @@ async function renderForAccount(accountId) {
   pnlEl.textContent = (totalPnl >= 0 ? '$' : '-$') + fmtD(totalPnl);
   pnlEl.className = 'stat-val ' + (totalPnl >= 0 ? 'pos' : 'neg');
   pnlEl.closest('.stat-card').className = 'stat-card ' + (totalPnl >= 0 ? 'tint-pos' : 'tint-neg');
+
+  // Account starting + P/L cards
+  const startingBal = accountsMap[accountId] || 0;
+  document.getElementById('s-starting').textContent = '$' + startingBal.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+  const acctPnlEl = document.getElementById('s-acct-pnl');
+  const acctPnl = totalPnl;
+  const acctPct = startingBal > 0 ? ((acctPnl / startingBal) * 100).toFixed(1) : '0.0';
+  acctPnlEl.innerHTML = `<span style="color:${acctPnl>=0?'#4caf82':'#e05c5c'}">${acctPnl>=0?'':'-'}$${fmtD(acctPnl)}</span> <span style="font-size:.6rem;color:#888">(${acctPct}%)</span>`;
+  acctPnlEl.closest('.stat-card').className = 'stat-card ' + (acctPnl >= 0 ? 'tint-pos' : 'tint-neg');
 
   // Detailed stats from trade-level data
   const wins = trades.filter(t => t.pnl > 0);
@@ -452,21 +460,26 @@ async function renderForAccount(accountId) {
     }).join('');
   } else { instSection.style.display = 'none'; }
 
-  // Monthly P&L cards (in Overview tab)
+  // Monthly P&L cards (in Overview tab) — always show 12 months
   const monthlySection = document.getElementById('monthly-section');
-  if (sessions.length > 0) {
-    const monthly = {};
-    sessions.forEach(s => { const m = (s.date || s.created_at || '').slice(0, 7); if (m) { if (!monthly[m]) monthly[m] = { pnl: 0, sessions: [] }; monthly[m].pnl += (s.pnl || 0); monthly[m].sessions.push(s); } });
-    const months = Object.keys(monthly).sort();
-    window._monthlyData = monthly;
-    monthlySection.style.display = '';
-    document.getElementById('monthly-cards').innerHTML = months.map(m => {
-      const v = monthly[m].pnl; const cls = v >= 0 ? 'tint-pos' : 'tint-neg'; const color = v >= 0 ? '#4caf82' : '#e05c5c';
-      const label = new Date(m + '-01').toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-      return `<div class="stat-card ${cls}" style="cursor:pointer;padding:10px 6px" onclick="selectMonth('${m}')"><div style="font-size:.8rem;font-weight:700;color:${color}">${v>=0?'':'−'}$${fmtD(v)}</div><div style="font-size:.5rem;color:#888;text-transform:uppercase;margin-top:2px">${label}</div></div>`;
-    }).join('');
-    if (months.length > 0) selectMonth(months[months.length - 1]);
-  } else { monthlySection.style.display = 'none'; }
+  const monthly = {};
+  sessions.forEach(s => { const m = (s.date || s.created_at || '').slice(0, 7); if (m) { if (!monthly[m]) monthly[m] = { pnl: 0, sessions: [] }; monthly[m].pnl += (s.pnl || 0); monthly[m].sessions.push(s); } });
+  window._monthlyData = monthly;
+  monthlySection.style.display = '';
+  const year = new Date().getFullYear();
+  const allMonths = Array.from({length:12}, (_,i) => `${year}-${String(i+1).padStart(2,'0')}`);
+  document.getElementById('monthly-cards').innerHTML = allMonths.map(m => {
+    const data = monthly[m];
+    if (!data) {
+      const label = new Date(m + '-01').toLocaleDateString(undefined, { month: 'short' });
+      return `<div class="stat-card" style="padding:10px 6px;opacity:.5"><div style="font-size:.8rem;font-weight:700;color:#555">—</div><div style="font-size:.5rem;color:#555;text-transform:uppercase;margin-top:2px">${label}</div></div>`;
+    }
+    const v = data.pnl; const cls = v >= 0 ? 'tint-pos' : 'tint-neg'; const color = v >= 0 ? '#4caf82' : '#e05c5c';
+    const label = new Date(m + '-01').toLocaleDateString(undefined, { month: 'short' });
+    return `<div class="stat-card ${cls}" style="cursor:pointer;padding:10px 6px" onclick="selectMonth('${m}')"><div style="font-size:.8rem;font-weight:700;color:${color}">${v>=0?'':'−'}$${fmtD(v)}</div><div style="font-size:.5rem;color:#888;text-transform:uppercase;margin-top:2px">${label}</div></div>`;
+  }).join('');
+  const tradedMonths = allMonths.filter(m => monthly[m]);
+  if (tradedMonths.length > 0) selectMonth(tradedMonths[tradedMonths.length - 1]);
 
   // Session history
   const tbody = document.getElementById('history-body');
