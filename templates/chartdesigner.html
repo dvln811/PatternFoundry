@@ -553,8 +553,7 @@ function initChart() {
     }
   }
   let _shadingTimer = null;
-  function throttledShading() { if (_shadingTimer) return; _shadingTimer = setTimeout(() => { _shadingTimer = null; drawOffHoursShading(); }, 200); }
-  chart.timeScale().subscribeVisibleTimeRangeChange(throttledShading);
+  chart.timeScale().subscribeVisibleTimeRangeChange(drawOffHoursShading);
   window.drawOffHoursShading = drawOffHoursShading;
   new ResizeObserver(() => { pmCanvas.width = el.clientWidth; pmCanvas.height = el.clientHeight; drawOffHoursShading(); }).observe(el);
 }
@@ -789,8 +788,12 @@ async function runTickPreview() {
   window._displayCandle = null;
   document.getElementById('tick-play-btn').textContent = '⏸ Playing';
 
-  // Anchor: tick 1-min candles continue the historical sequence (contiguous bars)
+  // Anchor: tick candles start at 09:30 RTH
   _lastHistTime = allCandles.length ? allCandles[allCandles.length - 1].time : 0;
+  // Ensure ticks start at 09:30 of the session day
+  const lastDate = new Date(_lastHistTime * 1000);
+  const rthOpen = Date.UTC(lastDate.getUTCFullYear(), lastDate.getUTCMonth(), lastDate.getUTCDate(), 9, 30) / 1000;
+  if (rthOpen > _lastHistTime) _lastHistTime = rthOpen - 60;
   // Price offset: first tick continues from last historical close (no big gap)
   const lastHistClose = allCandles.length ? allCandles[allCandles.length - 1].close : _tickPreviewData[0].price;
   const priceOffset = lastHistClose - _tickPreviewData[0].price;
@@ -806,7 +809,8 @@ async function runTickPreview() {
 function startTickPlayback() {
   if (_tickPreviewTimer) clearInterval(_tickPreviewTimer);
   const speed = parseFloat(document.getElementById('tick-speed').value);
-  const interval = Math.max(16, Math.round(1000 / speed));
+  const interval = Math.max(16, Math.round(1000 / Math.max(speed, 1) * Math.max(1, Math.round(speed / 10))));
+  const ticksPerFrame = Math.max(1, Math.round(speed / 10));
   const _el = {
     price: document.getElementById('td-price'), bid: document.getElementById('td-bid'),
     ask: document.getElementById('td-ask'), spread: document.getElementById('td-spread'),
@@ -819,56 +823,63 @@ function startTickPlayback() {
   const tickThresh = parseFloat(document.getElementById('p-tick').value) * 2;
 
   _tickPreviewTimer = setInterval(() => {
-    if (_tickPreviewIdx >= _tickPreviewData.length) { stopTickPreview(); return; }
-    const t = _tickPreviewData[_tickPreviewIdx++];
     const tf = parseInt(document.getElementById('tf').value);
-    const minuteIdx = Math.floor((_tickPreviewIdx - 1) / 60);
-    const candleTime = _lastHistTime + (minuteIdx + 1) * 60;
-    // Track 1-min candles internally
-    if (!_tickPreviewCandle || _tickPreviewCandle.time !== candleTime) {
-      if (_tickPreviewCandle) _tickMinuteCandles.push(_tickPreviewCandle);
-      _tickPreviewCandle = { time: candleTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
-    } else {
-      _tickPreviewCandle.high = Math.max(_tickPreviewCandle.high, t.price);
-      _tickPreviewCandle.low = Math.min(_tickPreviewCandle.low, t.price);
-      _tickPreviewCandle.close = t.price;
-      _tickPreviewCandle.volume += t.volume;
+    let lastTick = null;
+    for (let f = 0; f < ticksPerFrame; f++) {
+      if (_tickPreviewIdx >= _tickPreviewData.length) { stopTickPreview(); return; }
+      const t = _tickPreviewData[_tickPreviewIdx++];
+      lastTick = t;
+      const minuteIdx = Math.floor((_tickPreviewIdx - 1) / 60);
+      const candleTime = _lastHistTime + (minuteIdx + 1) * 60;
+      if (!_tickPreviewCandle || _tickPreviewCandle.time !== candleTime) {
+        if (_tickPreviewCandle) _tickMinuteCandles.push(_tickPreviewCandle);
+        _tickPreviewCandle = { time: candleTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+      } else {
+        _tickPreviewCandle.high = Math.max(_tickPreviewCandle.high, t.price);
+        _tickPreviewCandle.low = Math.min(_tickPreviewCandle.low, t.price);
+        _tickPreviewCandle.close = t.price;
+        _tickPreviewCandle.volume += t.volume;
+      }
+      const displayTime = Math.floor(candleTime / tf) * tf;
+      if (!window._displayCandle || window._displayCandle.time !== displayTime) {
+        if (window._displayCandle) window._chartData.push({ time: window._displayCandle.time, open: window._displayCandle.open, high: window._displayCandle.high, low: window._displayCandle.low, close: window._displayCandle.close });
+        window._displayCandle = { time: displayTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
+      } else {
+        window._displayCandle.high = Math.max(window._displayCandle.high, t.price);
+        window._displayCandle.low = Math.min(window._displayCandle.low, t.price);
+        window._displayCandle.close = t.price;
+        window._displayCandle.volume += t.volume;
+      }
     }
-    // Update chart at selected TF (bucket time like the simulator does)
-    const displayTime = Math.floor(candleTime / tf) * tf;
-    if (!window._displayCandle || window._displayCandle.time !== displayTime) {
-      if (window._displayCandle) window._chartData.push({ time: window._displayCandle.time, open: window._displayCandle.open, high: window._displayCandle.high, low: window._displayCandle.low, close: window._displayCandle.close });
-      window._displayCandle = { time: displayTime, open: t.price, high: t.price, low: t.price, close: t.price, volume: t.volume };
-    } else {
-      window._displayCandle.high = Math.max(window._displayCandle.high, t.price);
-      window._displayCandle.low = Math.min(window._displayCandle.low, t.price);
-      window._displayCandle.close = t.price;
-      window._displayCandle.volume += t.volume;
+    // Single chart update per frame
+    if (window._displayCandle) {
+      candleSeries.update({ time: window._displayCandle.time, open: window._displayCandle.open, high: window._displayCandle.high, low: window._displayCandle.low, close: window._displayCandle.close });
+      volSeries.update({ time: window._displayCandle.time, value: window._displayCandle.volume, color: window._displayCandle.close >= window._displayCandle.open ? '#4caf8266' : '#e05c5c66' });
     }
-    candleSeries.update({ time: window._displayCandle.time, open: window._displayCandle.open, high: window._displayCandle.high, low: window._displayCandle.low, close: window._displayCandle.close });
-    volSeries.update({ time: window._displayCandle.time, value: window._displayCandle.volume, color: window._displayCandle.close >= window._displayCandle.open ? '#4caf8266' : '#e05c5c66' });
-
-    // Update debug panel
-    _el.price.textContent = t.price.toFixed(2);
-    _el.bid.textContent = t.bid.toFixed(2);
-    _el.ask.textContent = t.ask.toFixed(2);
-    const spread = t.ask - t.bid;
-    _el.spread.textContent = spread.toFixed(2);
-    _el.spread.style.color = spread > tickThresh ? '#e05c5c' : '#f0c040';
-    _el.imb.textContent = t.imbalance.toFixed(2);
-    _el.imb.style.color = t.imbalance > 0.5 ? '#4caf82' : t.imbalance < -0.5 ? '#e05c5c' : '#888';
-    _el.vol.textContent = t.volume;
-    _el.tickNum.textContent = `${_tickPreviewIdx}/${_tickPreviewData.length}`;
-    _el.bar.style.width = (_tickPreviewIdx / _tickPreviewData.length * 100) + '%';
-    _el.hawkes.textContent = (t.hawkes || 0).toFixed(3);
-    _el.hawkes.style.color = (t.hawkes || 0) > 0.3 ? '#f97316' : '#888';
-    const instRem = t.inst_remaining || 0;
-    _el.inst.textContent = instRem > 0 ? 'ACTIVE' : 'quiet';
-    _el.inst.style.color = instRem > 0 ? '#a78bfa' : '#555';
-    _el.instRem.textContent = instRem;
-    _el.instDir.textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '-';
-    _el.instDir.style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
-    _el.candleNum.textContent = Math.ceil(_tickPreviewIdx / 60);
+    // Update debug panel with last tick of batch
+    if (lastTick) {
+      const t = lastTick;
+      _el.price.textContent = t.price.toFixed(2);
+      _el.bid.textContent = t.bid.toFixed(2);
+      _el.ask.textContent = t.ask.toFixed(2);
+      const spread = t.ask - t.bid;
+      _el.spread.textContent = spread.toFixed(2);
+      _el.spread.style.color = spread > tickThresh ? '#e05c5c' : '#f0c040';
+      _el.imb.textContent = t.imbalance.toFixed(2);
+      _el.imb.style.color = t.imbalance > 0.5 ? '#4caf82' : t.imbalance < -0.5 ? '#e05c5c' : '#888';
+      _el.vol.textContent = t.volume;
+      _el.tickNum.textContent = `${_tickPreviewIdx}/${_tickPreviewData.length}`;
+      _el.bar.style.width = (_tickPreviewIdx / _tickPreviewData.length * 100) + '%';
+      _el.hawkes.textContent = (t.hawkes || 0).toFixed(3);
+      _el.hawkes.style.color = (t.hawkes || 0) > 0.3 ? '#f97316' : '#888';
+      const instRem = t.inst_remaining || 0;
+      _el.inst.textContent = instRem > 0 ? 'ACTIVE' : 'quiet';
+      _el.inst.style.color = instRem > 0 ? '#a78bfa' : '#555';
+      _el.instRem.textContent = instRem;
+      _el.instDir.textContent = (t.inst_dir || 0) > 0 ? '▲ BUY' : (t.inst_dir || 0) < 0 ? '▼ SELL' : '-';
+      _el.instDir.style.color = (t.inst_dir || 0) > 0 ? '#4caf82' : (t.inst_dir || 0) < 0 ? '#e05c5c' : '#888';
+      _el.candleNum.textContent = Math.ceil(_tickPreviewIdx / 60);
+    }
   }, interval);
 }
 

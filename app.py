@@ -648,6 +648,14 @@ def character_generate():
     df      = generate_v2(n, spec, seed=seed)
     candles = apply_session_structure(df, gap_cfg, tf_seconds=60, seed=seed)
 
+    # Truncate at last RTH boundary — history should stop at 09:29
+    last_rth_start = None
+    for i in range(1, len(candles)):
+        if candles[i]['session'] == 'rth' and candles[i-1]['session'] != 'rth':
+            last_rth_start = i
+    if last_rth_start is not None:
+        candles = candles[:last_rth_start]
+
     # Regime stats
     regime_counts = df['Regime'].value_counts().to_dict()
     total = len(df)
@@ -690,18 +698,20 @@ def character_tick_preview():
     gap_cfg = extract_gap_cfg(spec)
     disable_internal_gaps(spec)
     df = generate_v2(n_candles, spec, seed=seed)
-    candles_structured = apply_session_structure(df, gap_cfg, tf_seconds=60, seed=seed)
 
-    # Build a mini DataFrame for tick engine
+    # Stamp as RTH directly — no session dampening
     import pandas as pd
-    mini_df = pd.DataFrame({
-        'Timestamp': pd.to_datetime([c['time'] for c in candles_structured[:n_candles]], unit='s', utc=True),
-        'Open': [c['open'] for c in candles_structured[:n_candles]],
-        'High': [c['high'] for c in candles_structured[:n_candles]],
-        'Low': [c['low'] for c in candles_structured[:n_candles]],
-        'Close': [c['close'] for c in candles_structured[:n_candles]],
-        'Volume': [c['volume'] for c in candles_structured[:n_candles]],
-    })
+    rth_start = pd.Timestamp('2024-01-02 09:30:00', tz='UTC')
+    candle_dicts = []
+    for i, (_, row) in enumerate(df.iterrows()):
+        if i >= n_candles:
+            break
+        candle_dicts.append({
+            'time': int((rth_start + pd.Timedelta(minutes=i)).timestamp()),
+            'open': round(float(row['Open']), 2), 'high': round(float(row['High']), 2),
+            'low': round(float(row['Low']), 2), 'close': round(float(row['Close']), 2),
+            'volume': int(row['Volume']),
+        })
 
     from tick_engine import generate_microstructure_ticks, MicroConfig
     tick_cfg = MicroConfig(
@@ -721,11 +731,6 @@ def character_tick_preview():
         pool_count=int(data.get('mc_pool_count', 3)),
         mean_rev_strength=float(data.get('mc_mean_rev', 0.002)),
     )
-
-    candle_dicts = [{
-        'time': c['time'], 'open': c['open'], 'high': c['high'],
-        'low': c['low'], 'close': c['close'], 'volume': c['volume'],
-    } for c in candles_structured[:n_candles]]
 
     ticks = generate_microstructure_ticks(candle_dicts, tick_cfg)
 
