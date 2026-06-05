@@ -1,44 +1,73 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <!-- Background circle -->
-  <circle cx="200" cy="200" r="200" fill="#1a1a2e"/>
-  
-  <!-- Subtle grid lines -->
-  <line x1="80" y1="320" x2="320" y2="320" stroke="#2a2a4a" stroke-width="1"/>
-  <line x1="80" y1="260" x2="320" y2="260" stroke="#2a2a4a" stroke-width="1"/>
-  <line x1="80" y1="200" x2="320" y2="200" stroke="#2a2a4a" stroke-width="1"/>
-  <line x1="80" y1="140" x2="320" y2="140" stroke="#2a2a4a" stroke-width="1"/>
-  
-  <!-- Candlesticks -->
-  <!-- Candle 1 - red -->
-  <line x1="120" y1="160" x2="120" y2="290" stroke="#e74c3c" stroke-width="3"/>
-  <rect x="108" y="200" width="24" height="60" fill="#e74c3c" rx="2"/>
-  
-  <!-- Candle 2 - red -->
-  <line x1="160" y1="180" x2="160" y2="310" stroke="#e74c3c" stroke-width="3"/>
-  <rect x="148" y="220" width="24" height="70" fill="#e74c3c" rx="2"/>
-  
-  <!-- Candle 3 - green (reversal) -->
-  <line x1="200" y1="190" x2="200" y2="300" stroke="#00d4aa" stroke-width="3"/>
-  <rect x="188" y="230" width="24" height="50" fill="#00d4aa" rx="2"/>
-  
-  <!-- Candle 4 - green -->
-  <line x1="240" y1="130" x2="240" y2="260" stroke="#00d4aa" stroke-width="3"/>
-  <rect x="228" y="150" width="24" height="70" fill="#00d4aa" rx="2"/>
-  
-  <!-- Candle 5 - green (strong) -->
-  <line x1="280" y1="90" x2="280" y2="210" stroke="#00d4aa" stroke-width="3"/>
-  <rect x="268" y="100" width="24" height="80" fill="#00d4aa" rx="2"/>
-  
-  <!-- Glow effect on last candle -->
-  <rect x="268" y="100" width="24" height="80" fill="#00d4aa" opacity="0.3" rx="2" filter="url(#glow)"/>
-  
   <defs>
+    <radialGradient id="bg" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#16213e"/>
+      <stop offset="100%" stop-color="#0f0f1a"/>
+    </radialGradient>
+    <linearGradient id="greenGrad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#00d4aa"/>
+      <stop offset="100%" stop-color="#00ff88"/>
+    </linearGradient>
     <filter id="glow">
-      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="6" result="blur"/>
       <feMerge>
-        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
   </defs>
+
+  <!-- Background -->
+  <circle cx="200" cy="200" r="200" fill="url(#bg)"/>
+  
+  <!-- Diagonal accent lines (depth) -->
+  <line x1="50" y1="350" x2="350" y2="50" stroke="#00d4aa" stroke-width="0.5" opacity="0.1"/>
+  <line x1="80" y1="380" x2="380" y2="80" stroke="#00d4aa" stroke-width="0.5" opacity="0.08"/>
+  <line x1="20" y1="320" x2="320" y2="20" stroke="#00d4aa" stroke-width="0.5" opacity="0.08"/>
+
+  <!-- Moving average line (swooping curve behind candles) -->
+  <path d="M70,270 C110,275 140,280 170,270 S220,220 250,180 S290,120 330,95" 
+        stroke="#6c63ff" stroke-width="2.5" fill="none" opacity="0.6" stroke-linecap="round"/>
+  
+  <!-- Second MA (faster) -->
+  <path d="M70,260 C100,290 140,295 170,280 S210,210 240,160 S280,100 320,75" 
+        stroke="#00d4aa" stroke-width="1.5" fill="none" opacity="0.3" stroke-linecap="round"/>
+
+  <!-- Candlesticks -->
+  <!-- Candle 1 - red, bearish -->
+  <line x1="115" y1="175" x2="115" y2="285" stroke="#ff4757" stroke-width="2.5"/>
+  <rect x="103" y="210" width="24" height="55" fill="#ff4757" rx="2"/>
+  
+  <!-- Candle 2 - red, hammer/doji (reversal signal) -->
+  <line x1="160" y1="220" x2="160" y2="310" stroke="#ff4757" stroke-width="2.5"/>
+  <rect x="148" y="225" width="24" height="12" fill="#ff4757" rx="2"/>
+  
+  <!-- Candle 3 - green engulfing -->
+  <line x1="205" y1="175" x2="205" y2="290" stroke="url(#greenGrad)" stroke-width="2.5"/>
+  <rect x="193" y="195" width="24" height="70" fill="url(#greenGrad)" rx="2"/>
+  
+  <!-- Candle 4 - green momentum -->
+  <line x1="250" y1="120" x2="250" y2="230" stroke="url(#greenGrad)" stroke-width="2.5"/>
+  <rect x="238" y="130" width="24" height="75" fill="url(#greenGrad)" rx="2"/>
+  
+  <!-- Candle 5 - green breakout -->
+  <line x1="295" y1="70" x2="295" y2="170" stroke="url(#greenGrad)" stroke-width="2.5"/>
+  <rect x="283" y="78" width="24" height="65" fill="url(#greenGrad)" rx="2" filter="url(#glow)"/>
+
+  <!-- Breakout arrow -->
+  <path d="M310,90 L325,70 L320,80 L335,75" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Volume bars at bottom -->
+  <rect x="105" y="305" width="20" height="25" fill="#ff4757" opacity="0.4" rx="1"/>
+  <rect x="150" y="315" width="20" height="15" fill="#ff4757" opacity="0.4" rx="1"/>
+  <rect x="195" y="300" width="20" height="30" fill="#00d4aa" opacity="0.4" rx="1"/>
+  <rect x="240" y="295" width="20" height="35" fill="#00d4aa" opacity="0.5" rx="1"/>
+  <rect x="285" y="285" width="20" height="45" fill="#00d4aa" opacity="0.6" rx="1"/>
+
+  <!-- Subtle ring border -->
+  <circle cx="200" cy="200" r="195" fill="none" stroke="#00d4aa" stroke-width="1.5" opacity="0.25"/>
+  <circle cx="200" cy="200" r="198" fill="none" stroke="#6c63ff" stroke-width="0.5" opacity="0.15"/>
 </svg>
