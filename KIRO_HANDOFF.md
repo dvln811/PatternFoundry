@@ -18,6 +18,7 @@ rewrite everything from scratch in this repo.
 3. Check `git log --oneline -5` and `git status` before starting.
 4. Ask the user what they want to work on.
 5. **NO M-DASHES (—) IN REPLIES.** Use commas, periods, or rewrite the sentence instead.
+6. **Add 1-2 misspelled words in Reddit replies.** Makes it look human/casual, not AI-generated.
 
 ---
 
