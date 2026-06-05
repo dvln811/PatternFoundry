@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="200" fill="#1a1a2e"/>
+  
+  <!-- Subtle grid lines -->
+  <line x1="80" y1="320" x2="320" y2="320" stroke="#2a2a4a" stroke-width="1"/>
+  <line x1="80" y1="260" x2="320" y2="260" stroke="#2a2a4a" stroke-width="1"/>
+  <line x1="80" y1="200" x2="320" y2="200" stroke="#2a2a4a" stroke-width="1"/>
+  <line x1="80" y1="140" x2="320" y2="140" stroke="#2a2a4a" stroke-width="1"/>
+  
+  <!-- Candlesticks -->
+  <!-- Candle 1 - red -->
+  <line x1="120" y1="160" x2="120" y2="290" stroke="#e74c3c" stroke-width="3"/>
+  <rect x="108" y="200" width="24" height="60" fill="#e74c3c" rx="2"/>
+  
+  <!-- Candle 2 - red -->
+  <line x1="160" y1="180" x2="160" y2="310" stroke="#e74c3c" stroke-width="3"/>
+  <rect x="148" y="220" width="24" height="70" fill="#e74c3c" rx="2"/>
+  
+  <!-- Candle 3 - green (reversal) -->
+  <line x1="200" y1="190" x2="200" y2="300" stroke="#00d4aa" stroke-width="3"/>
+  <rect x="188" y="230" width="24" height="50" fill="#00d4aa" rx="2"/>
+  
+  <!-- Candle 4 - green -->
+  <line x1="240" y1="130" x2="240" y2="260" stroke="#00d4aa" stroke-width="3"/>
+  <rect x="228" y="150" width="24" height="70" fill="#00d4aa" rx="2"/>
+  
+  <!-- Candle 5 - green (strong) -->
+  <line x1="280" y1="90" x2="280" y2="210" stroke="#00d4aa" stroke-width="3"/>
+  <rect x="268" y="100" width="24" height="80" fill="#00d4aa" rx="2"/>
+  
+  <!-- Glow effect on last candle -->
+  <rect x="268" y="100" width="24" height="80" fill="#00d4aa" opacity="0.3" rx="2" filter="url(#glow)"/>
+  
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
