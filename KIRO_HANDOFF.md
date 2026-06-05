@@ -68,6 +68,7 @@ rewrite everything from scratch in this repo.
 | `/board` | `board.html` | Kanban board (auto-syncs to server on Fly) |
 | `/marketing` | `marketing.html` | Marketing plan (strategy, channels, launch sequence) |
 | `/marketing/board` | `marketing_board.html` | Marketing Kanban board (5 cols, channel-based cards) |
+| `/marketing/scripts` | `marketing_scripts.html` | Copy-paste post scripts (Reddit, X, HN, SEO) |
 | `/feature-ideas` | `feature_ideas.html` | Design docs for upcoming features |
 
 ### Instruments (14 total)
@@ -157,6 +158,7 @@ rewrite everything from scratch in this repo.
 | `templates/chart.html` | Simulator SPA (~2200 lines) |
 | `templates/chartdesigner.html` | Chart Designer SPA (14 presets) |
 | `templates/marketing_board.html` | Marketing Kanban board (5 cols, channel-based) |
+| `templates/marketing_scripts.html` | Copy-paste marketing scripts (Reddit replies, value posts, X threads, HN) |
 | `templates/stats.html` | Stats + Iron Man config |
 | `templates/settings.html` | Account reset only |
 | `templates/admin_users.html` | User management + nuke button |
@@ -176,24 +178,23 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-04 session 6)
+## Recent Work (2026-06-05 session 7)
 
-1. **Off-hours shading fix (backend)** — `/api/sim-session` now uses `apply_session_structure()` with `tf_seconds=300` to generate full 24hr candles (288/day) instead of RTH-only (78/day). Off-hours bars have dampened body/volume. History has proper overnight/london/pre-market candles for shading.
-2. **Off-hours shading fix (frontend)** — Both `chart.html` and `chartdesigner.html` now use `logicalToCoordinate(index)` instead of `timeToCoordinate(timestamp)` for reliable off-hours shading across all bars regardless of scroll position.
-3. **Chart Designer tick playback performance** — Rewrote `startTickPlayback()` to batch ticks per frame (speed/10 per 16ms frame) with single `candleSeries.update()` per frame. Cached DOM refs for debug panel. Removed full `renderCandles()`/`setData()` per tick.
-4. **Chart Designer TF bucketing** — Tick candles now bucket to selected TF using `Math.floor(time/tf)*tf` (same as simulator's `getCandleTime`). Tracks `window._displayCandle` at TF level. Fixes issue where 30-min TF showed per-minute bars during playback.
-5. **Chart Designer: history truncated at RTH** — `character_generate()` now truncates output at last RTH boundary so generated history stops at 09:29. Tick engine handles RTH playback.
-6. **Chart Designer: tick-preview no dampening** — `/api/character/tick-preview` no longer uses `apply_session_structure`. Generates raw candles stamped as RTH (09:30+) with full volatility. Tick engine gets undampened data.
-7. **Chart Designer: tick timestamp anchoring** — Frontend anchors `_lastHistTime` to 09:29 so tick candles start at 09:30 (proper RTH timestamps in the shading).
-8. **Chart Designer: shading throttle removed** — `drawOffHoursShading` called directly on visible range change (no 200ms throttle), matching simulator behavior.
-9. **Marketing Board** — New `/marketing/board` page: 5-column Kanban (Backlog, This Week, Next Week, Ongoing, Done), channel-based badges (twitter/reddit/discord/content/youtube/product), seeded with 20 actionable marketing cards. API: `/api/marketing-board/save` + `/api/marketing-board/load`.
-10. **Marketing Plan rewrite** — `/marketing` completely rewritten: positioning ("the driving range for traders"), target audience (prop firm candidates, futures beginners), channel strategy with cadence, content angles, rules of engagement, 6-week launch sequence, competitive landscape, success metrics, monetization path.
+1. **Marketing board upload fix** — CORS `after_request` handler only matched `/api/board` paths but marketing board uses `/api/marketing-board/`. Extended check to include `/api/marketing-board` paths. Upload button now works from localhost → Fly.
+2. **Marketing plan rewrite (introvert-compatible)** — Rewrote `/marketing` for INTJ personality. Dropped all high-social-obligation channels initially. Channels: X (1 post/week batch-write Sunday), HN (Show HN launch), SEO (1 page/month), silent screen recordings. Rules reframed: "build in public, don't perform in public." 4-week compressed launch.
+3. **Reddit added back (structured/scripted)** — After discussion, Reddit added back as #1 channel but structured as a scripted 15-min/day checklist, not "go be social." 2-week warmup (replies only, no links) → value post week 3-4. Mod-proof rules added: no links in post body, neutral username, karma built first, never argue with mods.
+4. **Marketing scripts page** — New `/marketing/scripts` route + template. Contains: 5 Reddit daily reply templates, 2 full value posts (r/daytrading stats post + r/futurestrading instrument comparison), response templates for "what simulator?", Show HN post script, 4 weeks of X threads, SEO page outline, Google Ads copy (deferred).
+5. **Marketing board updated** — Board cards now match the strategy: Reddit account creation + daily replies (This Week), continued warmup + HN/X launch (Next Week), value post + ongoing maintenance (Ongoing). Channel badges include reddit/hn/seo/twitter/content/youtube/product.
+6. **Nav updated** — All marketing pages (Plan, Board, Scripts) cross-linked in nav.
+7. **Launch sequence** — Expanded to 5 weeks: Week 1 (assets + Reddit warmup), Week 2 (replies + HN prep), Week 3 (HN + X launch, continue Reddit), Week 4 (Reddit value post), Week 5 (evaluate + expand).
 
 ---
 
 ## Next Steps
 
-- **MARKETING EXECUTION** — Follow the 6-week launch plan. See `/marketing/board` for actionable tasks. Week 1: screenshots, create accounts, lurk.
+- **MARKETING EXECUTION (IN PROGRESS)** — Reddit account created. Next: daily 15-min reply routine in r/daytrading + r/futurestrading. Simultaneously grind 5 sim sessions/day to build real stats data (target: 70+ sessions by week 3 for value post credibility).
+- **Week 1-2:** Reddit replies (15 min/day) + sim sessions (5/day) + screenshots + screen recordings
+- **Week 3:** Post Show HN + first X thread. Reddit value post if 50+ sessions done.
 - **Chart Designer tick_value:** Add tick_value/margin fields to designer UI for custom characters
 - **Session history:** Per-trade annotations, journal notes
 - **See board + /feature-ideas** for full roadmap
