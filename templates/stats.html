@@ -50,7 +50,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 .history-table td{padding:7px 10px;border-bottom:1px solid #1a1a1a;color:#ccc}
 .history-table tr:hover td{background:#111}
 .tag{font-size:.6rem;padding:2px 6px;border-radius:8px;font-weight:600}
-.tag-win{background:#4caf8218;color:#4caf82}.tag-loss{background:#e05c5c18;color:#e05c5c}
+.tag-win{background:#4caf8218;color:#4caf82}.tag-loss{background:#e05c5c18;color:#e05c5c}.tag-flat{background:#f9731618;color:#f97316}
 .empty-state{color:#555;font-size:.78rem;text-align:center;padding:40px}
 /* Account list */
 .acct-list{max-height:200px;overflow-y:auto;border:1px solid #2a2a2a;border-radius:6px;background:#111}
@@ -351,8 +351,8 @@ function renderRecentResults() {
   if (recent.length === 0) { el.innerHTML = '<span style="color:#555;font-size:.7rem">No sessions yet</span>'; return; }
   el.innerHTML = recent.map(s => {
     const pnl = s.pnl || 0;
-    const color = pnl >= 0 ? '#4caf82' : '#e05c5c';
-    const tag = pnl >= 0 ? 'W' : 'L';
+    const tag = s.trades === 0 ? 'F' : pnl >= 0 ? 'W' : 'L';
+    const color = s.trades === 0 ? '#f97316' : pnl >= 0 ? '#4caf82' : '#e05c5c';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1a1a1a;font-size:.65rem">
       <span style="color:#888">${(s.date||'').slice(5)}</span>
       <span style="color:#aaa">${s.character||'-'}</span>
@@ -566,7 +566,7 @@ async function renderForAccount(accountId) {
   tbody.innerHTML = sessions.slice().reverse().map(h => {
     const wr3 = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
     const pnl2 = (h.pnl >= 0 ? '$' : '-$') + fmtD(h.pnl || 0);
-    const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
+    const tag = h.trades === 0 ? '<span class="tag tag-flat">FLAT</span>' : h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
     const dateVal = (h.date || '').slice(0, 10);
     return `<tr><td><input type="date" value="${dateVal}" class="session-date-pick" data-sid="${h.id}" style="background:#111;color:#ccc;border:1px solid #333;border-radius:3px;padding:2px 4px;font-size:.65rem;cursor:pointer"></td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr3}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl2}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
   }).join('');
