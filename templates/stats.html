@@ -547,12 +547,12 @@ async function renderForAccount(accountId) {
   const allMonths = Array.from({length:12}, (_,i) => `${year}-${String(i+1).padStart(2,'0')}`);
   document.getElementById('monthly-cards').innerHTML = allMonths.map(m => {
     const data = monthly[m];
+    const [yy, mm] = m.split('-').map(Number);
+    const label = new Date(yy, mm - 1).toLocaleDateString(undefined, { month: 'short' });
     if (!data) {
-      const label = new Date(m + '-01').toLocaleDateString(undefined, { month: 'short' });
       return `<div class="stat-card" style="padding:10px 6px"><div style="font-size:.8rem;font-weight:700;color:#555">—</div><div style="font-size:.5rem;color:#888;text-transform:uppercase;margin-top:2px">${label}</div></div>`;
     }
     const v = data.pnl; const cls = v >= 0 ? 'tint-pos' : 'tint-neg'; const color = v >= 0 ? '#4caf82' : '#e05c5c';
-    const label = new Date(m + '-01').toLocaleDateString(undefined, { month: 'short' });
     return `<div class="stat-card ${cls}" style="cursor:pointer;padding:10px 6px" onclick="selectMonth('${m}')"><div style="font-size:.8rem;font-weight:700;color:${color}">${v>=0?'':'−'}$${fmtD(v)}</div><div style="font-size:.5rem;color:#888;text-transform:uppercase;margin-top:2px">${label}</div></div>`;
   }).join('');
   const tradedMonths = allMonths.filter(m => monthly[m]);
