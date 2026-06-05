@@ -31,6 +31,7 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
 @media(max-width:700px){.grid2{grid-template-columns:1fr}}
 .tag{display:inline-block;font-size:.65rem;padding:2px 6px;border-radius:8px;font-weight:600;margin-right:4px}
 .tag-twitter{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
+.tag-reddit{background:#ff450018;color:#ff4500;border:1px solid #ff450033}
 .tag-hn{background:#ff660018;color:#ff6600;border:1px solid #ff660033}
 .tag-seo{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
 .tag-content{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
@@ -45,6 +46,7 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
   <nav>
     <a href="/marketing" class="active">Plan</a>
     <a href="/marketing/board">Board</a>
+    <a href="/marketing/scripts">Scripts</a>
     <a href="/board">Dev Board</a>
     <a href="/admin">Admin</a>
       <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
@@ -85,6 +87,7 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
   <table>
     <thead><tr><th>Channel</th><th>Approach</th><th>Cadence</th><th>Why It Works for Us</th></tr></thead>
     <tbody>
+      <tr><td><span class="tag tag-reddit">REDDIT</span></td><td>Scripted checklist: 2 weeks of helpful replies → 1 value post with data. Never link in post body. Lead with what you learned, not what you built.</td><td>15 min/day (scripted)</td><td>Highest-converting free channel for indie tools. Async, text-based. Execute checklist and close tab.</td></tr>
       <tr><td><span class="tag tag-twitter">X/TWITTER</span></td><td>Post threads with screenshots/data. No engagement farming — just put work out there.</td><td>1 post/week (batch-write Sunday)</td><td>Async. Post and walk away. No back-and-forth required.</td></tr>
       <tr><td><span class="tag tag-hn">HACKER NEWS</span></td><td>Show HN post. Let the product speak. Answer technical questions only.</td><td>1 launch post + occasional Show HN updates</td><td>Rewards builders. Technical audience. No karma farming.</td></tr>
       <tr><td><span class="tag tag-seo">SEO / CONTENT</span></td><td>Landing page keywords, docs pages, targeted blog posts for search queries.</td><td>1 page/month targeting specific keywords</td><td>Build once, compound forever. Zero social interaction.</td></tr>
@@ -117,21 +120,32 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
     <li><strong style="color:#e05c5c">NEVER</strong> — Cold DM, spam links, reply-guy behavior</li>
     <li><strong style="color:#f5c542">ENERGY</strong> — If a channel feels draining, drop it. Ship a feature instead.</li>
   </ul>
+  <h2 style="margin-top:16px">Reddit Mod-Proof Rules</h2>
+  <ul>
+    <li><strong style="color:#e05c5c">NEVER</strong> — Put a link in the post body. Ever. Link goes in a comment, only when asked.</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — Post in a sub where you haven't commented for 2+ weeks first.</li>
+    <li><strong style="color:#e05c5c">NEVER</strong> — Use promotional language ("check out my tool!", "free!", CTAs).</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — Frame posts as "here's what I learned" with data. The tool is incidental.</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — Use a neutral username (not brand-named).</li>
+    <li><strong style="color:#4caf82">ALWAYS</strong> — Have genuine comment karma in the sub before posting.</li>
+    <li><strong style="color:#f5c542">IF DELETED</strong> — Don't fight it. Move to the next sub. Never message mods arguing.</li>
+  </ul>
 </div>
 </div>
 
 <div class="section">
-  <h2>Launch Sequence (4 Weeks)</h2>
+  <h2>Launch Sequence (5 Weeks)</h2>
   <table>
     <thead><tr><th>Week</th><th>Focus</th><th>Actions</th></tr></thead>
     <tbody>
-      <tr><td><strong>1</strong></td><td>Assets</td><td>Take 5-6 clean screenshots. Record 2-3 silent screen captures (30-90 sec each). Set up X account if needed.</td></tr>
-      <tr><td><strong>2</strong></td><td>Launch</td><td>Post "Show HN" with 3-sentence description. Post first X thread with screenshot + link. Add recordings to landing page.</td></tr>
-      <tr><td><strong>3</strong></td><td>SEO</td><td>Write 1 targeted page ("free futures trading simulator"). Ensure Google has indexed the site. Check Search Console.</td></tr>
-      <tr><td><strong>4</strong></td><td>Evaluate</td><td>Check /admin/users. Check X impressions. If HN got traction, post a follow-up. If not, move on — ship features.</td></tr>
+      <tr><td><strong>1</strong></td><td>Assets + Reddit Warmup</td><td>Take 5-6 clean screenshots. Record 2-3 silent screen captures. Create Reddit account (neutral name). Join r/daytrading, r/futurestrading. Start daily 15-min reply checklist.</td></tr>
+      <tr><td><strong>2</strong></td><td>Reddit Replies + HN Prep</td><td>Continue daily Reddit replies (build karma, become recognized). Draft Show HN post. Set up X account.</td></tr>
+      <tr><td><strong>3</strong></td><td>Launch Week</td><td>Post Show HN. Post first X thread. Continue Reddit replies (do NOT post yet — still warming up).</td></tr>
+      <tr><td><strong>4</strong></td><td>Reddit Value Post</td><td>Post first value post to r/daytrading (data-led, no link in body). Answer all replies within 24h. Post link ONLY if someone asks.</td></tr>
+      <tr><td><strong>5</strong></td><td>Evaluate + Expand</td><td>Check /admin/users for signups. If Reddit post got traction → post in r/futurestrading. Write 1 SEO page. Assess what's working.</td></tr>
     </tbody>
   </table>
-  <p style="margin-top:12px;color:#888;font-size:.75rem">After week 4: maintain 1 X post/week if it feels sustainable. Otherwise, focus on SEO pages and let organic search do the work over months.</p>
+  <p style="margin-top:12px;color:#888;font-size:.75rem">After week 5: maintain Reddit replies (15 min/day) + 1 X post/week. One Reddit value post per month per sub. SEO pages ongoing.</p>
 </div>
 
 <div class="grid2">
@@ -148,10 +162,10 @@ td{padding:8px 10px;font-size:.8rem;border-bottom:1px solid #1a1a1a}
 <div class="section">
   <h2>Success Metrics</h2>
   <ul>
-    <li><strong style="color:#fff">Week 2:</strong> HN post submitted. X account has first thread posted.</li>
-    <li><strong style="color:#fff">Week 4:</strong> 10+ signups from organic channels (HN, X, or search)</li>
-    <li><strong style="color:#fff">Month 2:</strong> 50+ registered users. At least 1 SEO page ranking.</li>
-    <li><strong style="color:#fff">Month 3:</strong> 100+ users. Assess if X cadence is sustainable or pivot to SEO-only.</li>
+    <li><strong style="color:#fff">Week 2:</strong> Reddit karma building. HN post drafted. X account ready.</li>
+    <li><strong style="color:#fff">Week 4:</strong> First Reddit value post live. 10+ signups from organic channels.</li>
+    <li><strong style="color:#fff">Month 2:</strong> 50+ registered users. Reddit post(s) still up (not deleted). 1 SEO page ranking.</li>
+    <li><strong style="color:#fff">Month 3:</strong> 100+ users. Assess what's driving signups — double down on that channel.</li>
   </ul>
   <p style="margin-top:12px;color:#888;font-size:.75rem">Track via /admin/users. Add Plausible analytics ($9/mo) after 50+ active users.</p>
 </div>

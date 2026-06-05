@@ -39,6 +39,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 .card-footer{display:flex;align-items:center;gap:5px;margin-top:6px;margin-left:6px}
 .badge{font-size:.58rem;padding:2px 6px;border-radius:8px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
 .badge-twitter{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
+.badge-reddit{background:#ff450018;color:#ff4500;border:1px solid #ff450033}
 .badge-hn{background:#ff660018;color:#ff6600;border:1px solid #ff660033}
 .badge-seo{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
 .badge-content{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
@@ -84,6 +85,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
   <nav>
     <a href="/marketing">Plan</a>
     <a href="/marketing/board" class="active">Board</a>
+    <a href="/marketing/scripts">Scripts</a>
     <a href="/board">Dev Board</a>
     <a href="/admin">Admin</a>
       <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
@@ -103,7 +105,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
       <div><label>Notes</label><textarea id="m-notes"></textarea></div>
       <div class="modal-row">
         <div><label>Priority</label><select id="m-priority"><option value="low">Low</option><option value="med">Medium</option><option value="high">High</option><option value="crit">Critical</option></select></div>
-        <div><label>Channel</label><select id="m-channel"><option value="twitter">Twitter/X</option><option value="hn">Hacker News</option><option value="seo">SEO</option><option value="content">Content</option><option value="youtube">YouTube</option><option value="product">Product</option></select></div>
+        <div><label>Channel</label><select id="m-channel"><option value="twitter">Twitter/X</option><option value="reddit">Reddit</option><option value="hn">Hacker News</option><option value="seo">SEO</option><option value="content">Content</option><option value="youtube">YouTube</option><option value="product">Product</option></select></div>
       </div>
       <div class="modal-created" id="m-created"></div>
       <div class="comments-section">
@@ -132,28 +134,30 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 function defaultData(){return{
   'Backlog':[
     {id:uid(),title:'Write SEO page: "free futures trading simulator"',notes:'Target keyword: "free futures trading simulator". Compare to Forex Tester ($300), NinjaTrader (complex). Highlight: browser-based, instant, no download.',ch:'seo',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'First YouTube video (defer)',notes:'5-8 min walkthrough. Only do this if HN/X generate interest. No pressure.',ch:'youtube',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Reddit value post #2: r/futurestrading',notes:'Only after r/daytrading post is up and stable for a week. Same format — data-led, no link in body.',ch:'reddit',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'First YouTube video (defer)',notes:'5-8 min walkthrough. Only do this if HN/X/Reddit generate interest. No pressure.',ch:'youtube',priority:'low',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Set up Plausible analytics',notes:'$9/mo. Add script tag to landing.html.\nDo after 50+ users. Before that, /admin/users is enough.',ch:'product',priority:'low',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Submit to "free tools" directories',notes:'Indie Hackers, AlternativeTo, Product Hunt (eventually). Low-effort listing pages that compound.',ch:'seo',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Submit to "free tools" directories',notes:'AlternativeTo, Product Hunt (eventually). Low-effort listing pages that compound.',ch:'seo',priority:'low',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Write SEO page: "practice trading outside market hours"',notes:'Target search intent: people looking for practice after 4pm. Highlight unlimited sessions, any time.',ch:'seo',priority:'low',created:'2026-06-04',comments:[]},
   ],
   'This Week':[
+    {id:uid(),title:'Create Reddit account (neutral username)',notes:'NOT "PatternFoundry" or anything brand-related. Something like a normal person.\nJoin: r/daytrading, r/futurestrading\nDo NOT post yet. Just join.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Reddit: Daily replies (15 min) — Day 1-7',notes:'Open r/daytrading. Sort by New. Find 2-3 posts about: practice, screen time, simulators, prop firms, strategy testing.\nLeave a helpful 2-sentence reply. NO links, NO product mentions.\nClose tab. Done for the day.\n\nSee /marketing/scripts for reply templates.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Take 5-6 clean screenshots',notes:'Simulator mid-session, Chart Designer, Stats page, Iron Man mode, order book.\nClean browser, full-screen. Show wins AND losses.',ch:'content',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Record 30-sec silent screen capture #1',notes:'Open simulator → take a quick scalp → show P&L update. No voiceover, no editing. Just screen record + trim.',ch:'content',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Record 60-sec silent screen capture #2',notes:'Show Iron Man mode: start a run, get random instrument, take a trade. Silent, raw.',ch:'content',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Set up X account (if not done)',notes:'Bio: "Building PatternFoundry — free trading practice simulator." Pin: nothing yet (will pin first thread). Profile pic: logo or abstract.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Record 30-sec silent screen capture',notes:'Open simulator → take a quick scalp → show P&L update. No voiceover, no editing. Just screen record + trim.',ch:'content',priority:'med',created:'2026-06-04',comments:[]},
   ],
   'Next Week':[
-    {id:uid(),title:'Post Show HN',notes:'Title: "Show HN: PatternFoundry — free trading simulator with realistic microstructure"\nText: 3 sentences — what it is, why you built it, link. Answer technical questions if they come. Walk away otherwise.',ch:'hn',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Post first X thread',notes:'4-5 tweets max:\n1/ Hook: "Built a free trading simulator. Here\'s what practicing 50 sessions showed me."\n2/ Screenshot of stats\n3/ 30-sec recording\n4/ Link\nBatch-write it Sunday. Schedule or post Monday morning.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Add screen recordings to landing page',notes:'Embed 1-2 recordings in the landing page feature section. GIF or autoplay muted video.',ch:'product',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Verify Google indexing',notes:'Check Search Console. Submit sitemap if not indexed. Confirm robots.txt is correct.',ch:'seo',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Reddit: Continue daily replies — Day 8-14',notes:'Same routine. 15 min/day. 2-3 helpful replies. You should have 10-20 comment karma by now.\nPeople may start recognizing your username.\n\nSee /marketing/scripts for reply templates.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Post Show HN',notes:'Title: "Show HN: PatternFoundry — free trading simulator with realistic order book microstructure"\nSee /marketing/scripts for full script. Post Tuesday/Wednesday 8-9am ET.',ch:'hn',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Post first X thread',notes:'4-5 tweets: hook → stats screenshot → recording → link.\nSee /marketing/scripts for full script. Batch-write Sunday, post Monday.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Set up X account (if not done)',notes:'Bio: "Building a free trading practice simulator." Pin: nothing yet (will pin first thread). Profile pic: logo or abstract.',ch:'twitter',priority:'med',created:'2026-06-04',comments:[]},
   ],
   'Ongoing':[
-    {id:uid(),title:'X: 1 post per week (batch-write Sunday)',notes:'Rotate:\n- A session result with screenshot\n- "What I learned from X sessions"\n- A myth-bust (win rate, drawdown)\n- A new feature shipped\nWrite all on Sunday. Schedule. Don\'t check replies unless you feel like it.',ch:'twitter',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Reddit: Post value post in r/daytrading (Week 3-4)',notes:'ONLY after 2+ weeks of genuine comments.\nTitle: "I tracked my win rate across X sessions — here\'s what moved the needle"\nLead with DATA. Tool mention is incidental. NO link in post body.\nPost link in comment ONLY if asked.\n\nSee /marketing/scripts for full scripted post.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Reddit: Maintain 15 min/day replies',notes:'After the warmup period, keep going. 2-3 helpful replies per day.\nThis keeps you visible and builds ongoing karma.\nTreat it like a work task — timer for 15 min, then close.',ch:'reddit',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'X: 1 post per week (batch-write Sunday)',notes:'Rotate:\n- A session result with screenshot\n- "What I learned from X sessions"\n- A myth-bust (win rate, drawdown)\n- A new feature shipped\nSee /marketing/scripts for 4 weeks of pre-written threads.',ch:'twitter',priority:'med',created:'2026-06-04',comments:[]},
     {id:uid(),title:'SEO: 1 targeted page per month',notes:'Target a specific search query each month. Write it, publish it, forget it.\nLet search do the work over time.',ch:'seo',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Ship features > market features',notes:'Best marketing for a technical product: keep making it better. Every feature shipped is a new X post and a new reason for word-of-mouth.',ch:'product',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Monitor signups',notes:'Check /admin/users weekly.\n0 signups after month 1 → content not reaching people (SEO not indexed? HN didn\'t land?)\nSignups but no sessions → onboarding friction\nSessions but no returns → value not clear',ch:'product',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Ship features > market features',notes:'Best marketing for a technical product: keep making it better. Every feature shipped is a new post and a new reason for word-of-mouth.',ch:'product',priority:'med',created:'2026-06-04',comments:[]},
   ],
   'Done':[]
 }}
