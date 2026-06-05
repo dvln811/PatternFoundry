@@ -1393,7 +1393,6 @@ function closeTrade(exitPrice, reason) {
 function saveSessionToHistory() {
   if (sessionClosed) return;
   sessionClosed = true;
-  if (account.trades.length === 0) return;
   // Build 1-min session candles from ticks
   const sessionCandles = [];
   let c = null;
