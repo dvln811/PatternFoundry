@@ -567,8 +567,16 @@ async function renderForAccount(accountId) {
     const wr3 = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
     const pnl2 = (h.pnl >= 0 ? '$' : '-$') + fmtD(h.pnl || 0);
     const tag = h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
-    return `<tr><td>${h.date || '-'}</td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr3}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl2}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
+    const dateVal = (h.date || '').slice(0, 10);
+    return `<tr><td><input type="date" value="${dateVal}" class="session-date-pick" data-sid="${h.id}" style="background:#111;color:#ccc;border:1px solid #333;border-radius:3px;padding:2px 4px;font-size:.65rem;cursor:pointer"></td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr3}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl2}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
   }).join('');
+  tbody.querySelectorAll('.session-date-pick').forEach(el => {
+    el.addEventListener('change', async function() {
+      const sid = this.dataset.sid;
+      const res = await fetch(`/api/sessions/${sid}/date`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({date: this.value})});
+      if (res.ok) { this.style.borderColor = '#4caf82'; setTimeout(() => this.style.borderColor = '#333', 1000); }
+    });
+  });
 }
 
 // ── Monthly Calendar ─────────────────────────────────────────────────────────

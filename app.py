@@ -532,6 +532,24 @@ def api_get_session_detail(session_id):
     return jsonify(s)
 
 
+@app.route('/api/sessions/<int:session_id>/date', methods=['POST'])
+def api_update_session_date(session_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(force=True)
+    new_date = data.get('date', '')
+    conn = _get_db()
+    row = conn.execute('SELECT id FROM sessions WHERE id=? AND user_id=?', (session_id, uid)).fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'error': 'not_found'}), 404
+    conn.execute('UPDATE sessions SET date=? WHERE id=?', (new_date, session_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+
 @app.route('/api/trades')
 def api_get_trades():
     uid = _get_user_id()
