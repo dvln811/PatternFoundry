@@ -300,6 +300,12 @@ def marketing_board():
         return redirect('/')
     return render_template('marketing_board.html', board_api_key=os.environ.get('BOARD_API_KEY', ''))
 
+@app.route('/marketing/scripts')
+def marketing_scripts():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('marketing_scripts.html')
+
 @app.route('/api/marketing-board/save', methods=['POST', 'OPTIONS'])
 def marketing_board_save():
     if request.method == 'OPTIONS':

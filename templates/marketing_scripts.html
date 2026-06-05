@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketing Scripts - PatternFoundry</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh}
+.pf-header{background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0;z-index:100}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:8px 14px;font-size:.78rem;font-weight:600;text-decoration:none;color:#888;border:none;background:none;text-transform:uppercase;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.pf-header nav a:hover{color:#ccc}
+.pf-header nav a.active{color:#f97316;border-bottom-color:#f97316}
+.wrap{padding:24px 32px;max-width:900px;margin:0 auto}
+h1{color:#f97316;font-size:1.1rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.subtitle{color:#888;font-size:.78rem;margin-bottom:24px}
+.script-block{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:20px;margin-bottom:20px}
+.script-block h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:#f97316;margin-bottom:4px}
+.script-block .channel{font-size:.65rem;padding:2px 6px;border-radius:8px;font-weight:600;display:inline-block;margin-bottom:12px}
+.ch-hn{background:#ff660018;color:#ff6600;border:1px solid #ff660033}
+.ch-x{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
+.ch-seo{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
+.ch-ads{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
+.script-block .copy-text{background:#0a0a0a;border:1px solid #222;border-radius:4px;padding:12px 14px;font-size:.8rem;color:#ccc;line-height:1.6;white-space:pre-wrap;margin-bottom:10px}
+.script-block .notes{font-size:.72rem;color:#666;font-style:italic}
+.divider{border:none;border-top:1px solid #2a2a2a;margin:28px 0}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a href="/" class="brand"><img src="/static/logo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/marketing">Plan</a>
+    <a href="/marketing/board">Board</a>
+    <a href="/marketing/scripts" class="active">Scripts</a>
+    <a href="/board">Dev Board</a>
+    <a href="/admin">Admin</a>
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
+  </nav>
+</header>
+<div class="wrap">
+<h1>Marketing Scripts</h1>
+<p class="subtitle">Copy-paste ready. Edit as needed. All scripted for the board cards.</p>
+
+<div class="script-block">
+  <h2>Show HN Post</h2>
+  <span class="channel ch-hn">HACKER NEWS</span>
+  <div class="copy-text"><strong>Title (pick one):</strong>
+
+Show HN: PatternFoundry – Free browser-based trading simulator with realistic order book microstructure
+
+Show HN: I built a trading simulator that models spread dynamics, slippage, and order book pressure
+
+<strong>Opening comment (post immediately after submission):</strong>
+
+Hey HN — I built this because paper trading on broker platforms teaches bad execution habits. Their simulators fill you at mid-price instantly. Real markets don't work that way.
+
+PatternFoundry simulates:
+• Realistic bid/ask spreads and fill mechanics across 14 instruments (futures + stocks)
+• Order book microstructure — your market orders actually move price
+• Agent-based tick engine (4 agent types, Hawkes process clustering, liquidity pools)
+• "Iron Man" challenge — configurable drawdown/target/session limits, random instrument selection
+• Persistent performance stats (win rate, streaks, drawdown profiles, equity curves)
+
+Free, browser-only, no signup required for local mode. Built with Python/Flask backend + vanilla JS + LightweightCharts.
+
+The tick engine uses a simulated limit order book with market makers, momentum traders, noise agents, and institutional sweeps. Spreads widen on volatility. Fills are partial and price-dependent.
+
+Happy to answer questions about the simulation engine, microstructure model, or anything else.</div>
+  <div class="notes">Post Tuesday or Wednesday, 8-9am ET for best visibility. Answer technical questions honestly. Don't oversell. HN respects builders who are direct.</div>
+</div>
+
+<hr class="divider">
+
+<div class="script-block">
+  <h2>First X Thread</h2>
+  <span class="channel ch-x">X / TWITTER</span>
+  <div class="copy-text">1/ I built a free trading simulator because paper trading teaches bad habits.
+
+Broker sims fill you instantly at mid-price. Real markets punish you for size, timing, and impatience.
+
+So I built one with a real order book. Here's what 50 practice sessions showed me: 🧵
+
+2/ The stats after 50 sessions on ES (E-mini S&P):
+• Win rate: 52%
+• Avg winner: 1.8R
+• Avg loser: 1.0R
+• Longest losing streak: 7
+• Longest winning streak: 5
+
+Looks fine, right? But the streak data tells the real story ↓
+
+[attach screenshot of stats page]
+
+3/ Most of my losses clustered in the first 15 minutes of each session.
+
+Once I stopped trading the open and waited for the first pullback to resolve, win rate jumped to 61%.
+
+You can't see this pattern without tracking hundreds of trades.
+
+4/ The simulator generates fresh sessions on demand — realistic microstructure, off-hours data, proper order book.
+
+Iron Man mode: random instrument, drawdown limit, target %. One bad streak resets everything. Forces selectivity.
+
+[attach screenshot of Iron Man mode]
+
+5/ It's free. Runs in the browser. No signup.
+
+14 instruments (ES, NQ, CL, RTY + micros + stocks). Persistent stats. Replay any session.
+
+https://patternfoundry.net
+
+Built it solo because I wanted more reps without paying for another prop firm eval.</div>
+  <div class="notes">Attach 2 screenshots: stats page showing real data + simulator mid-trade. Batch-write this Sunday, post Monday morning. Don't reply to comments unless someone asks a genuine question.</div>
+</div>
+
+<hr class="divider">
+
+<div class="script-block">
+  <h2>X Thread — Week 2 (Myth-Bust)</h2>
+  <span class="channel ch-x">X / TWITTER</span>
+  <div class="copy-text">1/ "What's your win rate?" is the wrong question.
+
+Here's why: a 70% win rate with 0.5R average winner and 1R average loser = you're losing money.
+
+And a 40% win rate with 3R winners = you're printing.
+
+Thread on what actually matters ↓
+
+2/ After tracking 200+ simulated trades, here's what correlated with profitability:
+
+NOT win rate.
+NOT number of trades.
+
+What mattered:
+• Average R-multiple on winners vs losers
+• Streak recovery speed (how fast you stop bleeding after a losing streak)
+• Session-to-session consistency
+
+3/ The most dangerous pattern: win rate LOOKS good but drawdown is catastrophic.
+
+Example: 60% win rate but your losers are 2x your winners. You're net negative and don't even realize it until you're down 30%.
+
+[screenshot of equity curve showing this pattern]
+
+4/ This is why I built persistent stats into PatternFoundry — not just win rate, but:
+• Drawdown profiles
+• Streak patterns
+• Equity curves over time
+• Per-instrument breakdown
+
+You need hundreds of data points before the signal emerges from the noise.
+
+5/ Free to use. Practice 100 sessions. Then look at your actual data. The numbers don't lie even when your memory does.
+
+https://patternfoundry.net</div>
+  <div class="notes">This format works well on X — contrarian take + data. Attach equity curve screenshot showing the drawdown pattern you're describing.</div>
+</div>
+
+<hr class="divider">
+
+<div class="script-block">
+  <h2>X Thread — Week 3 (Build in Public)</h2>
+  <span class="channel ch-x">X / TWITTER</span>
+  <div class="copy-text">1/ Building a trading simulator as a solo dev. Here's what the tick engine actually does under the hood:
+
+Most "simulators" just replay historical candles. That's not simulation — that's a tape recorder.
+
+Here's what PatternFoundry does differently ↓
+
+2/ The engine runs 4 agent types simultaneously:
+• Market makers (provide liquidity, profit from spread)
+• Momentum traders (chase breakouts, add fuel to moves)
+• Noise agents (random flow — the "dumb money")
+• Institutional sweeps (large orders that eat through the book)
+
+3/ Orders go into a simulated limit order book. Your market order doesn't fill at mid — it walks the book based on available liquidity at each price level.
+
+Spreads widen when volatility spikes. Slippage is real. Thin books mean worse fills.
+
+4/ Event clustering uses a Hawkes process — one trade begets more trades. This creates realistic bursts of activity (like you see around news/breakouts) rather than uniform random ticks.
+
+5/ The result: practice that feels like real execution. Not instant fills at perfect prices.
+
+Free, browser-based, 14 instruments.
+
+https://patternfoundry.net</div>
+  <div class="notes">This plays to the technical audience. If anyone on HN or dev twitter finds you, this thread keeps them interested. Attach a screenshot of the order book / DOM.</div>
+</div>
+
+<hr class="divider">
+
+<div class="script-block">
+  <h2>X Thread — Week 4 (Quick Hit)</h2>
+  <span class="channel ch-x">X / TWITTER</span>
+  <div class="copy-text">Someone just completed a 30-session Iron Man run on PatternFoundry.
+
+Rules: $10k start, 10% drawdown limit, 15% target, random instrument each session.
+
+Final stats:
+• 30 sessions completed
+• 58% win rate
+• Peak drawdown: 7.2%
+• Ended at +12.4%
+
+That's passing most prop firm evals — for free, with realistic fills.
+
+https://patternfoundry.net</div>
+  <div class="notes">Short, punchy. One screenshot of the Iron Man results. Works as a standalone post, no thread needed. Use your own Iron Man run data (real numbers from your account).</div>
+</div>
+
+<hr class="divider">
+
+<div class="script-block">
+  <h2>SEO Page — "Free Futures Trading Simulator"</h2>
+  <span class="channel ch-seo">SEO</span>
+  <div class="copy-text"><strong>Target keyword:</strong> "free futures trading simulator"
+<strong>Secondary:</strong> "practice futures trading free", "ES simulator", "NQ practice"
+
+<strong>Page title:</strong> Free Futures Trading Simulator — Practice ES, NQ, CL & More | PatternFoundry
+
+<strong>H1:</strong> Free Futures Trading Simulator
+
+<strong>Opening paragraph:</strong>
+Practice trading E-mini S&P (ES), E-mini Nasdaq (NQ), Crude Oil (CL), and 11 more instruments — free, in your browser, no signup required. PatternFoundry generates fresh market sessions on demand with realistic order book microstructure, so every practice session is unique.
+
+<strong>Key sections to include:</strong>
+• Why practice on a simulator (cost of failed prop evals, skill development before real capital)
+• How PatternFoundry differs from paper trading (real order book, slippage, spread dynamics)
+• Supported instruments (list all 14 with tick values)
+• Features (Iron Man, stats tracking, session replay, drawing tools)
+• Comparison table vs Forex Tester ($300), NinjaTrader Replay (complex), broker paper trading (instant fills)
+• CTA: "Start practicing now — no signup, no download"</div>
+  <div class="notes">This page should live at /simulator/free or a dedicated landing route. Optimize meta description for the keyword. This is a long-term asset — Google will index it and send traffic for months/years.</div>
+</div>
+
+<hr class="divider">
+
+<div class="script-block">
+  <h2>Google Ads — If You Go Paid</h2>
+  <span class="channel ch-ads">PAID ADS</span>
+  <div class="copy-text"><strong>Platform:</strong> Google Search Ads
+<strong>Budget:</strong> $15-20/day to start ($450-600/mo)
+<strong>Expected CPC:</strong> $2-5 for trading simulator keywords
+
+<strong>Keywords to target:</strong>
+• free trading simulator
+• day trading practice
+• futures trading simulator
+• paper trading alternative
+• practice trading without money
+• ES simulator free
+
+<strong>Ad copy option 1:</strong>
+Headline: Free Trading Simulator — 14 Instruments
+Description: Practice futures & stocks with realistic order book fills. No signup. No download. Track your stats over hundreds of sessions.
+
+<strong>Ad copy option 2:</strong>
+Headline: Stop Paying for Prop Firm Evals You'll Fail
+Description: Practice with realistic execution first. Free simulator, 14 instruments, persistent stats. Know your actual win rate before risking capital.
+
+<strong>Landing page:</strong> Dedicated page optimized for conversion (big "Start Trading" button, screenshot, 3 bullet points, no friction)</div>
+  <div class="notes">Only do this if organic channels don't produce results after 4-6 weeks. $500/mo test for 30 days. Kill it if cost-per-signup exceeds $10 (since the product is free, you need volume). Revisit once monetization exists.</div>
+</div>
+
+</div>
+</body>
+</html>
