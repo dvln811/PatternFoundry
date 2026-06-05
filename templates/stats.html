@@ -340,7 +340,7 @@ function renderOverviewStats() {
   const bestEl = document.getElementById('ov-best-day');
   const worstEl = document.getElementById('ov-worst-day');
   if (days.length > 0) {
-    const best = Math.max(...days); bestEl.textContent = '$' + fmtD(best); bestEl.className = 'stat-val pos'; bestEl.closest('.stat-card').className = 'stat-card tint-pos';
+    const best = Math.max(...days); bestEl.textContent = (best >= 0 ? '$' : '-$') + fmtD(best); bestEl.className = 'stat-val ' + (best >= 0 ? 'pos' : 'neg'); bestEl.closest('.stat-card').className = 'stat-card ' + (best >= 0 ? 'tint-pos' : 'tint-neg');
     const worst = Math.min(...days); worstEl.textContent = (worst >= 0 ? '$' : '-$') + fmtD(worst); worstEl.className = 'stat-val ' + (worst >= 0 ? 'pos' : 'neg'); worstEl.closest('.stat-card').className = 'stat-card ' + (worst >= 0 ? 'tint-pos' : 'tint-neg');
   }
 }
@@ -574,7 +574,13 @@ async function renderForAccount(accountId) {
     el.addEventListener('change', async function() {
       const sid = this.dataset.sid;
       const res = await fetch(`/api/sessions/${sid}/date`, {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({date: this.value})});
-      if (res.ok) { this.style.borderColor = '#4caf82'; setTimeout(() => this.style.borderColor = '#333', 1000); }
+      if (res.ok) {
+        this.style.borderColor = '#4caf82'; setTimeout(() => this.style.borderColor = '#333', 1000);
+        const s = allSessions.find(x => x.id == sid);
+        if (s) s.date = this.value;
+        renderOverviewStats();
+        renderForAccount(selectedAccountId);
+      }
     });
   });
 }
