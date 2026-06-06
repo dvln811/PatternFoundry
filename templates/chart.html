@@ -1297,7 +1297,11 @@ function updateSetupDisplay() {
     const slDist = Math.abs(setupMode.entry - setupMode.sl);
     const ticksAtRisk = slDist / tickSize;
     const riskPerUnit = ticksAtRisk * tickValue;
-    const calcQty = riskPerUnit > 0 ? Math.max(1, Math.floor(riskDollarsBudget / riskPerUnit)) : 1;
+    let calcQty = riskPerUnit > 0 ? Math.max(1, Math.floor(riskDollarsBudget / riskPerUnit)) : 1;
+    if (initialMargin > 0) {
+      const maxByMargin = Math.floor(account.balance / (initialMargin * 0.25));
+      if (maxByMargin > 0) calcQty = Math.min(calcQty, maxByMargin);
+    }
     setupMode.qty = calcQty;
     document.getElementById('t-qty').value = calcQty;
   }
