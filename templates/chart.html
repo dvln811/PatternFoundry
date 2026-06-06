@@ -937,7 +937,7 @@ function processTick(tick) {
       const tpp = 1 / tickSize;
       const unrealized = (dir === 'long' ? tick.price - position.entry : position.entry - tick.price) * tpp * tickValue * position.qty;
       const equity = account.balance + unrealized;
-      const required = maintenanceMargin * position.qty;
+      const required = maintenanceMargin * position.qty * 0.25;
       if (equity < required) {
         closeTrade(tick.price, 'Margin Call');
         document.getElementById('pb-info').textContent = '⚠ MARGIN CALL — Position liquidated (equity below maintenance margin)';
@@ -1329,9 +1329,9 @@ function _clearSetupLines() {
 function confirmOrder() {
   if (!setupMode) return;
   const { direction: dir, entry, sl, tp, qty, orderType } = setupMode;
-  // Margin check
+  // Margin check (intraday = 25% of initial margin)
   if (initialMargin > 0) {
-    const requiredMargin = qty * initialMargin;
+    const requiredMargin = qty * initialMargin * 0.25;
     if (requiredMargin > account.balance) {
       document.getElementById('pb-info').textContent = `⚠ Order rejected: insufficient margin ($${requiredMargin.toLocaleString()} required, $${account.balance.toLocaleString()} available)`;
       document.getElementById('pb-info').style.color = '#e05c5c';
