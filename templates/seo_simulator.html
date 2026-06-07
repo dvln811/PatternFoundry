@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free Futures Trading Simulator - Practice Day Trading Online | PatternFoundry</title>
+<meta name="description" content="Free browser-based futures trading simulator with realistic order book fills, 14 instruments, and performance tracking. No download, no credit card. Practice ES, NQ, CL and more.">
+<meta property="og:title" content="Free Futures Trading Simulator - PatternFoundry">
+<meta property="og:description" content="Practice day trading with AI-generated realistic market data. Free, browser-based, no download required.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://patternfoundry.net/free-trading-simulator">
+<meta property="og:image" content="https://patternfoundry.net/static/patternFoundryLogo.png">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://patternfoundry.net/free-trading-simulator">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0d;color:#e0e0e0;font-family:Inter,system-ui,sans-serif;line-height:1.7}
+.nav{position:sticky;top:0;z-index:50;background:rgba(13,13,13,0.92);backdrop-filter:blur(10px);border-bottom:1px solid #222;padding:12px 40px;display:flex;align-items:center;justify-content:space-between}
+.nav .brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:#f97316;font-weight:700;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.nav .brand img{height:28px}
+.btn-signin{color:#4caf82;border:1px solid #4caf82;padding:6px 16px;border-radius:5px;font-size:.8rem;font-weight:600;text-decoration:none;text-transform:uppercase}
+.wrap{max-width:820px;margin:0 auto;padding:60px 24px}
+h1{font-size:2.2rem;font-weight:800;color:#fff;margin-bottom:16px;line-height:1.2}
+h2{font-size:1.3rem;font-weight:700;color:#e0e0e0;margin:48px 0 16px;text-transform:uppercase;letter-spacing:.02em}
+p{color:#bbb;margin-bottom:16px;font-size:.95rem}
+.highlight{color:#f97316}
+.cta{display:inline-block;background:#4caf82;color:#000;font-weight:700;padding:14px 32px;border-radius:6px;text-decoration:none;font-size:1rem;margin:24px 0;text-transform:uppercase;letter-spacing:.03em}
+.cta:hover{background:#5cc992}
+.compare{width:100%;border-collapse:collapse;margin:24px 0;font-size:.82rem}
+.compare th{text-align:left;padding:10px 12px;border-bottom:2px solid #2a2a2a;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.compare td{padding:10px 12px;border-bottom:1px solid #1a1a1a;color:#ccc}
+.compare tr:first-child td{font-weight:600;color:#f97316}
+.check{color:#4caf82}.cross{color:#e05c5c}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.feat{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:16px}
+.feat h3{font-size:.85rem;color:#fff;margin-bottom:6px;text-transform:uppercase}
+.feat p{font-size:.8rem;color:#888;margin:0}
+.instruments{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.inst{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:4px 10px;font-size:.75rem;color:#ccc;font-weight:600}
+@media(max-width:600px){.features{grid-template-columns:1fr}h1{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <a href="/register" class="btn-signin">Start Free</a>
+</nav>
+
+<div class="wrap">
+  <h1>Free Futures Trading Simulator</h1>
+  <p style="font-size:1.1rem;color:#ddd">Practice day trading with <span class="highlight">realistic market microstructure</span>, not replayed historical data. Browser-based, no download, no credit card. Open a session and trade in seconds.</p>
+
+  <a href="/register" class="cta">Start Practicing Free</a>
+
+  <h2>Why Simulated Markets Beat Replay</h2>
+  <p>Most trading simulators replay old market data. The problem? You can accidentally memorize patterns, and the fills are instant and unrealistic. PatternFoundry generates fresh market sessions using an agent-based tick engine with a real simulated order book. Every session is unique. Fills include spread, slippage, and queue priority.</p>
+
+  <h2>How It Compares</h2>
+  <table class="compare">
+    <thead><tr><th></th><th>PatternFoundry</th><th>Forex Tester 5</th><th>NinjaTrader Replay</th><th>TradingSim</th></tr></thead>
+    <tbody>
+      <tr><td>Price</td><td class="check">Free</td><td>$300 one-time</td><td>$60/mo+data</td><td>$30/mo</td></tr>
+      <tr><td>Fresh sessions (not replay)</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+      <tr><td>Realistic order book</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td></tr>
+      <tr><td>Browser-based (no install)</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td></tr>
+      <tr><td>Performance tracking</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td></tr>
+      <tr><td>Custom instruments</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+      <tr><td>Unlimited sessions</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td></tr>
+    </tbody>
+  </table>
+
+  <h2>14 Built-In Instruments</h2>
+  <p>Trade the most popular futures contracts and stocks with accurate tick sizes, margin requirements, and commission models.</p>
+  <div class="instruments">
+    <span class="inst">ES (E-mini S&P)</span>
+    <span class="inst">NQ (E-mini Nasdaq)</span>
+    <span class="inst">CL (Crude Oil)</span>
+    <span class="inst">RTY (E-mini Russell)</span>
+    <span class="inst">MES (Micro S&P)</span>
+    <span class="inst">MNQ (Micro Nasdaq)</span>
+    <span class="inst">MCL (Micro Crude)</span>
+    <span class="inst">M2K (Micro Russell)</span>
+    <span class="inst">SPY</span>
+    <span class="inst">AAPL</span>
+    <span class="inst">MSFT</span>
+    <span class="inst">TSLA</span>
+    <span class="inst">PLTR</span>
+    <span class="inst">GME</span>
+  </div>
+
+  <h2>Features</h2>
+  <div class="features">
+    <div class="feat"><h3>Realistic Fills</h3><p>Agent-based tick engine with simulated limit order book. Spreads, slippage, and liquidity pools.</p></div>
+    <div class="feat"><h3>Risk-Based Sizing</h3><p>Set your risk percentage and the system auto-calculates position size based on your stop distance.</p></div>
+    <div class="feat"><h3>Session Replay</h3><p>Review any completed session tick-by-tick. See your entries, exits, and what happened after.</p></div>
+    <div class="feat"><h3>Performance Stats</h3><p>Equity curves, win rate, profit factor, drawdown, instrument breakdown, and monthly P&L calendar.</p></div>
+    <div class="feat"><h3>Iron Man Mode</h3><p>Challenge mode with drawdown limits and profit targets. Random instruments, no safety net.</p></div>
+    <div class="feat"><h3>Chart Designer</h3><p>Build custom instruments with configurable volatility, drift, and microstructure parameters.</p></div>
+    <div class="feat"><h3>Drawing Tools</h3><p>14 drawing types including trend lines, fibs, rectangles, and free-form text annotations.</p></div>
+    <div class="feat"><h3>7 Indicators + Custom Scripts</h3><p>Built-in EMA, SMA, VWAP, RSI, ATR, Bollinger Bands, MACD. Plus a custom indicator scripting engine.</p></div>
+  </div>
+
+  <h2>Start Practicing Now</h2>
+  <p>No account needed to explore. Create a free account to save your sessions and track performance over time. The first 50 users get lifetime free access to all features.</p>
+  <a href="/register" class="cta">Claim Your Free Spot</a>
+
+  <div style="margin-top:60px;padding-top:24px;border-top:1px solid #1a1a1a;font-size:.75rem;color:#555;text-align:center">
+    <a href="/" style="color:#888;text-decoration:none">PatternFoundry</a> &middot;
+    <a href="/docs" style="color:#888;text-decoration:none">Documentation</a> &middot;
+    <a href="/docs/pricing" style="color:#888;text-decoration:none">Pricing</a>
+  </div>
+</div>
+</body>
+</html>

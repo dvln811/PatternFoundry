@@ -222,6 +222,10 @@ def sitemap():
 def docs():
     return render_template('docs.html')
 
+@app.route('/free-trading-simulator')
+def seo_simulator():
+    return render_template('seo_simulator.html')
+
 @app.route('/docs/getting-started')
 def docs_getting_started():
     return render_template('docs_getting_started.html')
