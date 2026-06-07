@@ -255,13 +255,14 @@ class User(UserMixin):
         # First user becomes admin
         count = conn.execute('SELECT COUNT(*) FROM users').fetchone()[0]
         role = 'admin' if count == 0 else 'user'
+        tier = 'edge' if count < 50 else 'free'
         try:
-            conn.execute('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)',
-                         (email, pw_hash, name, role))
+            conn.execute('INSERT INTO users (email, password_hash, name, role, tier) VALUES (?, ?, ?, ?, ?)',
+                         (email, pw_hash, name, role, tier))
             conn.commit()
             user_id = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()[0]
             conn.close()
-            return User(user_id, email, name, role)
+            return User(user_id, email, name, role, tier)
         except sqlite3.IntegrityError:
             conn.close()
             return None  # duplicate email
@@ -315,6 +316,13 @@ class User(UserMixin):
     def set_banned(user_id, banned):
         conn = _get_db()
         conn.execute('UPDATE users SET banned=? WHERE id=?', (int(banned), user_id))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def set_tier(user_id, tier):
+        conn = _get_db()
+        conn.execute('UPDATE users SET tier=? WHERE id=?', (tier, user_id))
         conn.commit()
         conn.close()
 

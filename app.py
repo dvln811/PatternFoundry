@@ -128,6 +128,9 @@ def admin_users_action():
     elif action == 'promote': User.set_role(uid, 'admin')
     elif action == 'demote': User.set_role(uid, 'user')
     elif action == 'nuke': nuke_user_stats(uid)
+    elif action == 'grant_edge': User.set_tier(uid, 'edge')
+    elif action == 'mark_test': User.set_tier(uid, 'test')
+    elif action == 'set_free': User.set_tier(uid, 'free')
     return redirect(url_for('admin_users'))
 
 @app.route('/admin/feedback')

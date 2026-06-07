@@ -51,12 +51,13 @@ tr:hover{background:#1a1a1a}
 <div class="wrap">
 <h2>User Management</h2>
 <table>
-<thead><tr><th>User</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+<thead><tr><th>User</th><th>Role</th><th>Tier</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
 <tbody>
 {% for u in users %}
 <tr>
   <td><strong>{{ u.name }}</strong><br><span style="color:#888;font-size:.72rem">{{ u.email }}</span></td>
   <td><span class="badge {% if u.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">{{ u.role }}</span></td>
+  <td><span class="badge" style="{% if u.tier == 'edge' %}color:#4caf82;border-color:#4caf8244{% elif u.tier == 'test' %}color:#f0c040;border-color:#f0c04044{% else %}color:#888;border-color:#88888844{% endif %}">{{ u.tier }}</span></td>
   <td><span class="badge {% if u.banned %}badge-banned{% else %}badge-active{% endif %}">{% if u.banned %}Banned{% else %}Active{% endif %}</span></td>
   <td style="color:#888;font-size:.72rem">{{ u.last_login_at or '-' }}</td>
   <td>
@@ -74,6 +75,9 @@ tr:hover{background:#1a1a1a}
       <button name="action" value="promote" class="btn">→ Admin</button>
       {% endif %}
       <button name="action" value="nuke" class="btn btn-danger" onclick="return confirm('Nuke all stats for {{u.name}}? This cannot be undone.')">Nuke Stats</button>
+      {% if u.tier != 'edge' %}<button name="action" value="grant_edge" class="btn" style="color:#4caf82;border-color:#4caf8244">Grant Edge</button>{% endif %}
+      {% if u.tier != 'test' %}<button name="action" value="mark_test" class="btn" style="color:#f0c040;border-color:#f0c04044">Mark Test</button>{% endif %}
+      {% if u.tier != 'free' %}<button name="action" value="set_free" class="btn">→ Free</button>{% endif %}
     </form>
     {% else %}<span style="color:#555;font-size:.72rem">You</span>
     <form method="POST" action="/admin/users/action" style="display:inline">
