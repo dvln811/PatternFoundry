@@ -928,10 +928,14 @@ function processTick(tick) {
   // SL/TP check
   if (position) {
     const dir = position.direction;
-    if (dir === 'long'  && tick.price <= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
-    if (dir === 'long'  && tick.price >= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
-    if (dir === 'short' && tick.price >= position.sl) { closeTrade(position.sl, 'SL Hit'); return; }
-    if (dir === 'short' && tick.price <= position.tp) { closeTrade(position.tp, 'TP Hit'); return; }
+    if (dir === 'long') {
+      if (tick.price <= Math.min(position.sl, position.tp)) { closeTrade(Math.min(position.sl, position.tp), 'SL Hit'); return; }
+      if (tick.price >= Math.max(position.sl, position.tp)) { closeTrade(Math.max(position.sl, position.tp), 'TP Hit'); return; }
+    }
+    if (dir === 'short') {
+      if (tick.price >= Math.max(position.sl, position.tp)) { closeTrade(Math.max(position.sl, position.tp), 'SL Hit'); return; }
+      if (tick.price <= Math.min(position.sl, position.tp)) { closeTrade(Math.min(position.sl, position.tp), 'TP Hit'); return; }
+    }
     // Maintenance margin check
     if (maintenanceMargin > 0) {
       const tpp = 1 / tickSize;
