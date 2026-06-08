@@ -34,7 +34,7 @@ def generate_v2(n: int, spec: CharacterSpec = ES_CALM, seed: Optional[int] = Non
     cum_log = np.zeros(n, dtype=np.float32)
     running = 0.0
     for i in range(n):
-        running += log_returns[i] + gap_log[i] - 0.0005 * running
+        running += log_returns[i] + gap_log[i] - 0.0001 * running
         cum_log[i] = running
 
     prices_np    = np.empty(n + 1, dtype=np.float32)

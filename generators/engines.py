@@ -80,9 +80,9 @@ def drift_engine(spec, regime_labels, xp):
     noise = xp.random.normal(0, 1, n).astype(xp.float32)
     drift = mean_table[regime] + noise * sigma_table[regime]
 
-    # 35% counter-trend flips on trend bars
+    # 18% counter-trend flips on trend bars
     trend_mask   = (regime == REGIME_IDS['trend_up']) | (regime == REGIME_IDS['trend_down'])
-    counter_mask = trend_mask & (xp.random.rand(n) < 0.35)
+    counter_mask = trend_mask & (xp.random.rand(n) < 0.18)
     flip_scale   = xp.random.uniform(0.3, 0.8, n).astype(xp.float32)
     drift        = xp.where(counter_mask, -drift * flip_scale, drift)
 
