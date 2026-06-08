@@ -1210,6 +1210,10 @@ document.getElementById('chart-tf').addEventListener('change', () => {
     const bucketed = rebucketHistory(allSoFar, candleTF);
     window._chartData = bucketed.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })); candleSeries.setData(window._chartData); setTimeout(function(){if(window.drawOffHoursShading)window.drawOffHoursShading()}, 100);
     volSeries.setData(bucketed.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#4caf8266' : '#e05c5c66' })));
+    if (bucketed.length > 0) {
+      const last = bucketed[bucketed.length - 1];
+      currentCandle = { time: last.time, open: last.open, high: last.high, low: last.low, close: last.close, volume: last.volume };
+    }
     if (activeIndicators.length) rebuildIndicators();
   }
   if (wasPlaying) startPlay();
