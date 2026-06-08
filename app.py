@@ -258,6 +258,10 @@ def docs_ironman():
 def docs_stats():
     return render_template('docs_stats.html')
 
+@app.route('/docs/presets')
+def docs_presets():
+    return render_template('docs_presets.html')
+
 _BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
 os.makedirs(_BOARD_DIR, exist_ok=True)
 

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PatternFoundry - Instrument Presets Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.pf-header{position:sticky;top:0;z-index:100;background:#0e1217;border-bottom:1px solid #222;padding:8px 16px;display:flex;align-items:center;gap:10px;height:48px;flex-shrink:0}
+.pf-header .brand{display:flex;align-items:center;gap:8px;color:#f97316;font-weight:700;text-decoration:none;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.pf-header .brand img{height:28px;width:auto}
+.pf-header nav{margin-left:auto;display:flex;gap:4px;align-items:center}
+.pf-header nav a{padding:8px 14px;font-size:.78rem;font-weight:600;text-decoration:none;color:#888;border:none;background:none;text-transform:uppercase;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.pf-header nav a:hover{color:#ccc}
+.pf-header nav a.active{color:#f97316;border-bottom-color:#f97316}
+.docs-main{max-width:1000px;margin:0 auto;padding:32px 48px 80px}
+.docs-main .back{display:inline-block;margin-bottom:20px;color:#888;font-size:.8rem;text-decoration:none}
+.docs-main .back:hover{color:#f97316}
+.docs-main h1{color:#f97316;font-size:28px;font-weight:700;margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid #2a2a2a}
+.docs-main h2{color:#e0e0e0;font-size:20px;font-weight:700;margin:40px 0 6px;padding:10px 0 6px;border-bottom:1px solid #1a1a1a}
+.docs-main h3{color:#e0e0e0;font-size:16px;font-weight:600;margin:28px 0 10px}
+.docs-main h4{color:#ccc;font-size:14px;font-weight:600;margin:20px 0 8px}
+.docs-main p{font-size:13.5px;line-height:1.7;color:#bbb;margin-bottom:12px}
+.docs-main ul,.docs-main ol{margin:8px 0 16px 20px;font-size:13.5px;color:#bbb;line-height:1.8}
+.docs-main li{margin-bottom:4px}
+.docs-main strong{color:#e0e0e0}
+.docs-main code{background:#0a0a0a;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4caf82}
+.tip{background:#111;border-left:3px solid #f97316;padding:12px 16px;margin:16px 0;border-radius:0 6px 6px 0}
+.tip .tip-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:4px}
+.tip p{margin:0;font-size:12.5px}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12px}
+table th{text-align:left;padding:8px 10px;background:#1a1a1a;color:#e0e0e0;font-weight:600;border-bottom:1px solid #2a2a2a}
+table td{padding:7px 10px;border-bottom:1px solid #1a1a1a;color:#bbb;vertical-align:top}
+table tr:nth-child(even) td{background:#0f0f0f}
+table tr:hover td{background:#151515}
+.inst-nav{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 30px}
+.inst-nav a{padding:5px 12px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#888;font-size:.72rem;font-weight:600;text-decoration:none;text-transform:uppercase}
+.inst-nav a:hover{color:#f97316;border-color:#f97316}
+.badge-fut{color:#4caf82;border-color:#4caf8244}
+.badge-stock{color:#f0c040;border-color:#f0c04044}
+.section-label{display:inline-block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:3px;margin-bottom:8px}
+.sl-hist{background:#4caf8218;color:#4caf82}
+.sl-micro{background:#f9731618;color:#f97316}
+.avatar-wrap{position:relative;margin-left:auto}.avatar-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;color:#e0e0e0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}.avatar-btn:hover{border-color:#4caf82}.avatar-menu{display:none;position:absolute;top:38px;right:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:12px;min-width:160px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.5)}.avatar-wrap.open .avatar-menu{display:block}.avatar-menu a{display:block;color:#ccc;font-size:.75rem;text-decoration:none;padding:5px 0}.avatar-menu a:hover{color:#4caf82}.avatar-menu-name{color:#e0e0e0;font-size:.8rem;font-weight:600}.avatar-menu-email{color:#666;font-size:.7rem;margin-top:2px}
+</style>
+</head>
+<body>
+<header class="pf-header">
+  <a class="brand" href="/"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/simulator">Simulator</a>
+    <a href="/chartdesigner">Chart Designer</a>
+    <a href="/stats">Stats</a>
+    <a href="/settings">Settings</a>
+    <a href="/docs" class="active">Docs</a>
+    {% if is_admin %}<a href="/admin">Admin</a>{% endif %}
+    {% if not is_admin %}<a href="/feedback" target="_blank" style="color:#888;font-size:.7rem;text-decoration:none;border:1px solid #2a2a2a;padding:4px 10px;border-radius:4px;margin-left:auto" onmouseenter="this.style.borderColor='#f97316';this.style.color='#f97316'" onmouseleave="this.style.borderColor='#2a2a2a';this.style.color='#888'">Feedback</a>{% endif %}
+      <div class="avatar-wrap" onclick="this.classList.toggle('open')"><div class="avatar-btn">{{ initials or 'U' }}</div><div class="avatar-menu"><div class="avatar-menu-name">{{ user_name or 'User' }}</div><div class="avatar-menu-email">{{ user or '' }}</div><hr style="border:none;border-top:1px solid #2a2a2a;margin:8px 0"><a href="/logout">Sign Out</a></div></div>
+  </nav>
+</header>
+<main class="docs-main">
+<a class="back" href="/docs">&larr; Back to Docs</a>
+<h1>Instrument Presets Reference</h1>
+<p>This page documents every setting for each of the 14 built-in instrument presets. Use it as a reference when creating custom instruments in the Chart Designer, or to understand why each instrument behaves the way it does.</p>
+
+<div class="inst-nav">
+  <a href="#es" class="badge-fut">ES</a><a href="#nq" class="badge-fut">NQ</a><a href="#cl" class="badge-fut">CL</a><a href="#rty" class="badge-fut">RTY</a>
+  <a href="#mes" class="badge-fut">MES</a><a href="#mnq" class="badge-fut">MNQ</a><a href="#mcl" class="badge-fut">MCL</a><a href="#m2k" class="badge-fut">M2K</a>
+  <a href="#spy" class="badge-stock">SPY</a><a href="#aapl" class="badge-stock">AAPL</a><a href="#msft" class="badge-stock">MSFT</a><a href="#pltr" class="badge-stock">PLTR</a>
+  <a href="#tsla" class="badge-stock">TSLA</a><a href="#gme" class="badge-stock">GME</a>
+</div>
+
+<div class="tip"><div class="tip-title">How to read this page</div><p>Each instrument has two tables: <strong>Historical</strong> (candle generation - regime, drift, volatility, wicks) and <strong>Microstructure</strong> (tick engine - LOB, agents, Hawkes). The "Effect of Change" column tells you what happens if you increase or decrease that setting in the Chart Designer.</p></div>
+
+<!-- ═══════════════════════ ES ═══════════════════════ -->
+<h2 id="es">ES - E-mini S&P 500</h2>
+<p>The benchmark index future. Institutional-dominated, moderate volatility, smooth trends. Average daily range: <strong>40-60 points</strong> (~$2,500-$3,750/contract).</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>30 bars</td><td>ES spends significant time consolidating between institutional order blocks</td><td>Higher = longer range-bound periods. Lower = faster transitions into trends.</td></tr>
+<tr><td><code>trend duration</code></td><td>35 bars</td><td>ES trends are sustained by passive institutional flows (VWAP algos, rebalancing)</td><td>Higher = longer directional legs. Lower = choppier trend segments.</td></tr>
+<tr><td><code>impulse duration</code></td><td>5 bars</td><td>News-driven spikes on ES are relatively contained vs NQ</td><td>Higher = longer spike events. Lower = sharper, shorter reactions.</td></tr>
+<tr><td><code>trend &rarr; chop</code></td><td>0.35</td><td>ES trends often exhaust into rotation zones rather than reversing directly</td><td>Higher = trends end in consolidation more often. Lower = more direct reversals.</td></tr>
+<tr><td><code>trend &rarr; trend (reverse)</code></td><td>0.50</td><td>ES frequently V-reverses off key levels (VWAP, prior highs/lows)</td><td>Higher = more V-reversals. Lower = more consolidation between moves.</td></tr>
+<tr><td><code>chop_sigma</code></td><td>0.04</td><td>Low noise during consolidation; tight candle bodies in chop</td><td>Higher = wider ranging candles even in consolidation. Lower = flatter chop.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.20</td><td>Moderate directional drift per candle during trends (~0.2pts avg per 1-min bar)</td><td>Higher = faster price movement during trends. Lower = more gradual trends.</td></tr>
+<tr><td><code>trend_sigma</code></td><td>0.12</td><td>Some noise within trends but not excessive (institutional flow is steady)</td><td>Higher = more pullbacks within trends. Lower = cleaner, more linear moves.</td></tr>
+<tr><td><code>impulse_magnitude</code></td><td>1.2</td><td>News/data spikes move ~1.2pts per candle (4-5 ticks)</td><td>Higher = larger spike magnitudes. Lower = smaller reactions to events.</td></tr>
+<tr><td><code>volatility chop</code></td><td>0.8</td><td>Produces realistic 1-2pt candle ranges during consolidation</td><td>Higher = larger candle bodies/wicks in chop. Lower = tighter ranges.</td></tr>
+<tr><td><code>volatility trend</code></td><td>1.5</td><td>Nearly 2x chop volatility during directional moves</td><td>Higher = wider candles during trends. Lower = tighter trend candles.</td></tr>
+<tr><td><code>volatility impulse</code></td><td>3.5</td><td>Spike candles are ~4x normal size</td><td>Higher = more extreme spike candles. Lower = milder reactions.</td></tr>
+<tr><td><code>wick chop_ratio</code></td><td>2.0</td><td>Long wicks in chop (rejection candles, indecision)</td><td>Higher = more prominent wicks. Lower = smaller wicks, more body-dominant candles.</td></tr>
+<tr><td><code>wick trend_ratio</code></td><td>0.5</td><td>Short wicks in trends (clean directional candles)</td><td>Higher = more pullback wicks during trends. Lower = cleaner trend candles.</td></tr>
+<tr><td><code>global_bias</code></td><td>0.01</td><td>Slight long bias reflecting long-term equity uptrend</td><td>Positive = net upward drift. Negative = net downward drift. 0 = neutral.</td></tr>
+</tbody>
+</table>
+
+<span class="section-label sl-micro">Microstructure (Tick Engine)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>spread_base</code></td><td>1.0 tick</td><td>ES is the most liquid futures contract; spread is nearly always 1 tick</td><td>Higher = wider resting spread. Lower = tighter (may not be realistic).</td></tr>
+<tr><td><code>spread_vol_mult</code></td><td>1.5</td><td>Spread barely widens even during volatile periods due to deep liquidity</td><td>Higher = spread blows out more during spikes. Lower = more stable spread.</td></tr>
+<tr><td><code>inst_rate</code></td><td>0.015</td><td>Moderate institutional activity (lower than NQ due to steadier flow)</td><td>Higher = more large orders hitting the book. Lower = quieter order flow.</td></tr>
+<tr><td><code>inst_size</code></td><td>10-80 lots</td><td>ES institutional clips are moderate (vs NQ which sees larger single orders)</td><td>Higher = more impactful individual orders. Lower = smaller footprints.</td></tr>
+<tr><td><code>inst_persistence</code></td><td>0.90</td><td>Institutions tend to work orders in one direction for sustained periods</td><td>Higher = more sustained directional pressure. Lower = more random flow.</td></tr>
+<tr><td><code>retail_rate</code></td><td>0.06</td><td>Moderate retail participation</td><td>Higher = more noise/random fills. Lower = cleaner institutional-driven ticks.</td></tr>
+<tr><td><code>momentum_rate</code></td><td>0.03</td><td>Low momentum chasing (ES traders are more methodical)</td><td>Higher = more breakout acceleration. Lower = less follow-through on moves.</td></tr>
+<tr><td><code>hawkes_base</code></td><td>0.12</td><td>Low base clustering intensity (ticks are more evenly spaced)</td><td>Higher = more tick clustering/bursts. Lower = more uniform tick arrival.</td></tr>
+<tr><td><code>hawkes_alpha</code></td><td>0.4</td><td>Moderate self-excitation (activity begets activity, but contained)</td><td>Higher = stronger cascading effects. Lower = less reactive to prior activity.</td></tr>
+<tr><td><code>pool_strength</code></td><td>0.25</td><td>Moderate attraction to S/R levels (price gravitates but doesn't stick)</td><td>Higher = stronger magnetism to key levels. Lower = more free-flowing price.</td></tr>
+<tr><td><code>pool_count</code></td><td>3</td><td>Typically 3 major S/R levels in a session (open, prior high, prior low)</td><td>Higher = more levels to interact with. Lower = fewer attraction points.</td></tr>
+<tr><td><code>mean_rev_strength</code></td><td>0.003</td><td>Moderate pull toward VWAP (institutional VWAP algos are active on ES)</td><td>Higher = stronger VWAP reversion. Lower = more deviation allowed.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ NQ ═══════════════════════ -->
+<h2 id="nq">NQ - E-mini Nasdaq 100</h2>
+<p>Tech-heavy, momentum-driven. Bigger moves, stronger trends, more volatile than ES. Average daily range: <strong>200-400 points</strong> (~$1,000-$2,000/contract).</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>20 bars</td><td>NQ spends less time in consolidation than ES; moves quickly between regimes</td><td>Higher = more time ranging. Lower = faster regime transitions.</td></tr>
+<tr><td><code>trend duration</code></td><td>40 bars</td><td>NQ trends run longer than ES (momentum begets momentum in tech names)</td><td>Higher = extended directional runs. Lower = shorter trend legs.</td></tr>
+<tr><td><code>impulse duration</code></td><td>6 bars</td><td>Tech earnings/FOMC reactions last longer on NQ</td><td>Higher = prolonged spike events. Lower = quicker normalization.</td></tr>
+<tr><td><code>trend &rarr; chop</code></td><td>0.30</td><td>NQ trends rarely die into consolidation; they usually reverse or accelerate</td><td>Higher = more exhaustion into chop. Lower = more continuation/reversal.</td></tr>
+<tr><td><code>trend &rarr; trend (reverse)</code></td><td>0.50</td><td>NQ is prone to sharp reversals (tech rotation, sector switches)</td><td>Higher = more whipsaw reversals. Lower = more sustained one-way moves.</td></tr>
+<tr><td><code>impulse &rarr; trend</code></td><td>0.50</td><td>NQ impulse moves often lead into sustained trends (breakout continuation)</td><td>Higher = spikes become trend starters. Lower = spikes fade quickly.</td></tr>
+<tr><td><code>chop_sigma</code></td><td>0.15</td><td>NQ chop is noisier than ES (wider candles even when ranging)</td><td>Higher = messier consolidation. Lower = tighter, cleaner ranges.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.8</td><td>Strong directional drift per candle (~3 ticks avg per bar during trends)</td><td>Higher = faster trending. Lower = more gradual moves.</td></tr>
+<tr><td><code>trend_sigma</code></td><td>0.5</td><td>High noise within trends (NQ has deep pullbacks mid-trend)</td><td>Higher = more volatility within trends. Lower = smoother trend legs.</td></tr>
+<tr><td><code>impulse_magnitude</code></td><td>4.0</td><td>Large spike moves (~16 ticks/bar during impulse)</td><td>Higher = more violent spikes. Lower = smaller reactions.</td></tr>
+<tr><td><code>volatility chop</code></td><td>3.0</td><td>NQ 1-min candles are 5-10pts even in chop</td><td>Higher = larger ranging candles. Lower = tighter chop candles.</td></tr>
+<tr><td><code>volatility trend</code></td><td>6.0</td><td>2x chop vol during trends; 15-25pt candles common</td><td>Higher = wider trend candles. Lower = more contained moves.</td></tr>
+<tr><td><code>volatility impulse</code></td><td>12.0</td><td>4x chop vol during spikes; 30-50pt single candles possible</td><td>Higher = more extreme spike candles. Lower = milder reactions.</td></tr>
+<tr><td><code>global_bias</code></td><td>0.02</td><td>Slight upward bias (Nasdaq has historically outperformed)</td><td>Positive = net bullish drift. 0 = neutral.</td></tr>
+</tbody>
+</table>
+
+<span class="section-label sl-micro">Microstructure (Tick Engine)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>spread_base</code></td><td>1.0 tick</td><td>NQ is highly liquid; 1-tick spread during regular hours</td><td>Higher = wider spread (less liquid feel). Lower = not realistic.</td></tr>
+<tr><td><code>spread_vol_mult</code></td><td>2.0</td><td>Spread widens more than ES during volatile moves (thinner relative book)</td><td>Higher = more spread blowout. Lower = more stable spread.</td></tr>
+<tr><td><code>inst_rate</code></td><td>0.025</td><td>Higher institutional activity than ES (more aggressive algo participation)</td><td>Higher = more impactful orders. Lower = calmer flow.</td></tr>
+<tr><td><code>inst_size</code></td><td>15-150 lots</td><td>Larger institutional clips on NQ (bigger notional per contract)</td><td>Higher = more market impact per order. Lower = smaller footprints.</td></tr>
+<tr><td><code>inst_persistence</code></td><td>0.88</td><td>Slightly less persistent than ES (faster regime switches)</td><td>Higher = longer sustained pressure. Lower = more random direction.</td></tr>
+<tr><td><code>momentum_rate</code></td><td>0.06</td><td>High momentum chasing (breakout traders, trend followers active on NQ)</td><td>Higher = stronger breakout acceleration. Lower = less follow-through.</td></tr>
+<tr><td><code>hawkes_base</code></td><td>0.18</td><td>Higher clustering (NQ has burst-like tick patterns)</td><td>Higher = more tick bursts. Lower = smoother tick flow.</td></tr>
+<tr><td><code>hawkes_alpha</code></td><td>0.7</td><td>Strong self-excitation (activity cascades quickly)</td><td>Higher = more volatile cascades. Lower = less reactive.</td></tr>
+<tr><td><code>pool_count</code></td><td>4</td><td>More S/R levels (NQ has prior day high/low, weekly levels, round numbers)</td><td>Higher = more magnetic zones. Lower = fewer structural levels.</td></tr>
+<tr><td><code>mean_rev_strength</code></td><td>0.002</td><td>Weaker VWAP pull than ES (NQ deviates more from VWAP)</td><td>Higher = stronger VWAP reversion. Lower = more trending away from VWAP.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ CL ═══════════════════════ -->
+<h2 id="cl">CL - Crude Oil</h2>
+<p>Commodity future driven by geopolitics, supply/demand, and inventory reports. Choppy with sudden impulse moves. Average daily range: <strong>$1.50-$3.00</strong> ($1,500-$3,000/contract).</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>35 bars</td><td>CL spends much time consolidating between news events</td><td>Higher = more dead zones. Lower = more frequent directional moves.</td></tr>
+<tr><td><code>trend duration</code></td><td>25 bars</td><td>CL trends are moderate length; driven by order flow imbalances</td><td>Higher = longer directional runs. Lower = quicker mean reversion.</td></tr>
+<tr><td><code>impulse duration</code></td><td>4 bars</td><td>EIA/OPEC reactions are sharp but brief</td><td>Higher = longer spike duration. Lower = faster normalization.</td></tr>
+<tr><td><code>chop &rarr; impulse</code></td><td>0.40</td><td>CL is the most impulse-prone instrument (news-driven)</td><td>Higher = more frequent spikes from chop. Lower = calmer transitions.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.012</td><td>Moderate drift in dollar terms (~1.2 cents/bar during trends)</td><td>Higher = faster directional moves. Lower = more gradual trends.</td></tr>
+<tr><td><code>volatility chop</code></td><td>0.03</td><td>Tight 3-5 cent candles during quiet periods</td><td>Higher = wider ranging candles. Lower = flatter chop.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.08</td><td>Occasional gaps on geopolitical events (weekend risk, OPEC)</td><td>Higher = more gap events. Lower = fewer gaps.</td></tr>
+<tr><td><code>wick asymmetry</code></td><td>0.15</td><td>Slight downside wick bias (panic selling is sharper than buying)</td><td>Higher = more lopsided wicks. 0 = symmetric wicks.</td></tr>
+</tbody>
+</table>
+
+<span class="section-label sl-micro">Microstructure (Tick Engine)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>spread_base</code></td><td>1.5 ticks</td><td>CL is less liquid than index futures; wider natural spread</td><td>Higher = more slippage on entries. Lower = tighter fills.</td></tr>
+<tr><td><code>spread_vol_mult</code></td><td>2.5</td><td>Spread widens significantly during news events</td><td>Higher = worse fills during volatility. Lower = more stable execution.</td></tr>
+<tr><td><code>inst_persistence</code></td><td>0.85</td><td>Less persistent than index futures (fundamental-driven, less algo flow)</td><td>Higher = more sustained one-directional pressure. Lower = choppier flow.</td></tr>
+<tr><td><code>retail_rate</code></td><td>0.05</td><td>Lower retail participation than equities</td><td>Higher = more noise. Lower = cleaner institutional-dominated flow.</td></tr>
+<tr><td><code>pool_strength</code></td><td>0.30</td><td>Key levels (round numbers, prior settle) are significant for CL</td><td>Higher = stronger attraction to levels. Lower = more free-flowing price.</td></tr>
+<tr><td><code>mean_rev_strength</code></td><td>0.003</td><td>Moderate VWAP pull; CL respects VWAP well intraday</td><td>Higher = tighter reversion. Lower = more trending behavior.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ RTY ═══════════════════════ -->
+<h2 id="rty">RTY - E-mini Russell 2000</h2>
+<p>Small-cap index. Choppier than ES/NQ, less liquid, wider effective spreads. Average daily range: <strong>20-40 points</strong> (~$1,000-$2,000/contract).</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>25 bars</td><td>RTY chops frequently; small caps are sentiment-driven with mixed flows</td><td>Higher = more consolidation. Lower = faster trending.</td></tr>
+<tr><td><code>trend duration</code></td><td>30 bars</td><td>RTY trends are moderate; less algo-driven than ES/NQ</td><td>Higher = longer directional legs. Lower = quicker reversals.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.09</td><td>Moderate drift (~0.9 ticks per bar during trends on ~2100 price)</td><td>Higher = faster moves. Lower = more gradual trends.</td></tr>
+<tr><td><code>volatility chop</code></td><td>0.4</td><td>Wider candles in chop vs ES (less institutional smoothing)</td><td>Higher = messier consolidation. Lower = tighter ranges.</td></tr>
+<tr><td><code>volatility trend</code></td><td>0.85</td><td>~2x chop volatility during trends</td><td>Higher = wider trend candles. Lower = more contained trending.</td></tr>
+<tr><td><code>global_bias</code></td><td>0.0</td><td>No directional bias (small caps don't trend up as reliably as large caps)</td><td>Positive = bullish bias. Negative = bearish bias.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ Micros ═══════════════════════ -->
+<h2 id="mes">MES - Micro E-mini S&P</h2>
+<p>Identical price action to ES. 1/10th the dollar value per tick ($1.25 vs $12.50). Same historical settings as ES. Designed for smaller accounts.</p>
+<div class="tip"><div class="tip-title">Note</div><p>MES, MNQ, MCL, and M2K use the exact same regime, drift, volatility, and wick settings as their E-mini counterparts. Only tick_value and margin differ.</p></div>
+
+<h2 id="mnq">MNQ - Micro Nasdaq</h2>
+<p>Identical price action to NQ. $0.50/tick vs $5.00. Same historical and microstructure settings as NQ.</p>
+
+<h2 id="mcl">MCL - Micro Crude Oil</h2>
+<p>Identical price action to CL. $1.00/tick vs $10.00. Same historical settings as CL.</p>
+
+<h2 id="m2k">M2K - Micro Russell 2000</h2>
+<p>Identical price action to RTY. $0.50/tick vs $5.00. Same historical settings as RTY.</p>
+
+<!-- ═══════════════════════ SPY ═══════════════════════ -->
+<h2 id="spy">SPY - S&P 500 ETF</h2>
+<p>The most liquid equity in the world. Mirrors ES but with penny ticks and massive volume. Average daily range: <strong>$4-6</strong> on ~$560 price.</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>30 bars</td><td>Same institutional rhythm as ES (tracks the same index)</td><td>Higher = more consolidation. Lower = faster regime changes.</td></tr>
+<tr><td><code>trend duration</code></td><td>35 bars</td><td>Sustained trends mirroring ES behavior</td><td>Higher = longer directional moves. Lower = choppier.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.025</td><td>~2.5 cents per bar during trends (penny-tick instrument)</td><td>Higher = faster price movement. Lower = more gradual.</td></tr>
+<tr><td><code>volatility chop</code></td><td>0.07</td><td>Very tight 1-min candles (5-10 cent range in chop)</td><td>Higher = wider candles. Lower = tighter consolidation.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.05</td><td>Small overnight gaps on earnings/macro (less than individual stocks)</td><td>Higher = more gaps. Lower = smoother opens.</td></tr>
+</tbody>
+</table>
+
+<span class="section-label sl-micro">Microstructure (Tick Engine)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>spread_base</code></td><td>1.0 tick</td><td>Penny spread (most liquid equity on the planet)</td><td>Higher = unrealistic for SPY. Lower = not possible.</td></tr>
+<tr><td><code>inst_size</code></td><td>50-500 shares</td><td>Huge institutional blocks (ETF creation/redemption, rebalancing)</td><td>Higher = more impact per order. Lower = less visible footprint.</td></tr>
+<tr><td><code>inst_persistence</code></td><td>0.93</td><td>Very persistent (VWAP algos work all day in one direction)</td><td>Higher = more sustained flow. Lower = more random direction.</td></tr>
+<tr><td><code>mean_rev_strength</code></td><td>0.004</td><td>Strongest VWAP pull of any instrument (VWAP is king for SPY)</td><td>Higher = tighter reversion. Lower = more deviation allowed.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ AAPL ═══════════════════════ -->
+<h2 id="aapl">AAPL - Apple</h2>
+<p>Mega-cap tech stock. Clear trends, moderate volatility, earnings-driven gaps. Average daily range: <strong>$3-5</strong> on ~$215 price.</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>trend duration</code></td><td>30 bars</td><td>AAPL trends are driven by sector rotation and institutional positioning</td><td>Higher = longer runs. Lower = choppier action.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.016</td><td>~1.6 cents per bar drift during trends</td><td>Higher = steeper trends. Lower = more gradual.</td></tr>
+<tr><td><code>volatility chop</code></td><td>0.045</td><td>Tight consolidation (AAPL is well-covered, less random noise)</td><td>Higher = wider ranging. Lower = tighter boxes.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.08</td><td>Regular overnight gaps (earnings, analyst upgrades, product launches)</td><td>Higher = more gaps. Lower = fewer gap opens.</td></tr>
+<tr><td><code>global_bias</code></td><td>0.003</td><td>Slight bullish bias (AAPL long-term uptrend)</td><td>Higher = more bullish drift. 0 = neutral.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ MSFT ═══════════════════════ -->
+<h2 id="msft">MSFT - Microsoft</h2>
+<p>Large-cap tech, similar to AAPL but slightly less volatile. Steady institutional ownership. Average daily range: <strong>$5-8</strong> on ~$440 price.</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>trend duration</code></td><td>32 bars</td><td>Slightly longer trends than AAPL (more institutional accumulation)</td><td>Higher = more sustained moves. Lower = more rotation.</td></tr>
+<tr><td><code>trend_magnitude</code></td><td>0.045</td><td>Higher absolute magnitude (higher price = more cents per bar needed)</td><td>Higher = faster trends. Lower = more gradual.</td></tr>
+<tr><td><code>volatility chop</code></td><td>0.14</td><td>Wider than AAPL/SPY in absolute terms due to higher share price</td><td>Higher = larger candles. Lower = tighter consolidation.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.06</td><td>Less gap-prone than AAPL (fewer catalysts outside earnings)</td><td>Higher = more gaps. Lower = smoother transitions.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ PLTR ═══════════════════════ -->
+<h2 id="pltr">PLTR - Palantir</h2>
+<p>High-beta momentum stock. Retail favorite with strong directional moves. Average daily range: <strong>$3-6</strong> on ~$120 price.</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>15 bars</td><td>PLTR doesn't consolidate long; retail flow creates constant movement</td><td>Higher = more dead time. Lower = even more active.</td></tr>
+<tr><td><code>trend duration</code></td><td>25 bars</td><td>Momentum-driven trends; retail FOMO creates sustained moves</td><td>Higher = longer runs. Lower = quicker reversals.</td></tr>
+<tr><td><code>trend &rarr; impulse</code></td><td>0.35</td><td>Trends frequently accelerate into impulse (FOMO cascades)</td><td>Higher = more trend-to-spike. Lower = more orderly trends.</td></tr>
+<tr><td><code>impulse &rarr; trend</code></td><td>0.50</td><td>Spikes often lead into sustained moves (breakout continuation)</td><td>Higher = spikes become trends. Lower = spikes fade faster.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.15</td><td>Frequent gaps (AI hype cycles, analyst coverage, Elon tweets)</td><td>Higher = more gap risk. Lower = smoother opens.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ TSLA ═══════════════════════ -->
+<h2 id="tsla">TSLA - Tesla</h2>
+<p>Highly volatile momentum stock. Strong trends, large gaps, retail-driven with institutional overlay. Average daily range: <strong>$7-15</strong> on ~$250 price.</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>trend duration</code></td><td>28 bars</td><td>TSLA trends run hard (sentiment-driven, crowded trades)</td><td>Higher = longer directional legs. Lower = more reversals.</td></tr>
+<tr><td><code>trend &rarr; chop</code></td><td>0.25</td><td>TSLA rarely consolidates quietly; moves tend to reverse or continue</td><td>Higher = more quiet periods. Lower = more continuous action.</td></tr>
+<tr><td><code>trend &rarr; impulse</code></td><td>0.30</td><td>Trends frequently accelerate (short squeezes, panic selling)</td><td>Higher = more acceleration events. Lower = steadier trends.</td></tr>
+<tr><td><code>impulse_magnitude</code></td><td>0.28</td><td>Large spike candles (~$0.28/bar during impulse, ~$1.50+ in 5 bars)</td><td>Higher = more violent spikes. Lower = milder reactions.</td></tr>
+<tr><td><code>wick asymmetry</code></td><td>0.20</td><td>Notable wick asymmetry (sharp selloffs create long lower wicks)</td><td>Higher = more directional bias in wicks. 0 = symmetric.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.20</td><td>Very gap-prone (earnings, Elon posts, delivery numbers, macro)</td><td>Higher = more gap risk. Lower = fewer overnight moves.</td></tr>
+</tbody>
+</table>
+
+<span class="section-label sl-micro">Microstructure (Tick Engine)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>spread_base</code></td><td>2.0 ticks</td><td>Wider spread than mega-caps (lower relative liquidity despite high volume)</td><td>Higher = more slippage. Lower = tighter fills.</td></tr>
+<tr><td><code>spread_vol_mult</code></td><td>3.0</td><td>Spread blows out significantly during volatile moves</td><td>Higher = worse fills during spikes. Lower = more stable execution.</td></tr>
+<tr><td><code>inst_persistence</code></td><td>0.94</td><td>Very persistent institutional flow (large funds accumulate/distribute over days)</td><td>Higher = stronger sustained pressure. Lower = more mixed flow.</td></tr>
+<tr><td><code>momentum_rate</code></td><td>0.07</td><td>High momentum chasing (retail + algo breakout traders)</td><td>Higher = more acceleration on breakouts. Lower = less follow-through.</td></tr>
+<tr><td><code>hawkes_alpha</code></td><td>0.8</td><td>Strong tick clustering (bursts of activity on TSLA are extreme)</td><td>Higher = more volatile bursts. Lower = smoother tick flow.</td></tr>
+<tr><td><code>pool_count</code></td><td>5</td><td>Many key levels (round numbers, options strikes, prior day levels)</td><td>Higher = more levels to react to. Lower = fewer structural points.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ GME ═══════════════════════ -->
+<h2 id="gme">GME - GameStop</h2>
+<p>Meme stock. Extreme volatility, impulse-dominated, thin liquidity at times. Average daily range: <strong>$1-2.50</strong> on ~$28 price (4-8%).</p>
+
+<span class="section-label sl-hist">Historical (Candle Generation)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>chop duration</code></td><td>12 bars</td><td>GME barely consolidates; constant retail flow creates perpetual motion</td><td>Higher = more dead time. Lower = non-stop action.</td></tr>
+<tr><td><code>trend duration</code></td><td>20 bars</td><td>Trends are moderate length but intense (retail FOMO/panic)</td><td>Higher = longer runs. Lower = quicker reversals.</td></tr>
+<tr><td><code>chop &rarr; impulse</code></td><td>0.40</td><td>High probability of sudden spikes from any state (news, social media)</td><td>Higher = more random spikes. Lower = calmer transitions.</td></tr>
+<tr><td><code>trend &rarr; impulse</code></td><td>0.45</td><td>Trends frequently explode into impulse (short squeezes, capitulation)</td><td>Higher = more parabolic moves. Lower = steadier trends.</td></tr>
+<tr><td><code>impulse &rarr; trend</code></td><td>0.60</td><td>Impulse moves lead into sustained trends more often than fading</td><td>Higher = spikes become trends. Lower = spikes mean-revert.</td></tr>
+<tr><td><code>gap prob</code></td><td>0.25</td><td>Very high gap frequency (social media catalysts, after-hours trades)</td><td>Higher = more overnight risk. Lower = fewer gaps.</td></tr>
+</tbody>
+</table>
+
+<span class="section-label sl-micro">Microstructure (Tick Engine)</span>
+<table>
+<thead><tr><th>Setting</th><th>Value</th><th>Rationale</th><th>Effect of Change</th></tr></thead>
+<tbody>
+<tr><td><code>spread_base</code></td><td>3.0 ticks</td><td>Thin liquidity; wide natural spread due to low institutional participation</td><td>Higher = more slippage cost. Lower = unrealistically tight fills.</td></tr>
+<tr><td><code>spread_vol_mult</code></td><td>4.0</td><td>Spread explodes during volatility (liquidity evaporates on meme stocks)</td><td>Higher = brutal fills during moves. Lower = more stable execution.</td></tr>
+<tr><td><code>inst_persistence</code></td><td>0.70</td><td>Very low persistence (no sustained institutional flow; all retail chaos)</td><td>Higher = more directional pressure. Lower = more random walk.</td></tr>
+<tr><td><code>retail_rate</code></td><td>0.20</td><td>Extremely high retail participation (highest of any instrument)</td><td>Higher = more noise/random fills. Lower = calmer flow.</td></tr>
+<tr><td><code>momentum_rate</code></td><td>0.10</td><td>Very high momentum chasing (FOMO-driven entries)</td><td>Higher = stronger breakout acceleration. Lower = less follow-through.</td></tr>
+<tr><td><code>hawkes_alpha</code></td><td>1.0</td><td>Maximum self-excitation (activity cascades violently)</td><td>Higher = more extreme clustering. Lower = more uniform ticks.</td></tr>
+<tr><td><code>pool_strength</code></td><td>0.40</td><td>Strong S/R (retail herds at round numbers and meme-significant prices)</td><td>Higher = more magnetic levels. Lower = free-flowing price.</td></tr>
+</tbody>
+</table>
+
+<!-- ═══════════════════════ Tuning Guide ═══════════════════════ -->
+<h2>Tuning Guide</h2>
+<p>When creating custom instruments in the Chart Designer, use these guidelines:</p>
+
+<h3>Want more trending sessions?</h3>
+<ul>
+  <li>Increase <code>trend duration</code> (40+ bars for strong trending)</li>
+  <li>Decrease <code>trend &rarr; chop</code> transition (below 0.30)</li>
+  <li>Increase <code>trend_magnitude</code> (larger drift per bar)</li>
+  <li>Add <code>impulse &rarr; trend</code> transitions (spikes lead into trends)</li>
+</ul>
+
+<h3>Want more choppy/range-bound sessions?</h3>
+<ul>
+  <li>Increase <code>chop duration</code> (30+ bars)</li>
+  <li>Increase <code>trend &rarr; chop</code> transition (0.60+)</li>
+  <li>Decrease <code>trend_magnitude</code></li>
+  <li>Increase <code>wick chop_ratio</code> (more rejection candles)</li>
+</ul>
+
+<h3>Want more volatile/impulsive behavior?</h3>
+<ul>
+  <li>Increase all <code>volatility</code> values proportionally</li>
+  <li>Increase <code>impulse_magnitude</code></li>
+  <li>Increase <code>chop &rarr; impulse</code> and <code>trend &rarr; impulse</code> transitions</li>
+  <li>Increase <code>hawkes_alpha</code> in microstructure (more tick clustering)</li>
+</ul>
+
+<h3>Want wider spreads / worse fills?</h3>
+<ul>
+  <li>Increase <code>spread_base</code> (2-4 ticks for illiquid instruments)</li>
+  <li>Increase <code>spread_vol_mult</code> (3-5 for thin books)</li>
+  <li>Decrease <code>lob_base_size</code> (less depth = more slippage)</li>
+</ul>
+
+<h3>Want more realistic S/R interaction?</h3>
+<ul>
+  <li>Increase <code>pool_strength</code> (0.30-0.40 for sticky levels)</li>
+  <li>Increase <code>pool_count</code> (4-5 for instruments with many key levels)</li>
+  <li>Increase <code>mean_rev_strength</code> (for VWAP-dominated instruments)</li>
+</ul>
+
+</main>
+</body>
+</html>
