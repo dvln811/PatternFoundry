@@ -180,25 +180,39 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-05 session 7)
+## Recent Work (2026-06-08 session 8)
 
-1. **Marketing board upload fix** — CORS `after_request` handler only matched `/api/board` paths but marketing board uses `/api/marketing-board/`. Extended check to include `/api/marketing-board` paths. Upload button now works from localhost → Fly.
-2. **Marketing plan rewrite (introvert-compatible)** — Rewrote `/marketing` for INTJ personality. Dropped all high-social-obligation channels initially. Channels: X (1 post/week batch-write Sunday), HN (Show HN launch), SEO (1 page/month), silent screen recordings. Rules reframed: "build in public, don't perform in public." 4-week compressed launch.
-3. **Reddit added back (structured/scripted)** — After discussion, Reddit added back as #1 channel but structured as a scripted 15-min/day checklist, not "go be social." 2-week warmup (replies only, no links) → value post week 3-4. Mod-proof rules added: no links in post body, neutral username, karma built first, never argue with mods.
-4. **Marketing scripts page** — New `/marketing/scripts` route + template. Contains: 5 Reddit daily reply templates, 2 full value posts (r/daytrading stats post + r/futurestrading instrument comparison), response templates for "what simulator?", Show HN post script, 4 weeks of X threads, SEO page outline, Google Ads copy (deferred).
-5. **Marketing board updated** — Board cards now match the strategy: Reddit account creation + daily replies (This Week), continued warmup + HN/X launch (Next Week), value post + ongoing maintenance (Ongoing). Channel badges include reddit/hn/seo/twitter/content/youtube/product.
-6. **Nav updated** — All marketing pages (Plan, Board, Scripts) cross-linked in nav.
-7. **Launch sequence** — Expanded to 5 weeks: Week 1 (assets + Reddit warmup), Week 2 (replies + HN prep), Week 3 (HN + X launch, continue Reddit), Week 4 (Reddit value post), Week 5 (evaluate + expand).
+1. **Reddit account active** — Created under neutral username (not brand-linked). Avatar built (trading-adjacent SVG/PNG). Bio intentionally blank for now (add in week 2-3). Account age gate on r/futurestrading (3 days), active on r/daytrading. Multiple helpful replies posted, gaining karma organically.
+2. **Session date reassignment** — Users can change the display date of any session via date picker in stats history. API: `POST /api/sessions/<id>/date`. Calendar + monthly P&L update live on change.
+3. **Stats bugs fixed** — Best Day card sign, monthly P&L UTC timezone off-by-one, calendar not refreshing on date change.
+4. **FLAT tag for zero-trade sessions** — Orange tag for sessions closed with no trades. Previously these were silently discarded; now they save properly.
+5. **Risk % position sizing** — Risk % input auto-calculates qty from account balance, SL distance, and tick value. Capped at max margin allowance. Minimum 1 contract.
+6. **Intraday margin (25%)** — Both initial and maintenance margin checks now use 25% of listed values (intraday rate, matching Tradovate-style).
+7. **Tier system** — First 50 registrations auto-get 'edge' tier (lifetime free). Admin panel: Grant Edge / Mark Test / Set Free buttons. Landing page updated: "First 50 Users Get Lifetime Free Access."
+8. **SEO landing page** — `/free-trading-simulator` targeting "free futures trading simulator" keyword. Comparison table vs paid tools, feature grid, CTAs. Added to sitemap.
+9. **Sticky headers** — All pages except simulator/designer now have sticky nav header (always visible in screenshots).
+10. **SL/TP exit reason fix** — Exit reason now determined by price position relative to entry (not variable name), preventing "TP Hit" labels on losing trades when lines are dragged.
+11. **Drawing color persistence** — Saved in localStorage, restored across sessions.
+12. **Hotkeys [ ]** — `[` = 1x speed, `]` = max speed.
+13. **INSTRUMENT CHARACTER OVERHAUL** — All 14 instruments completely recalibrated:
+    - Counter-trend flip reduced 35% → 18% (trends actually trend now)
+    - Mean-reversion tether reduced 0.0005 → 0.0001
+    - Longer trend durations (30-40 bars), trend-to-trend transitions added
+    - All instruments now produce realistic daily ranges (NQ ~230pts, ES ~55pts, CL ~$2.20, etc.)
+14. **Docs: Instrument Presets Reference** — `/docs/presets` page documenting all settings for every instrument with rationale and tuning guide.
+15. **TF switch candle compression fix** — After switching timeframes, currentCandle is initialized from last bucket to prevent data loss.
+16. **Indicator performance fix** — `buildAllCandles()` now incremental (maintains running array) instead of rebuilding from all ticks every 5 ticks. Massive improvement for long history sessions.
 
 ---
 
 ## Next Steps
 
-- **MARKETING EXECUTION (IN PROGRESS)** — Reddit account created. Next: daily 15-min reply routine in r/daytrading + r/futurestrading. Simultaneously grind 5 sim sessions/day to build real stats data (target: 70+ sessions by week 3 for value post credibility).
-- **Week 1-2:** Reddit replies (15 min/day) + sim sessions (5/day) + screenshots + screen recordings
-- **Week 3:** Post Show HN + first X thread. Reddit value post if 50+ sessions done.
-- **Chart Designer tick_value:** Add tick_value/margin fields to designer UI for custom characters
-- **Session history:** Per-trade annotations, journal notes
+- **VALUE POST (READY TO DRAFT)** — ORB comparison data complete: 2:1 target = -16% (28% WR), 1:1 target = +7.4% (59% WR). Screenshots in `tmp/ORB_2-1.png` and `tmp/ORB_1-1.png`. Consider re-running 2:1 data with updated instrument characters for apples-to-apples comparison.
+- **Reddit strategy** — Continue daily 2-3 replies across r/daytrading (r/futurestrading unlocks after 3-day age). Build to 50+ karma before value post.
+- **AlternativeTo submission** — Account created, submit on weekday (paused on weekends). Listing copy ready in chat history.
+- **HN Show HN** — Target week 3. Post script exists in `/marketing/scripts`.
+- **Remaining features:** Chart Designer tick_value/margin fields for custom chars, partial position exits (peel off), session journal/annotations, export data button.
+- **Usage note:** At 70% monthly usage on June 8th. Be efficient with context in future sessions.
 - **See board + /feature-ideas** for full roadmap
 
 ---
