@@ -193,9 +193,10 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
         </div>
         <div class="acct-list" id="acct-list"><div style="padding:10px;color:#555;font-size:.72rem">Loading...</div></div>
         <button class="btn-purge" id="btn-purge" onclick="purgeArchived()" style="margin-top:8px;display:none">Purge All Archived</button>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
           <div class="stat-card"><div class="stat-val" id="s-starting">-</div><div class="stat-label">Starting Balance</div></div>
           <div class="stat-card"><div class="stat-val" id="s-acct-pnl">-</div><div class="stat-label">P/L</div></div>
+          <div class="stat-card"><div class="stat-val" id="s-acct-bal">-</div><div class="stat-label">Account Balance</div></div>
         </div>
       </div>
 
@@ -457,6 +458,13 @@ async function renderForAccount(accountId) {
   const acctPct = startingBal > 0 ? ((acctPnl / startingBal) * 100).toFixed(1) : '0.0';
   acctPnlEl.innerHTML = `<span style="color:${acctPnl>=0?'#4caf82':'#e05c5c'}">${acctPnl>=0?'':'-'}$${fmtD(acctPnl)}</span> <span style="font-size:.6rem;color:#888">(${acctPct}%)</span>`;
   acctPnlEl.closest('.stat-card').className = 'stat-card ' + (acctPnl >= 0 ? 'tint-pos' : 'tint-neg');
+  const computedBal = startingBal + totalPnl;
+  const balEl = document.getElementById('s-acct-bal');
+  balEl.textContent = '$' + computedBal.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
+  balEl.className = 'stat-val ' + (computedBal >= startingBal ? 'pos' : 'neg');
+  // Update account list row to show computed balance
+  const row = document.querySelector(`.acct-item[data-id="${accountId}"]`);
+  if (row) { const spans = row.querySelectorAll('span'); if (spans[1]) spans[1].textContent = '$' + computedBal.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0}); }
 
   // Detailed stats from trade-level data
   const wins = trades.filter(t => t.pnl > 0);
