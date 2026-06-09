@@ -872,6 +872,7 @@ async function loadSession() {
 
   // History is pre-built 1-min candles - load statically onto chart
   window._historyBars = data.history || [];
+  window._allCandlesBase = null;
   window._sessionStart = 0; // ticks start at session open, no offset needed
 
   const histBucketed = rebucketHistory(window._historyBars, candleTF);
@@ -1126,6 +1127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Store 1-min candles for TF switching and indicators
       window._historyBars = histCandles;
+      window._allCandlesBase = null;
       window._reviewSessionCandles = sessionCandles;
       const allBars = [...histCandles, ...sessionCandles];
 
@@ -1184,6 +1186,7 @@ document.getElementById('chart-tf').addEventListener('change', () => {
   if (wasPlaying) stopPlay();
   candleTF = parseInt(document.getElementById('chart-tf').value);
   currentCandle = null;
+  window._allCandlesBase = null;
 
   const histBars = window._historyBars || [];
   let allSoFar;
@@ -1729,6 +1732,7 @@ async function loadSavedSession(idx) {
   tickSize      = data.tick_size || 0.25;
   tickValue     = data.tick_value || 1.25;
   window._historyBars = data.history || [];
+  window._allCandlesBase = null;
   window._sessionStart = 0;
 
   // Restore account/position state
@@ -1816,25 +1820,25 @@ let indColorIdx = Math.floor(Math.random() * 8);
 const IND_COLORS = ['#f0c040','#a78bfa','#38bdf8','#fb923c','#f472b6','#34d399','#818cf8','#fbbf24'];
 
 function buildAllCandles() {
-  // Include history + played tick candles for live indicator updates
-  const histBars = window._historyBars || [];
-  const playedCandles = [];
-  if (tickIdx > 0) {
-    let pb = null;
-    for (let i = 0; i < tickIdx; i++) {
-      const t = allTicks[i];
-      const ct = Math.floor(t.time / candleTF) * candleTF;
-      if (!pb || pb.time !== ct) {
-        if (pb) playedCandles.push(pb);
-        pb = {time:ct, open:t.price, high:t.price, low:t.price, close:t.price, volume:t.volume};
-      } else {
-        pb.high = Math.max(pb.high, t.price); pb.low = Math.min(pb.low, t.price);
-        pb.close = t.price; pb.volume += t.volume;
-      }
-    }
-    if (pb) playedCandles.push(pb);
+  // Incremental: only rebuild if not already seeded from history
+  if (!window._allCandlesBase) {
+    const histBars = window._historyBars || [];
+    window._allCandlesBase = rebucketHistory(histBars, candleTF);
   }
-  allCandles = rebucketHistory([...histBars, ...playedCandles], candleTF);
+  // Append/update the current candle from live playback
+  const base = window._allCandlesBase;
+  if (currentCandle) {
+    if (base.length > 0 && base[base.length - 1].time === currentCandle.time) {
+      const last = base[base.length - 1];
+      last.high = Math.max(last.high, currentCandle.high);
+      last.low = Math.min(last.low, currentCandle.low);
+      last.close = currentCandle.close;
+      last.volume = currentCandle.volume;
+    } else if (base.length === 0 || base[base.length - 1].time < currentCandle.time) {
+      base.push({time: currentCandle.time, open: currentCandle.open, high: currentCandle.high, low: currentCandle.low, close: currentCandle.close, volume: currentCandle.volume});
+    }
+  }
+  allCandles = base;
 }
 
 function onIndSelectChange() {
