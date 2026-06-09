@@ -128,11 +128,12 @@ def simulate_session_candles(p_memory_prices, clamp_hi, clamp_lo, last_hist_time
     ohlc        = []
     timestamps  = []
     zone_counter   = 0
-    current_regime = 'trend'
+    current_regime = np.random.choice(['trend', 'chop'])
+    regime_state   = {'target': max(5, int(np.random.geometric(1.0 / profile.trend_duration)))}
     prev_volume    = None
 
     for i in range(NUM_SESSION_CANDLES):
-        current_regime, zone_counter = _update_regime(current_regime, zone_counter, profile)
+        current_regime, zone_counter = _update_regime(current_regime, zone_counter, profile, regime_state)
         drift = _compute_drift(i, current_regime, current_price, fvg_zones, profile)
         o, c  = _generate_open_close(current_price, drift, current_regime, profile)
         h, l  = _generate_wicks(o, c, current_regime, profile)
@@ -156,11 +157,12 @@ def simulate_session_candles(p_memory_prices, clamp_hi, clamp_lo, last_hist_time
     return df
 
 
-def _update_regime(regime, counter, profile):
+def _update_regime(regime, counter, profile, state):
     counter += 1
-    if counter >= profile.trend_duration:
-        regime  = 'chop' if regime == 'trend' else 'trend'
+    if counter >= state['target']:
+        regime = 'chop' if regime == 'trend' else 'trend'
         counter = 0
+        state['target'] = max(5, int(np.random.geometric(1.0 / profile.trend_duration)))
     return regime, counter
 
 
@@ -169,9 +171,12 @@ def _compute_drift(i, regime, price, fvg_zones, profile):
     if regime == 'chop': return np.random.normal(0.0, 0.05)
     d = np.random.choice([0.2, -0.2]) + profile.drift_bias
     if np.random.rand() < 0.35: d = -d * np.random.uniform(0.3, 0.8)
-    if   i < 15:  d *= 1.5
-    elif 30 <= i < 45: d *= 0.5
-    elif i >= 60: d *= 1.2
+    # Smooth time-of-day energy curve with randomness (no fixed breakout times)
+    session_pct = i / NUM_SESSION_CANDLES
+    if session_pct < 0.08:
+        d *= np.random.uniform(1.2, 1.6)  # opening energy
+    elif session_pct > 0.85:
+        d *= np.random.uniform(0.6, 1.0)  # late-day fade
     return d
 
 
