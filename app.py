@@ -585,6 +585,12 @@ def api_get_account():
     if not acct:
         create_account(uid)
         acct = get_active_account(uid)
+    # Compute true balance from starting + sum of session PnLs
+    from models import _get_db
+    conn = _get_db()
+    row = conn.execute('SELECT COALESCE(SUM(pnl),0) as total_pnl FROM sessions WHERE account_id=?', (acct['id'],)).fetchone()
+    conn.close()
+    acct['balance'] = acct['starting_balance'] + row['total_pnl']
     return jsonify(acct)
 
 

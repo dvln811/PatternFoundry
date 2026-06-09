@@ -273,6 +273,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const fmtD = v => Math.abs(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtCompact = v => { const a = Math.abs(v); if (a >= 1e6) return (v<0?'-':'') + '$' + (a/1e6).toFixed(1) + 'M'; return (v<0?'-':'') + '$' + Math.round(a).toLocaleString(); };
 let allSessions = [];
 let selectedAccountId = null;
 let equityChartInstance = null;
@@ -452,17 +453,17 @@ async function renderForAccount(accountId) {
 
   // Account starting + P/L cards
   const startingBal = accountsMap[accountId] || 0;
-  document.getElementById('s-starting').textContent = '$' + startingBal.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('s-starting').textContent = fmtCompact(startingBal);
   const acctPnlEl = document.getElementById('s-acct-pnl');
   const acctPnl = totalPnl;
   const acctPct = startingBal > 0 ? ((acctPnl / startingBal) * 100).toFixed(1) : '0.0';
-  acctPnlEl.textContent = (acctPnl>=0?'':'-') + '$' + Math.abs(Math.round(acctPnl)).toLocaleString();
+  acctPnlEl.textContent = fmtCompact(acctPnl);
   acctPnlEl.className = 'stat-val ' + (acctPnl >= 0 ? 'pos' : 'neg');
   acctPnlEl.closest('.stat-card').querySelector('.stat-label').textContent = 'P/L (' + acctPct + '%)';
   acctPnlEl.closest('.stat-card').className = 'stat-card ' + (acctPnl >= 0 ? 'tint-pos' : 'tint-neg');
   const computedBal = startingBal + totalPnl;
   const balEl = document.getElementById('s-acct-bal');
-  balEl.textContent = '$' + computedBal.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+  balEl.textContent = fmtCompact(computedBal);
   balEl.className = 'stat-val ' + (computedBal >= startingBal ? 'pos' : 'neg');
   // Update account list row to show computed balance
   const row = document.querySelector(`.acct-item[data-id="${accountId}"]`);
