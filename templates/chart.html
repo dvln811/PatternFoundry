@@ -882,7 +882,7 @@ async function loadSession() {
     currentPrice = histBucketed[histBucketed.length - 1].close;
   }
 
-  if (activeIndicators.length) recomputeIndicators();
+  if (activeIndicators.length) rebuildIndicators();
 
   document.getElementById('btn-long').disabled  = false;
   document.getElementById('btn-short').disabled = false;
@@ -1168,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (trades.length === 0) log.innerHTML = '<div style="font-size:0.72rem;color:#bbb;padding:4px 0">No trades</div>';
 
       // Indicators work now since window._chartData is populated
-      if (activeIndicators.length) recomputeIndicators();
+      if (activeIndicators.length) rebuildIndicators();
 
       // Restore drawings
       if (data.drawings && data.drawings.length && drawMgr) drawMgr.fromJSON(data.drawings);
@@ -2015,8 +2015,11 @@ function renderIndChips() {
 
 function recomputeIndicators() {
   buildAllCandles();
+  const n = allCandles.length;
+  if (n === 0) return;
   for (const ind of activeIndicators) {
     if (ind.type === 'custom') {
+      // Custom indicators: still do full recompute (user code, can't optimize generically)
       const saved = CustomIndicator.loadAll().find(s => s.name === ind.label);
       if (saved) {
         const result = CustomIndicator.execute(saved.code, allCandles);
@@ -2029,15 +2032,27 @@ function recomputeIndicators() {
         }
       }
     } else if (ind.type === 'macd') {
-      const d = Indicators.macd(allCandles, 12, 26, 9);
-      ind.series[0]?.setData(d.macd); ind.series[1]?.setData(d.signal); ind.series[2]?.setData(d.histogram);
+      const d = Indicators.lastMacd(allCandles, 12, 26, 9);
+      if (d) { ind.series[0]?.update(d.macd); ind.series[1]?.update(d.signal); ind.series[2]?.update(d.histogram); }
     } else if (ind.type === 'bbands') {
-      const d = Indicators.bbands(allCandles, ind.period, 2);
-      ind.series[0]?.setData(d.upper); ind.series[1]?.setData(d.mid); ind.series[2]?.setData(d.lower);
-    } else if (ind.type === 'rsi')   { ind.series[0]?.setData(Indicators.rsi(allCandles, ind.period)); }
-    else if (ind.type === 'atr')     { ind.series[0]?.setData(Indicators.atr(allCandles, ind.period)); }
-    else if (ind.type === 'vwap')    { ind.series[0]?.setData(Indicators.vwap(allCandles)); }
-    else if (Indicators[ind.type])   { ind.series[0]?.setData(Indicators[ind.type](allCandles, ind.period)); }
+      const d = Indicators.lastBbands(allCandles, ind.period, 2);
+      if (d) { ind.series[0]?.update(d.upper); ind.series[1]?.update(d.mid); ind.series[2]?.update(d.lower); }
+    } else if (ind.type === 'rsi') {
+      const pt = Indicators.lastRsi(allCandles, ind.period);
+      if (pt) ind.series[0]?.update(pt);
+    } else if (ind.type === 'atr') {
+      const pt = Indicators.lastAtr(allCandles, ind.period);
+      if (pt) ind.series[0]?.update(pt);
+    } else if (ind.type === 'vwap') {
+      const pt = Indicators.lastVwap(allCandles);
+      if (pt) ind.series[0]?.update(pt);
+    } else if (ind.type === 'sma') {
+      const pt = Indicators.lastSma(allCandles, ind.period);
+      if (pt) ind.series[0]?.update(pt);
+    } else if (ind.type === 'ema') {
+      const pt = Indicators.lastEma(allCandles, ind.period);
+      if (pt) ind.series[0]?.update(pt);
+    }
   }
   // Also update the custom indicator applied via the modal
   if (_customIndSeries && document.getElementById('ci-code')) {
