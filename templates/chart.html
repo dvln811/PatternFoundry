@@ -627,6 +627,7 @@ let ironMan = { active: false, run: null };
 let sessionClosed = false;
 let position = null, pendingOrder = null;
 let entryLine = null, slLine = null, tpLine = null, pendingLine = null;
+let tradeMarkers = [];
 
 // Load trading account from server
 (async () => {
@@ -865,6 +866,7 @@ async function loadSession() {
   document.getElementById('pb-play').disabled = false;
   position = null; pendingOrder = null;
   entryLine = slLine = tpLine = pendingLine = null;
+  tradeMarkers = [];
   updateAccount(); updatePosition();
   document.getElementById('trade-log').innerHTML = '<div style="font-size:0.72rem;color:#bbb;padding:4px 0">No trades yet</div>';
 
@@ -917,6 +919,8 @@ function processTick(tick) {
       if (slLine) { candleSeries.removePriceLine(slLine); slLine = null; }
       if (tpLine) { candleSeries.removePriceLine(tpLine); tpLine = null; }
       position = { direction: po.direction, entry: po.entry, qty: po.qty, sl: po.sl, tp: po.tp, entryTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) };
+      tradeMarkers.push({time: currentCandle.time, position: po.direction==='long'?'belowBar':'aboveBar', color: po.direction==='long'?'#4caf82':'#e05c5c', shape: po.direction==='long'?'arrowUp':'arrowDown', text: po.direction==='long'?'BUY':'SELL'});
+      candleSeries.setMarkers([...tradeMarkers]);
       entryLine = candleSeries.createPriceLine({ price: po.entry, color: '#f0c040', lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: 'Entry' });
       slLine    = candleSeries.createPriceLine({ price: po.sl,    color: '#e05c5c', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'SL' });
       tpLine    = candleSeries.createPriceLine({ price: po.tp,    color: '#4caf82', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'TP' });
@@ -1361,6 +1365,8 @@ function confirmOrder() {
   setupMode = null;
   if (isMarket) {
     position = { direction: dir, entry: currentPrice, qty, sl, tp, entryTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) };
+    tradeMarkers.push({time: currentCandle.time, position: dir==='long'?'belowBar':'aboveBar', color: dir==='long'?'#4caf82':'#e05c5c', shape: dir==='long'?'arrowUp':'arrowDown', text: dir==='long'?'BUY':'SELL'});
+    candleSeries.setMarkers([...tradeMarkers]);
     entryLine = candleSeries.createPriceLine({ price: currentPrice, color: '#f0c040', lineWidth: 1, lineStyle: 0, axisLabelVisible: true, title: 'Entry' });
     slLine    = candleSeries.createPriceLine({ price: sl,           color: '#e05c5c', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'SL' });
     tpLine    = candleSeries.createPriceLine({ price: tp,           color: '#4caf82', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'TP' });
@@ -1409,6 +1415,8 @@ function closeTrade(exitPrice, reason) {
   account.sessionPnl += pnl;
   if (pnl > 0) account.wins++; else account.losses++;
   account.trades.push({ dir, entry, exit: exitPrice, qty, pnl: Math.round(pnl * 100) / 100, reason, entryTime: position.entryTime || 0, exitTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) });
+  tradeMarkers.push({time: currentCandle.time, position: dir==='long'?'aboveBar':'belowBar', color: '#f0c040', shape: 'circle', text: (reason||'Close').slice(0,6)});
+  candleSeries.setMarkers([...tradeMarkers]);
   if (entryLine) { candleSeries.removePriceLine(entryLine); entryLine = null; }
   if (slLine)    { candleSeries.removePriceLine(slLine);    slLine    = null; }
   if (tpLine)    { candleSeries.removePriceLine(tpLine);    tpLine    = null; }
