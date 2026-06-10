@@ -798,7 +798,7 @@ function getCandleTime(ts) {
 }
 
 function rebucketHistory(candles, tf) {
-  if (tf <= 60) return candles;
+  if (tf <= 60) return candles.slice();
   const out = [];
   let bucket = null;
   for (const c of candles) {
