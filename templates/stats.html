@@ -198,6 +198,9 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
           <div class="stat-card" style="padding:8px 6px"><div class="stat-val" id="s-acct-pnl" style="font-size:clamp(.65rem,.82rem,1rem);overflow:visible;white-space:nowrap">-</div><div class="stat-label">P/L</div></div>
           <div class="stat-card" style="padding:8px 6px"><div class="stat-val" id="s-acct-bal" style="font-size:clamp(.65rem,.82rem,1rem);overflow:visible;white-space:nowrap">-</div><div class="stat-label">Balance</div></div>
         </div>
+        <div style="margin-top:8px">
+          <textarea id="acct-notes" placeholder="Strategy, rules, notes..." style="width:100%;min-height:48px;max-height:120px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:5px;color:#ccc;font-size:.68rem;padding:8px;resize:vertical;font-family:inherit;line-height:1.4" spellcheck="false"></textarea>
+        </div>
       </div>
 
       <div class="stats-grid" id="stats-grid" style="grid-template-columns:repeat(2,1fr)">
@@ -430,12 +433,21 @@ async function selectAccount(id) {
 
 // ── Account Details ──────────────────────────────────────────────────────────
 async function renderForAccount(accountId) {
-  const [res, tradesRes] = await Promise.all([
+  const [res, tradesRes, notesRes] = await Promise.all([
     fetch('/api/sessions?account_id=' + accountId, {credentials:'include'}),
     fetch('/api/trades?account_id=' + accountId, {credentials:'include'}),
+    fetch('/api/account/' + accountId + '/notes', {credentials:'include'}),
   ]);
   const sessions = await res.json();
   const trades = await tradesRes.json();
+  const notesData = await notesRes.json();
+
+  // Load notes
+  const notesEl = document.getElementById('acct-notes');
+  notesEl.value = notesData.notes || '';
+  notesEl.onblur = () => {
+    fetch('/api/account/' + accountId + '/notes', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({notes: notesEl.value})});
+  };
 
   const totalSessions = sessions.length;
   const totalTrades = sessions.reduce((s, h) => s + (h.trades || 0), 0);

@@ -632,6 +632,24 @@ def api_update_balance():
     return jsonify({'saved': True})
 
 
+@app.route('/api/account/<int:account_id>/notes', methods=['GET', 'POST'])
+def api_account_notes(account_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    from models import _get_db
+    conn = _get_db()
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        conn.execute('UPDATE trading_accounts SET notes=? WHERE id=? AND user_id=?', (data.get('notes', ''), account_id, uid))
+        conn.commit()
+        conn.close()
+        return jsonify({'saved': True})
+    row = conn.execute('SELECT notes FROM trading_accounts WHERE id=? AND user_id=?', (account_id, uid)).fetchone()
+    conn.close()
+    return jsonify({'notes': row['notes'] if row and row['notes'] else ''})
+
+
 @app.route('/api/account/archived')
 def api_archived_accounts():
     uid = _get_user_id()
