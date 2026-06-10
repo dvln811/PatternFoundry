@@ -913,7 +913,12 @@ function processTick(tick) {
   // Pending order trigger
   if (pendingOrder && !position) {
     const po = pendingOrder;
-    const triggered = (po.direction === 'long' && tick.price >= po.entry) || (po.direction === 'short' && tick.price <= po.entry);
+    let triggered;
+    if (po.orderType === 'limit') {
+      triggered = (po.direction === 'long' && tick.price <= po.entry) || (po.direction === 'short' && tick.price >= po.entry);
+    } else {
+      triggered = (po.direction === 'long' && tick.price >= po.entry) || (po.direction === 'short' && tick.price <= po.entry);
+    }
     if (triggered) {
       if (pendingLine) { candleSeries.removePriceLine(pendingLine); pendingLine = null; }
       if (slLine) { candleSeries.removePriceLine(slLine); slLine = null; }
@@ -1368,7 +1373,7 @@ function confirmOrder() {
     }
   }
   _clearSetupLines();
-  const isMarket = orderType === 'market' || Math.abs(entry - currentPrice) < tickSize * 2;
+  const isMarket = orderType === 'market' || (orderType === 'limit' && ((dir === 'long' && entry >= currentPrice) || (dir === 'short' && entry <= currentPrice)));
   setupMode = null;
   if (isMarket) {
     position = { direction: dir, entry: currentPrice, qty, sl, tp, entryTime: allTicks[tickIdx - 1] ? allTicks[tickIdx - 1].time : Math.floor(Date.now()/1000) };
@@ -1380,7 +1385,7 @@ function confirmOrder() {
     document.getElementById('btn-close').classList.remove('hidden');
     attachPositionDrag();
   } else {
-    pendingOrder = { direction: dir, entry, qty, sl, tp };
+    pendingOrder = { direction: dir, entry, qty, sl, tp, orderType };
     pendingLine = candleSeries.createPriceLine({ price: entry, color: '#f0c04088', lineWidth: 1, lineStyle: 1, axisLabelVisible: true, title: 'Pending ' + dir.toUpperCase() });
     slLine      = candleSeries.createPriceLine({ price: sl,    color: '#ef535066', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'SL' });
     tpLine      = candleSeries.createPriceLine({ price: tp,    color: '#4caf8266', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'TP' });
