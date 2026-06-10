@@ -664,6 +664,27 @@ def api_account_exclude(account_id):
     return jsonify({'saved': True})
 
 
+@app.route('/api/account/<int:account_id>', methods=['DELETE'])
+def api_account_delete(account_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    from models import _get_db
+    conn = _get_db()
+    row = conn.execute('SELECT id FROM trading_accounts WHERE id=? AND user_id=?', (account_id, uid)).fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'error': 'not found'}), 404
+    sess_ids = [r['id'] for r in conn.execute('SELECT id FROM sessions WHERE account_id=?', (account_id,)).fetchall()]
+    if sess_ids:
+        conn.execute(f"DELETE FROM trades WHERE session_id IN ({','.join('?'*len(sess_ids))})", sess_ids)
+    conn.execute('DELETE FROM sessions WHERE account_id=?', (account_id,))
+    conn.execute('DELETE FROM trading_accounts WHERE id=?', (account_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'deleted': True})
+
+
 @app.route('/api/account/archived')
 def api_archived_accounts():
     uid = _get_user_id()

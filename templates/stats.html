@@ -416,11 +416,13 @@ function renderAccountList(accounts) {
     const statusTag = a.status === 'active' ? '<span style="color:#4caf82;font-size:.55rem;font-weight:600">ACTIVE</span>' : '<span style="color:#888;font-size:.55rem">archived</span>';
     const dateStr = a.date ? a.date.slice(0, 10) : '-';
     const exCk = `<label style="display:inline-flex;align-items:center;cursor:pointer" data-tip="Include in Overview" onclick="event.stopPropagation()"><input type="checkbox" ${a.excluded?'':'checked'} onchange="toggleExclude(${a.id},!this.checked)" style="accent-color:#4caf82;width:11px;height:11px;cursor:pointer"></label>`;
-    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;align-items:center;gap:4px">
+    const delBtn = `<span data-tip="Delete account" onclick="event.stopPropagation();deleteAccount(${a.id})" style="cursor:pointer;color:#666;font-size:.7rem;line-height:1">&times;</span>`;
+    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})" style="display:grid;grid-template-columns:1fr 1fr 1fr auto auto;align-items:center;gap:4px">
       ${statusTag}
       <span style="color:#ccc">$${a.balance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
       <span style="color:#888;font-size:.55rem">${dateStr}</span>
       ${exCk}
+      ${delBtn}
     </div>`;
   }).join('');
 }
@@ -439,6 +441,12 @@ async function toggleExclude(accountId, excluded) {
   renderTopInstruments();
   renderSessionDistribution();
   renderStreak(allSessions.filter(s => !excludedAccountIds.has(s.account_id)));
+}
+
+async function deleteAccount(accountId) {
+  if (!confirm('Delete this account and all its sessions/trades? This cannot be undone.')) return;
+  await fetch('/api/account/' + accountId, {method:'DELETE', credentials:'include'});
+  location.reload();
 }
 
 async function selectAccount(id) {
