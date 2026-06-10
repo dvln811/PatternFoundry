@@ -180,39 +180,29 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-08 session 8)
+## Recent Work (2026-06-10 session 9)
 
-1. **Reddit account active** — Created under neutral username (not brand-linked). Avatar built (trading-adjacent SVG/PNG). Bio intentionally blank for now (add in week 2-3). Account age gate on r/futurestrading (3 days), active on r/daytrading. Multiple helpful replies posted, gaining karma organically.
-2. **Session date reassignment** — Users can change the display date of any session via date picker in stats history. API: `POST /api/sessions/<id>/date`. Calendar + monthly P&L update live on change.
-3. **Stats bugs fixed** — Best Day card sign, monthly P&L UTC timezone off-by-one, calendar not refreshing on date change.
-4. **FLAT tag for zero-trade sessions** — Orange tag for sessions closed with no trades. Previously these were silently discarded; now they save properly.
-5. **Risk % position sizing** — Risk % input auto-calculates qty from account balance, SL distance, and tick value. Capped at max margin allowance. Minimum 1 contract.
-6. **Intraday margin (25%)** — Both initial and maintenance margin checks now use 25% of listed values (intraday rate, matching Tradovate-style).
-7. **Tier system** — First 50 registrations auto-get 'edge' tier (lifetime free). Admin panel: Grant Edge / Mark Test / Set Free buttons. Landing page updated: "First 50 Users Get Lifetime Free Access."
-8. **SEO landing page** — `/free-trading-simulator` targeting "free futures trading simulator" keyword. Comparison table vs paid tools, feature grid, CTAs. Added to sitemap.
-9. **Sticky headers** — All pages except simulator/designer now have sticky nav header (always visible in screenshots).
-10. **SL/TP exit reason fix** — Exit reason now determined by price position relative to entry (not variable name), preventing "TP Hit" labels on losing trades when lines are dragged.
-11. **Drawing color persistence** — Saved in localStorage, restored across sessions.
-12. **Hotkeys [ ]** — `[` = 1x speed, `]` = max speed.
-13. **INSTRUMENT CHARACTER OVERHAUL** — All 14 instruments completely recalibrated:
-    - Counter-trend flip reduced 35% → 18% (trends actually trend now)
-    - Mean-reversion tether reduced 0.0005 → 0.0001
-    - Longer trend durations (30-40 bars), trend-to-trend transitions added
-    - All instruments now produce realistic daily ranges (NQ ~230pts, ES ~55pts, CL ~$2.20, etc.)
-14. **Docs: Instrument Presets Reference** — `/docs/presets` page documenting all settings for every instrument with rationale and tuning guide.
-15. **TF switch candle compression fix** — After switching timeframes, currentCandle is initialized from last bucket to prevent data loss.
-16. **Indicator performance fix** — `buildAllCandles()` now incremental (maintains running array) instead of rebuilding from all ticks every 5 ticks. Massive improvement for long history sessions.
+1. **Indicator performance v2** — `recomputeIndicators()` now uses `series.update()` (single point) instead of `setData()` (full array). Added `Indicators.lastX()` functions that compute only the final value. Massive improvement with indicators active.
+2. **Session structure randomization** — Fixed predictable noon breakout. Regime durations now use geometric distribution (randomized per switch). Removed hardcoded bar-index drift multipliers. Starting regime randomized.
+3. **Account balance fix** — `/api/account` now computes balance server-side as `starting_balance + SUM(session.pnl)`. Stats page also derives balance from sessions, not stored value. Fixes drift between displayed balance and actual P/L.
+4. **Stats account cards** — 3-card layout (Starting, P/L, Balance). Uses `fmtCompact()` formatter ($42,907 or $2.1M). Percentage in label. No truncation.
+5. **Live trade markers** — BUY/SELL arrows on entry, yellow exit circles with reason. Same style as session replay. Markers rebucket correctly on TF switch.
+6. **TF switch marker crash fix** — Markers filtered to only existing candle times on TF change. Prevents "Value is null" error.
+7. **Per-account notes** — Textarea in Account Details, auto-saves on blur. API: GET/POST `/api/account/<id>/notes`. Strategy tracking per account.
+8. **Exclude from overview toggle** — Checkbox per account row ("Ov" column). Excluded accounts filtered from all Overview aggregations (equity curve, stats, instruments, distribution, streak). Persists server-side.
+9. **Themed tooltips on stats** — Uses `[data-tip]` CSS pattern (orange border popup) instead of browser default `title` attribute.
+10. **Reddit momentum** — ~20 karma/day from genuine replies on r/daytrading. Account approaching 50 karma threshold for value post.
 
 ---
 
 ## Next Steps
 
-- **VALUE POST (READY TO DRAFT)** — ORB comparison data complete: 2:1 target = -16% (28% WR), 1:1 target = +7.4% (59% WR). Screenshots in `tmp/ORB_2-1.png` and `tmp/ORB_1-1.png`. Consider re-running 2:1 data with updated instrument characters for apples-to-apples comparison.
-- **Reddit strategy** — Continue daily 2-3 replies across r/daytrading (r/futurestrading unlocks after 3-day age). Build to 50+ karma before value post.
-- **AlternativeTo submission** — Account created, submit on weekday (paused on weekends). Listing copy ready in chat history.
+- **VALUE POST (READY TO DRAFT)** — ORB comparison data complete: 2:1 target = -16% (28% WR), 1:1 target = +7.4% (59% WR). Screenshots in `tmp/ORB_2-1.png` and `tmp/ORB_1-1.png`. Should re-run 2:1 data with updated (randomized) instrument characters for apples-to-apples comparison.
+- **Reddit strategy** — Continue daily 2-3 replies. r/futurestrading should be unlocked now (3-day age reached). Build to 50+ karma before value post.
+- **AlternativeTo submission** — Account created, submit on weekday. Listing copy ready in chat history.
 - **HN Show HN** — Target week 3. Post script exists in `/marketing/scripts`.
-- **Remaining features:** Chart Designer tick_value/margin fields for custom chars, partial position exits (peel off), session journal/annotations, export data button.
-- **Usage note:** At 70% monthly usage on June 8th. Be efficient with context in future sessions.
+- **Remaining features:** Chart Designer tick_value/margin fields for custom chars, partial position exits (peel off), export data button.
+- **Tooltip audit** — Replace ALL remaining `title=""` attributes across all templates with `data-tip`. Never use browser default tooltips.
 - **See board + /feature-ideas** for full roadmap
 
 ---
