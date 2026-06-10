@@ -305,13 +305,13 @@ async function init() {
   const archived = await archivedRes.json();
 
   const accounts = [];
-  accounts.push({ id: activeAcct.id, label: 'Current', balance: activeAcct.balance, starting: activeAcct.starting_balance, status: 'active', date: activeAcct.created_at });
+  accounts.push({ id: activeAcct.id, label: 'Current', balance: activeAcct.balance, starting: activeAcct.starting_balance, status: 'active', date: activeAcct.created_at, excluded: !!activeAcct.excluded });
   archived.forEach(a => {
-    accounts.push({ id: a.id, balance: a.balance, starting: a.starting_balance, status: 'archived', date: a.archived_at });
+    accounts.push({ id: a.id, balance: a.balance, starting: a.starting_balance, status: 'archived', date: a.archived_at, excluded: !!a.excluded });
   });
 
   renderAccountList(accounts);
-  accounts.forEach(a => { accountsMap[a.id] = a.starting; });
+  accounts.forEach(a => { accountsMap[a.id] = a.starting; if (a.excluded) excludedAccountIds.add(a.id); });
   if (archived.length > 0) document.getElementById('btn-purge').style.display = '';
   selectedAccountId = activeAcct.id;
   highlightAccount(selectedAccountId);
@@ -321,15 +321,16 @@ async function init() {
   renderRecentResults();
   renderTopInstruments();
   renderSessionDistribution();
-  renderStreak(allSessions);
+  renderStreak(allSessions.filter(s => !excludedAccountIds.has(s.account_id)));
   renderIronMan();
 }
 
 function renderOverviewStats() {
-  const total = allSessions.length;
-  const trades = allSessions.reduce((s, h) => s + (h.trades || 0), 0);
-  const wins = allSessions.reduce((s, h) => s + (h.wins || 0), 0);
-  const pnl = allSessions.reduce((s, h) => s + (h.pnl || 0), 0);
+  const filtered = allSessions.filter(s => !excludedAccountIds.has(s.account_id));
+  const total = filtered.length;
+  const trades = filtered.reduce((s, h) => s + (h.trades || 0), 0);
+  const wins = filtered.reduce((s, h) => s + (h.wins || 0), 0);
+  const pnl = filtered.reduce((s, h) => s + (h.pnl || 0), 0);
   const wr = trades > 0 ? ((wins / trades) * 100).toFixed(1) + '%' : '-';
   document.getElementById('ov-total-sessions').textContent = total;
   document.getElementById('ov-total-trades').textContent = trades;
@@ -340,7 +341,7 @@ function renderOverviewStats() {
   pnlEl.closest('.stat-card').className = 'stat-card ' + (pnl >= 0 ? 'tint-pos' : 'tint-neg');
   // Best/worst day
   const byDay = {};
-  allSessions.forEach(s => { const d = s.date || ''; if (d) byDay[d] = (byDay[d] || 0) + (s.pnl || 0); });
+  filtered.forEach(s => { const d = s.date || ''; if (d) byDay[d] = (byDay[d] || 0) + (s.pnl || 0); });
   const days = Object.values(byDay);
   const bestEl = document.getElementById('ov-best-day');
   const worstEl = document.getElementById('ov-worst-day');
@@ -370,7 +371,7 @@ function renderRecentResults() {
 function renderTopInstruments() {
   const el = document.getElementById('top-instruments');
   const map = {};
-  allSessions.forEach(s => {
+  allSessions.filter(s => !excludedAccountIds.has(s.account_id)).forEach(s => {
     const c = s.character || 'Unknown';
     if (!map[c]) map[c] = { sessions: 0, wins: 0, trades: 0 };
     map[c].sessions++; map[c].trades += (s.trades || 0); map[c].wins += (s.wins || 0);
@@ -393,7 +394,7 @@ function renderTopInstruments() {
 function renderSessionDistribution() {
   const el = document.getElementById('session-distribution');
   const days = [0, 0, 0, 0, 0, 0, 0];
-  allSessions.forEach(s => { if (s.date) { const d = new Date(s.date + 'T12:00:00').getDay(); days[d]++; } });
+  allSessions.filter(s => !excludedAccountIds.has(s.account_id)).forEach(s => { if (s.date) { const d = new Date(s.date + 'T12:00:00').getDay(); days[d]++; } });
   const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const max = Math.max(...days, 1);
   el.innerHTML = `<div style="display:flex;align-items:flex-end;gap:6px;height:80px">` +
@@ -413,16 +414,30 @@ function renderAccountList(accounts) {
   el.innerHTML = accounts.map(a => {
     const statusTag = a.status === 'active' ? '<span style="color:#4caf82;font-size:.55rem;font-weight:600">ACTIVE</span>' : '<span style="color:#888;font-size:.55rem">archived</span>';
     const dateStr = a.date ? a.date.slice(0, 10) : '-';
-    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})" style="display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center">
+    const exCk = `<label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:.5rem;color:${a.excluded?'#e05c5c':'#555'}" title="Include in aggregated stats" onclick="event.stopPropagation()"><input type="checkbox" ${a.excluded?'':'checked'} onchange="toggleExclude(${a.id},!this.checked)" style="accent-color:#4caf82;width:10px;height:10px;cursor:pointer">${a.excluded?'excl':''}</label>`;
+    return `<div class="acct-item" data-id="${a.id}" onclick="selectAccount(${a.id})" style="display:grid;grid-template-columns:1fr 1fr 1fr auto;align-items:center;gap:4px">
       ${statusTag}
       <span style="color:#ccc">$${a.balance.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
       <span style="color:#888;font-size:.55rem">${dateStr}</span>
+      ${exCk}
     </div>`;
   }).join('');
 }
 
 function highlightAccount(id) {
   document.querySelectorAll('.acct-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.id) === id));
+}
+
+let excludedAccountIds = new Set();
+
+async function toggleExclude(accountId, excluded) {
+  await fetch('/api/account/' + accountId + '/exclude', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({excluded})});
+  if (excluded) excludedAccountIds.add(accountId); else excludedAccountIds.delete(accountId);
+  renderOverviewStats();
+  renderAggregated();
+  renderTopInstruments();
+  renderSessionDistribution();
+  renderStreak(allSessions.filter(s => !excludedAccountIds.has(s.account_id)));
 }
 
 async function selectAccount(id) {
@@ -637,9 +652,10 @@ function selectMonth(month) {
 function renderAggregated() {
   const ctx = document.getElementById('equity-chart-agg').getContext('2d');
   if (aggChartInstance) aggChartInstance.destroy();
-  if (allSessions.length === 0) { aggChartInstance = null; return; }
+  const aggFiltered = allSessions.filter(s => !excludedAccountIds.has(s.account_id));
+  if (aggFiltered.length === 0) { aggChartInstance = null; return; }
   let running = 0;
-  const curve = allSessions.map(h => { const base = accountsMap[h.account_id] || 0; running += base > 0 ? ((h.pnl || 0) / base) * 100 : 0; return running; });
+  const curve = aggFiltered.map(h => { const base = accountsMap[h.account_id] || 0; running += base > 0 ? ((h.pnl || 0) / base) * 100 : 0; return running; });
   const color = running >= 0 ? '#4caf82' : '#e05c5c';
   aggChartInstance = new Chart(ctx, {
     type: 'line',

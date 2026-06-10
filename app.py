@@ -650,6 +650,20 @@ def api_account_notes(account_id):
     return jsonify({'notes': row['notes'] if row and row['notes'] else ''})
 
 
+@app.route('/api/account/<int:account_id>/exclude', methods=['POST'])
+def api_account_exclude(account_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json(force=True)
+    from models import _get_db
+    conn = _get_db()
+    conn.execute('UPDATE trading_accounts SET excluded=? WHERE id=? AND user_id=?', (1 if data.get('excluded') else 0, account_id, uid))
+    conn.commit()
+    conn.close()
+    return jsonify({'saved': True})
+
+
 @app.route('/api/account/archived')
 def api_archived_accounts():
     uid = _get_user_id()

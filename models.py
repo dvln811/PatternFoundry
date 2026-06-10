@@ -104,6 +104,10 @@ def init_db():
         conn.execute('ALTER TABLE trading_accounts ADD COLUMN notes TEXT DEFAULT ""')
     except Exception:
         pass
+    try:
+        conn.execute('ALTER TABLE trading_accounts ADD COLUMN excluded INTEGER DEFAULT 0')
+    except Exception:
+        pass
     # Per-trade data
     conn.execute('''CREATE TABLE IF NOT EXISTS trades (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
