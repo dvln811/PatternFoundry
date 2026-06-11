@@ -846,7 +846,8 @@ async function loadSession() {
     return;
   }
 
-  if (seedVal === '') document.getElementById('sim-seed').value = data.seed || '';
+  document.getElementById('sim-seed').value = '';
+  document.getElementById('sim-seed').placeholder = data.seed || 'random';
 
   // /api/sim-session returns { history: [...1-min candles], ticks: [...second-by-second] }
   allTicks      = data.ticks;   // second-by-second {time, price, volume}
