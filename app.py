@@ -685,6 +685,38 @@ def api_account_delete(account_id):
     return jsonify({'deleted': True})
 
 
+@app.route('/api/account/<int:account_id>/export')
+def api_account_export(account_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    from models import _get_db
+    import csv, io
+    conn = _get_db()
+    acct = conn.execute('SELECT id, starting_balance FROM trading_accounts WHERE id=? AND user_id=?', (account_id, uid)).fetchone()
+    if not acct:
+        conn.close()
+        return jsonify({'error': 'not found'}), 404
+    sessions = conn.execute('SELECT id, date, character, trades, wins, pnl, tick_size, tick_value FROM sessions WHERE account_id=? ORDER BY id', (account_id,)).fetchall()
+    sess_ids = [s['id'] for s in sessions]
+    trades = []
+    if sess_ids:
+        trades = conn.execute(f"SELECT session_id, direction, qty, entry_price, entry_time, exit_price, exit_time, pnl, exit_reason FROM trades WHERE session_id IN ({','.join('?'*len(sess_ids))}) ORDER BY session_id, entry_time", sess_ids).fetchall()
+    conn.close()
+
+    sess_map = {s['id']: s for s in sessions}
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(['date', 'instrument', 'direction', 'qty', 'entry_price', 'exit_price', 'pnl', 'exit_reason', 'tick_size', 'tick_value'])
+    for t in trades:
+        s = sess_map[t['session_id']]
+        w.writerow([s['date'], s['character'], t['direction'], t['qty'], t['entry_price'], t['exit_price'], round(t['pnl'] or 0, 2), t['exit_reason'], s['tick_size'], s['tick_value']])
+
+    resp = app.response_class(buf.getvalue(), mimetype='text/csv')
+    resp.headers['Content-Disposition'] = f'attachment; filename=account_{account_id}_trades.csv'
+    return resp
+
+
 @app.route('/api/account/archived')
 def api_archived_accounts():
     uid = _get_user_id()
