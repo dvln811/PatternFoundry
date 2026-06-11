@@ -717,6 +717,34 @@ def api_account_export(account_id):
     return resp
 
 
+@app.route('/api/account/<int:account_id>/export-candles')
+def api_account_export_candles(account_id):
+    uid = _get_user_id()
+    if not uid:
+        return jsonify({'error': 'unauthorized'}), 401
+    from models import _get_db
+    import csv, io
+    conn = _get_db()
+    acct = conn.execute('SELECT id FROM trading_accounts WHERE id=? AND user_id=?', (account_id, uid)).fetchone()
+    if not acct:
+        conn.close()
+        return jsonify({'error': 'not found'}), 404
+    sessions = conn.execute('SELECT date, character, candles FROM sessions WHERE account_id=? AND candles IS NOT NULL ORDER BY id', (account_id,)).fetchall()
+    conn.close()
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(['session_date', 'instrument', 'time', 'open', 'high', 'low', 'close', 'volume'])
+    for s in sessions:
+        candles = json.loads(s['candles']) if s['candles'] else []
+        for c in candles:
+            w.writerow([s['date'], s['character'], c.get('t', ''), c.get('o', ''), c.get('h', ''), c.get('l', ''), c.get('c', ''), c.get('v', 0)])
+
+    resp = app.response_class(buf.getvalue(), mimetype='text/csv')
+    resp.headers['Content-Disposition'] = f'attachment; filename=account_{account_id}_candles.csv'
+    return resp
+
+
 @app.route('/api/account/archived')
 def api_archived_accounts():
     uid = _get_user_id()
