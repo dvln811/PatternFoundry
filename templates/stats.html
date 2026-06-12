@@ -238,9 +238,15 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
         <div class="equity-chart"><canvas id="equity-chart"></canvas></div>
       </div>
 
-      <div class="section" id="drawdown-section" style="display:none">
-        <h2>Drawdown</h2>
-        <div class="equity-chart"><canvas id="drawdown-chart"></canvas></div>
+      <div class="section" id="analytics-grid-section" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><div style="font-size:.6rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Rolling Win Rate (10)</div><div class="equity-chart" style="height:140px"><canvas id="chart-rolling-wr"></canvas></div></div>
+          <div><div style="font-size:.6rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Rolling Expectancy (10)</div><div class="equity-chart" style="height:140px"><canvas id="chart-rolling-exp"></canvas></div></div>
+          <div><div style="font-size:.6rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">R-Multiple per Trade</div><div class="equity-chart" style="height:140px"><canvas id="chart-r-multiple"></canvas></div></div>
+          <div><div style="font-size:.6rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Drawdown Duration</div><div class="equity-chart" style="height:140px"><canvas id="chart-dd-duration"></canvas></div></div>
+          <div><div style="font-size:.6rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">P/L Distribution</div><div class="equity-chart" style="height:140px"><canvas id="chart-pnl-dist"></canvas></div></div>
+          <div><div style="font-size:.6rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Cumulative R</div><div class="equity-chart" style="height:140px"><canvas id="chart-cum-r"></canvas></div></div>
+        </div>
       </div>
 
       <div class="section" id="instrument-section" style="display:none">
@@ -562,19 +568,11 @@ async function renderForAccount(accountId) {
   renderEquityCurve('equity-chart', sessions, 'equityChartInstance');
 
   // Drawdown
-  const ddSection = document.getElementById('drawdown-section');
-  if (sessions.length > 1) {
-    let running = 0, peak = 0;
-    const dd = sessions.map(s => { running += (s.pnl || 0); peak = Math.max(peak, running); return running - peak; });
-    ddSection.style.display = '';
-    const ddCtx = document.getElementById('drawdown-chart').getContext('2d');
-    if (window._ddChart) window._ddChart.destroy();
-    window._ddChart = new Chart(ddCtx, {
-      type: 'line',
-      data: { labels: dd.map((_, i) => i + 1), datasets: [{ data: dd, borderColor: '#e05c5c', borderWidth: 1.5, pointRadius: 0, fill: true, backgroundColor: '#e05c5c18', tension: 0.2 }] },
-      options: { responsive: true, maintainAspectRatio: false, animation: { duration: 300 }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' $' + c.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) } } }, scales: { x: { ticks: { color: '#bbb', maxTicksLimit: 10 }, grid: { color: '#1a1a1a' } }, y: { ticks: { color: '#bbb', callback: v => '$' + v.toLocaleString() }, grid: { color: '#1a1a1a' } } } }
-    });
-  } else { ddSection.style.display = 'none'; }
+  const analyticsSection = document.getElementById('analytics-grid-section');
+  if (trades.length >= 5) {
+    analyticsSection.style.display = '';
+    renderMiniCharts(trades, sessions);
+  } else { analyticsSection.style.display = 'none'; }
 
   // Per-instrument breakdown
   const instMap = {};
@@ -704,6 +702,75 @@ function renderEquityCurve(canvasId, sessions, instanceKey) {
     data: { labels: curve.map((_, i) => i + 1), datasets: [{ data: curve, borderColor: color, borderWidth: 1.5, pointRadius: 0, fill: true, backgroundColor: color + '18', tension: 0.2 }] },
     options: { responsive: true, maintainAspectRatio: false, animation: { duration: 300 }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' $' + c.parsed.y.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) } } }, scales: { x: { ticks: { color: '#bbb', maxTicksLimit: 10 }, grid: { color: '#1a1a1a' } }, y: { ticks: { color: '#bbb', callback: v => '$' + v.toLocaleString() }, grid: { color: '#1a1a1a' } } } }
   });
+}
+
+// ── Mini Analytics Charts ─────────────────────────────────────────────────────
+const _miniCharts = {};
+function _miniOpts(tooltipCb) {
+  return { responsive: true, maintainAspectRatio: false, animation: { duration: 200 }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: tooltipCb } } }, scales: { x: { display: false }, y: { ticks: { color: '#888', font: { size: 9 }, maxTicksLimit: 4 }, grid: { color: '#1a1a1a' } } } };
+}
+function _makeChart(id, type, labels, datasets, opts) {
+  const ctx = document.getElementById(id).getContext('2d');
+  if (_miniCharts[id]) _miniCharts[id].destroy();
+  _miniCharts[id] = new Chart(ctx, { type, data: { labels, datasets }, options: opts });
+}
+
+function renderMiniCharts(trades, sessions) {
+  const W = 10; // rolling window
+
+  // 1. Rolling Win Rate
+  const wrData = [];
+  for (let i = W - 1; i < trades.length; i++) {
+    const slice = trades.slice(i - W + 1, i + 1);
+    wrData.push(slice.filter(t => t.pnl > 0).length / W * 100);
+  }
+  _makeChart('chart-rolling-wr', 'line', wrData.map((_, i) => i + W), [{ data: wrData, borderColor: '#4caf82', borderWidth: 1.5, pointRadius: 0, fill: true, backgroundColor: '#4caf8218', tension: 0.3 }], _miniOpts(c => c.parsed.y.toFixed(1) + '%'));
+
+  // 2. Rolling Expectancy
+  const expData = [];
+  for (let i = W - 1; i < trades.length; i++) {
+    const slice = trades.slice(i - W + 1, i + 1);
+    expData.push(slice.reduce((s, t) => s + t.pnl, 0) / W);
+  }
+  const expColor = expData.length && expData[expData.length - 1] >= 0 ? '#4caf82' : '#e05c5c';
+  _makeChart('chart-rolling-exp', 'line', expData.map((_, i) => i + W), [{ data: expData, borderColor: expColor, borderWidth: 1.5, pointRadius: 0, fill: true, backgroundColor: expColor + '18', tension: 0.3 }], _miniOpts(c => '$' + c.parsed.y.toFixed(2)));
+
+  // 3. R-Multiple per trade (risk = |pnl| of avg loss as 1R)
+  const avgLoss = Math.abs(trades.filter(t => t.pnl < 0).reduce((s, t) => s + t.pnl, 0) / (trades.filter(t => t.pnl < 0).length || 1));
+  const rMultiples = trades.map(t => avgLoss > 0 ? t.pnl / avgLoss : 0);
+  const rColors = rMultiples.map(r => r >= 0 ? '#4caf82' : '#e05c5c');
+  _makeChart('chart-r-multiple', 'bar', rMultiples.map((_, i) => i + 1), [{ data: rMultiples, backgroundColor: rColors, borderWidth: 0 }], _miniOpts(c => c.parsed.y.toFixed(2) + 'R'));
+
+  // 4. Drawdown Duration (sessions to recover)
+  const ddDurations = [];
+  let running = 0, peak = 0, ddStart = -1;
+  sessions.forEach((s, i) => {
+    running += (s.pnl || 0);
+    if (running > peak) { if (ddStart >= 0) { ddDurations.push(i - ddStart); ddStart = -1; } peak = running; }
+    else if (ddStart < 0) { ddStart = i; }
+  });
+  if (ddStart >= 0) ddDurations.push(sessions.length - ddStart);
+  _makeChart('chart-dd-duration', 'bar', ddDurations.map((_, i) => i + 1), [{ data: ddDurations, backgroundColor: '#e05c5c88', borderWidth: 0 }], _miniOpts(c => c.parsed.y + ' sessions'));
+
+  // 5. P/L Distribution (histogram)
+  const pnls = trades.map(t => t.pnl);
+  const mn = Math.min(...pnls), mx = Math.max(...pnls);
+  const bins = 12; const step = (mx - mn) / bins || 1;
+  const hist = Array(bins).fill(0);
+  const histLabels = [];
+  for (let i = 0; i < bins; i++) {
+    const lo = mn + i * step;
+    hist[i] = pnls.filter(p => p >= lo && (i === bins - 1 ? p <= mx : p < lo + step)).length;
+    histLabels.push('$' + Math.round(lo));
+  }
+  const histColors = histLabels.map(l => parseFloat(l.replace('$', '')) >= 0 ? '#4caf8288' : '#e05c5c88');
+  _makeChart('chart-pnl-dist', 'bar', histLabels, [{ data: hist, backgroundColor: histColors, borderWidth: 0 }], _miniOpts(c => c.parsed.y + ' trades'));
+
+  // 6. Cumulative R
+  const cumR = []; let cr = 0;
+  rMultiples.forEach(r => { cr += r; cumR.push(cr); });
+  const crColor = cr >= 0 ? '#4caf82' : '#e05c5c';
+  _makeChart('chart-cum-r', 'line', cumR.map((_, i) => i + 1), [{ data: cumR, borderColor: crColor, borderWidth: 1.5, pointRadius: 0, fill: true, backgroundColor: crColor + '18', tension: 0.3 }], _miniOpts(c => c.parsed.y.toFixed(2) + 'R'));
 }
 
 // ── Practice Streak & Heatmap ────────────────────────────────────────────────
