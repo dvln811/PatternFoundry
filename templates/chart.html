@@ -858,6 +858,15 @@ async function loadSession() {
   initialMargin = data.initial_margin || 0;
   maintenanceMargin = data.maintenance_margin || 0;
 
+  // Refresh balance from server (previous session may have updated it)
+  if (!ironMan.active) {
+    try {
+      const ar = await fetch('/api/account', {credentials:'include'});
+      const ad = await ar.json();
+      serverAccount.balance = ad.balance;
+    } catch(e) {}
+  }
+
   account = {
     balance: ironMan.active ? ironMan.run.balance : (serverAccount.balance || 50000),
     startBal: ironMan.active ? ironMan.run.balance : (serverAccount.balance || 50000),

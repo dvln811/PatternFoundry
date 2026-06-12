@@ -257,7 +257,7 @@ h1{color:#f97316;font-size:1rem;text-transform:uppercase;letter-spacing:.1em;mar
         <h2>Session History</h2>
         <div class="history-wrap">
           <table class="history-table" id="history-table">
-            <thead><tr><th>Date</th><th>Instrument</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Result</th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Instrument</th><th>Trades</th><th>Win Rate</th><th>P/L</th><th>Start Bal</th><th>End Bal</th><th>Result</th><th></th></tr></thead>
             <tbody id="history-body"></tbody>
           </table>
         </div>
@@ -622,12 +622,19 @@ async function renderForAccount(accountId) {
   const noHist = document.getElementById('no-history');
   if (sessions.length === 0) { noHist.style.display = 'block'; tbody.innerHTML = ''; return; }
   noHist.style.display = 'none';
-  tbody.innerHTML = sessions.slice().reverse().map(h => {
+  // Compute running balance per session
+  let runBal = startingBal;
+  const sessionsWithBal = sessions.map(h => {
+    const sb = runBal;
+    runBal += (h.pnl || 0);
+    return { ...h, startBal: sb, endBal: runBal };
+  });
+  tbody.innerHTML = sessionsWithBal.slice().reverse().map(h => {
     const wr3 = h.trades > 0 ? ((h.wins / h.trades) * 100).toFixed(0) + '%' : '-';
     const pnl2 = (h.pnl >= 0 ? '$' : '-$') + fmtD(h.pnl || 0);
     const tag = h.trades === 0 ? '<span class="tag tag-flat">FLAT</span>' : h.pnl >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
     const dateVal = (h.date || '').slice(0, 10);
-    return `<tr><td><input type="date" value="${dateVal}" class="session-date-pick" data-sid="${h.id}" style="background:#111;color:#ccc;border:1px solid #333;border-radius:3px;padding:2px 4px;font-size:.65rem;cursor:pointer"></td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr3}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl2}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
+    return `<tr><td><input type="date" value="${dateVal}" class="session-date-pick" data-sid="${h.id}" style="background:#111;color:#ccc;border:1px solid #333;border-radius:3px;padding:2px 4px;font-size:.65rem;cursor:pointer"></td><td>${h.character || '-'}</td><td>${h.trades || 0}</td><td>${wr3}</td><td style="color:${h.pnl>=0?'#4caf82':'#e05c5c'}">${pnl2}</td><td>$${fmtD(h.startBal)}</td><td>$${fmtD(h.endBal)}</td><td>${tag}</td><td>${h.id ? `<a href="/simulator?replay=${h.id}" style="color:#f97316;font-size:.7rem;text-decoration:none">▶</a>` : ''}</td></tr>`;
   }).join('');
   tbody.querySelectorAll('.session-date-pick').forEach(el => {
     el.addEventListener('change', async function() {
