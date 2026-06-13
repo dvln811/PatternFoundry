@@ -53,6 +53,7 @@ h1{font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.05e
   <input id="meta-date" placeholder="YYYY-MM-DD" style="max-width:140px">
   <input id="meta-author" placeholder="Author" value="PatternFoundry Engineering" style="max-width:200px">
   <input id="meta-slug" placeholder="slug-name" style="max-width:200px">
+  <button onclick="genSlug()" style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;padding:6px 10px;border-radius:4px;font-size:.7rem;cursor:pointer">Auto</button>
 </div>
 <div class="meta-row">
   <input id="meta-excerpt" placeholder="Short excerpt for blog index listing" style="flex:1">
@@ -99,6 +100,12 @@ function ins(before, after) {
   editor.selectionStart = start + before.length;
   editor.selectionEnd = start + before.length + sel.length;
   updatePreview();
+}
+
+function genSlug() {
+  const date = document.getElementById('meta-date').value || new Date().toISOString().slice(0,10);
+  const title = document.getElementById('meta-title').value || 'untitled';
+  document.getElementById('meta-slug').value = date + '-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/,'').replace(/^-+/,'');
 }
 
 function buildFrontMatter() {
