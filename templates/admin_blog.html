@@ -54,6 +54,9 @@ h1{font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.05e
   <input id="meta-author" placeholder="Author" value="PatternFoundry Engineering" style="max-width:200px">
   <input id="meta-slug" placeholder="slug-name" style="max-width:200px">
 </div>
+<div class="meta-row">
+  <input id="meta-excerpt" placeholder="Short excerpt for blog index listing" style="flex:1">
+</div>
 
 <div class="toolbar">
   <button onclick="ins('## ','')">H2</button>
@@ -102,10 +105,12 @@ function buildFrontMatter() {
   const title = document.getElementById('meta-title').value;
   const date = document.getElementById('meta-date').value;
   const author = document.getElementById('meta-author').value;
+  const excerpt = document.getElementById('meta-excerpt').value;
   let fm = '---\n';
   if (title) fm += 'title: ' + title + '\n';
   if (date) fm += 'date: ' + date + '\n';
   if (author) fm += 'author: ' + author + '\n';
+  if (excerpt) fm += 'excerpt: ' + excerpt + '\n';
   fm += '---\n\n';
   return fm;
 }
@@ -158,6 +163,7 @@ async function loadPost(slug) {
   document.getElementById('meta-title').value = d.title || '';
   document.getElementById('meta-date').value = d.date || '';
   document.getElementById('meta-author').value = d.author || 'PatternFoundry Engineering';
+  document.getElementById('meta-excerpt').value = d.excerpt || '';
   document.getElementById('meta-slug').value = d.slug || '';
   updatePreview();
 }
