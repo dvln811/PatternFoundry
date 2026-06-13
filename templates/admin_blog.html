@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blog Editor — PatternFoundry Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0d;color:#e0e0e0;font-family:Inter,system-ui,sans-serif;padding:20px 40px}
+h1{font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px;color:#f97316}
+.top-bar{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.top-bar select,.top-bar input,.top-bar button{background:#111;border:1px solid #2a2a2a;color:#ccc;padding:6px 12px;border-radius:4px;font-size:.78rem;font-family:inherit}
+.top-bar button{cursor:pointer;border-color:#4caf82;color:#4caf82;font-weight:600}
+.top-bar button:hover{background:#4caf8218}
+.top-bar button.danger{border-color:#e05c5c;color:#e05c5c}
+.meta-row{display:flex;gap:12px;margin-bottom:12px}
+.meta-row input{flex:1;background:#111;border:1px solid #2a2a2a;color:#ccc;padding:8px 12px;border-radius:4px;font-size:.8rem;font-family:inherit}
+.toolbar{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.toolbar button{background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;padding:4px 10px;border-radius:3px;font-size:.72rem;cursor:pointer;font-family:monospace}
+.toolbar button:hover{border-color:#f97316;color:#f97316}
+.editor-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;height:calc(100vh - 260px)}
+#editor{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;padding:16px;color:#ccc;font-family:'Courier New',monospace;font-size:.82rem;resize:none;line-height:1.6;overflow-y:auto}
+#preview{background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:24px;overflow-y:auto;line-height:1.7;font-size:.88rem;color:#ccc}
+#preview h2{font-size:1.05rem;font-weight:700;color:#e0e0e0;margin:24px 0 8px;text-transform:uppercase;letter-spacing:.03em}
+#preview h3{font-size:.92rem;font-weight:600;color:#e0e0e0;margin:18px 0 6px}
+#preview p{margin-bottom:14px}
+#preview img{max-width:100%;border-radius:6px;border:1px solid #2a2a2a;margin:12px 0}
+#preview code{background:#1a1a1a;padding:2px 6px;border-radius:3px;font-size:.82rem;color:#f97316}
+#preview pre{background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;padding:14px;overflow-x:auto;margin:14px 0}
+#preview pre code{background:none;padding:0;color:#ccc}
+#preview blockquote{border-left:3px solid #f97316;padding-left:14px;color:#888;margin:14px 0;font-style:italic}
+#preview ul,#preview ol{margin:10px 0 14px 20px}
+#preview a{color:#f97316}
+.status{font-size:.7rem;color:#555;margin-left:auto}
+</style>
+</head>
+<body>
+<h1><a href="/admin" style="color:#888;text-decoration:none">Admin</a> / Blog Editor</h1>
+
+<div class="top-bar">
+  <select id="post-list" onchange="loadPost(this.value)"><option value="">— New Post —</option></select>
+  <button onclick="savePost()">Save</button>
+  <button class="danger" onclick="deletePost()">Delete</button>
+  <label style="cursor:pointer;border:1px solid #2a2a2a;padding:6px 12px;border-radius:4px;font-size:.78rem;color:#aaa">
+    Upload Image <input type="file" accept="image/*" style="display:none" onchange="uploadImage(this)">
+  </label>
+  <span class="status" id="status"></span>
+</div>
+
+<div class="meta-row">
+  <input id="meta-title" placeholder="Post Title">
+  <input id="meta-date" placeholder="YYYY-MM-DD" style="max-width:140px">
+  <input id="meta-author" placeholder="Author" value="PatternFoundry Engineering" style="max-width:200px">
+  <input id="meta-slug" placeholder="slug-name" style="max-width:200px">
+</div>
+
+<div class="toolbar">
+  <button onclick="ins('## ','')">H2</button>
+  <button onclick="ins('### ','')">H3</button>
+  <button onclick="ins('**','**')">B</button>
+  <button onclick="ins('*','*')">I</button>
+  <button onclick="ins('`','`')">Code</button>
+  <button onclick="ins('```\\n','\\n```')">Block</button>
+  <button onclick="ins('[','](url)')">Link</button>
+  <button onclick="ins('![alt](/static/blog/',')')">Img</button>
+  <button onclick="ins('> ','')">Quote</button>
+  <button onclick="ins('- ','')">List</button>
+  <button onclick="ins('---\\n','')">HR</button>
+</div>
+
+<div class="editor-wrap">
+  <textarea id="editor" oninput="updatePreview()" spellcheck="false"></textarea>
+  <div id="preview"></div>
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+
+function updatePreview() {
+  const raw = editor.value;
+  let content = raw;
+  if (content.startsWith('---')) {
+    const parts = content.split('---');
+    if (parts.length >= 3) content = parts.slice(2).join('---');
+  }
+  preview.innerHTML = marked.parse(content);
+}
+
+function ins(before, after) {
+  const start = editor.selectionStart, end = editor.selectionEnd;
+  const sel = editor.value.substring(start, end);
+  editor.value = editor.value.substring(0, start) + before + sel + after + editor.value.substring(end);
+  editor.focus();
+  editor.selectionStart = start + before.length;
+  editor.selectionEnd = start + before.length + sel.length;
+  updatePreview();
+}
+
+function buildFrontMatter() {
+  const title = document.getElementById('meta-title').value;
+  const date = document.getElementById('meta-date').value;
+  const author = document.getElementById('meta-author').value;
+  let fm = '---\n';
+  if (title) fm += 'title: ' + title + '\n';
+  if (date) fm += 'date: ' + date + '\n';
+  if (author) fm += 'author: ' + author + '\n';
+  fm += '---\n\n';
+  return fm;
+}
+
+function getSlug() {
+  let slug = document.getElementById('meta-slug').value.trim();
+  if (!slug) {
+    const date = document.getElementById('meta-date').value || new Date().toISOString().slice(0,10);
+    const title = document.getElementById('meta-title').value || 'untitled';
+    slug = date + '-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+  }
+  return slug;
+}
+
+async function savePost() {
+  const slug = getSlug();
+  const body = editor.value;
+  // Rebuild with front matter if not already present
+  let content = body;
+  if (!body.startsWith('---')) {
+    content = buildFrontMatter() + body;
+  }
+  const res = await fetch('/api/blog/posts', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slug, content})});
+  const d = await res.json();
+  if (d.saved) {
+    document.getElementById('status').textContent = 'Saved ✓';
+    document.getElementById('meta-slug').value = d.slug;
+    setTimeout(() => document.getElementById('status').textContent = '', 2000);
+    loadList();
+  }
+}
+
+async function deletePost() {
+  const slug = document.getElementById('meta-slug').value || document.getElementById('post-list').value;
+  if (!slug || !confirm('Delete this post?')) return;
+  await fetch('/api/blog/posts/' + slug, {method:'DELETE', credentials:'include'});
+  editor.value = '';
+  document.getElementById('meta-title').value = '';
+  document.getElementById('meta-date').value = '';
+  document.getElementById('meta-slug').value = '';
+  updatePreview();
+  loadList();
+}
+
+async function loadPost(slug) {
+  if (!slug) { editor.value = ''; document.getElementById('meta-title').value = ''; document.getElementById('meta-date').value = ''; document.getElementById('meta-slug').value = ''; updatePreview(); return; }
+  const res = await fetch('/api/blog/posts/' + slug, {credentials:'include'});
+  const d = await res.json();
+  editor.value = d.raw || '';
+  document.getElementById('meta-title').value = d.title || '';
+  document.getElementById('meta-date').value = d.date || '';
+  document.getElementById('meta-author').value = d.author || 'PatternFoundry Engineering';
+  document.getElementById('meta-slug').value = d.slug || '';
+  updatePreview();
+}
+
+async function loadList() {
+  const res = await fetch('/api/blog/posts', {credentials:'include'});
+  const posts = await res.json();
+  const sel = document.getElementById('post-list');
+  sel.innerHTML = '<option value="">— New Post —</option>' + posts.map(p => '<option value="'+p.slug+'">'+( p.title||p.slug)+'</option>').join('');
+}
+
+async function uploadImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch('/api/blog/upload', {method:'POST', credentials:'include', body:fd});
+  const d = await res.json();
+  if (d.url) {
+    ins('![' + file.name + '](' + d.url + ')', '');
+    document.getElementById('status').textContent = 'Uploaded ✓';
+    setTimeout(() => document.getElementById('status').textContent = '', 2000);
+  }
+}
+
+loadList();
+document.getElementById('meta-date').value = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>

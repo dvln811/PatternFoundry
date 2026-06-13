@@ -308,6 +308,64 @@ def blog_post(slug):
     post = _parse_post(slug + '.md')
     return render_template('blog_post.html', post=post)
 
+@app.route('/admin/blog')
+def admin_blog():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return redirect('/')
+    return render_template('admin_blog.html')
+
+@app.route('/api/blog/posts')
+def api_blog_list():
+    return jsonify(_get_posts())
+
+@app.route('/api/blog/posts/<slug>')
+def api_blog_get(slug):
+    path = os.path.join(_BLOG_DIR, slug + '.md')
+    if not os.path.isfile(path):
+        return jsonify({'error': 'not found'}), 404
+    with open(path) as f:
+        raw = f.read()
+    post = _parse_post(slug + '.md')
+    post['raw'] = raw
+    return jsonify(post)
+
+@app.route('/api/blog/posts', methods=['POST'])
+def api_blog_save():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json()
+    slug = data.get('slug', '').strip()
+    content = data.get('content', '')
+    if not slug:
+        return jsonify({'error': 'slug required'}), 400
+    slug = ''.join(c if c.isalnum() or c in '-_' else '-' for c in slug).strip('-')
+    path = os.path.join(_BLOG_DIR, slug + '.md')
+    with open(path, 'w') as f:
+        f.write(content)
+    return jsonify({'saved': True, 'slug': slug})
+
+@app.route('/api/blog/posts/<slug>', methods=['DELETE'])
+def api_blog_delete(slug):
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return jsonify({'error': 'unauthorized'}), 401
+    path = os.path.join(_BLOG_DIR, slug + '.md')
+    if os.path.isfile(path):
+        os.remove(path)
+    return jsonify({'deleted': True})
+
+@app.route('/api/blog/upload', methods=['POST'])
+def api_blog_upload():
+    if not _IS_LOCAL and (not current_user.is_authenticated or not current_user.is_admin):
+        return jsonify({'error': 'unauthorized'}), 401
+    f = request.files.get('file')
+    if not f:
+        return jsonify({'error': 'no file'}), 400
+    filename = ''.join(c if c.isalnum() or c in '-_.' else '_' for c in f.filename)
+    img_dir = os.path.join(os.path.dirname(__file__), 'static', 'blog')
+    os.makedirs(img_dir, exist_ok=True)
+    f.save(os.path.join(img_dir, filename))
+    return jsonify({'url': '/static/blog/' + filename})
+
 _BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
 os.makedirs(_BOARD_DIR, exist_ok=True)
 
