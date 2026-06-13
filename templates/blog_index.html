@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blog — PatternFoundry</title>
+<meta name="description" content="Technical articles on market simulation, trading mechanics, and the engineering behind PatternFoundry.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0d;color:#e0e0e0;font-family:Inter,system-ui,sans-serif}
+.nav{position:sticky;top:0;z-index:50;background:rgba(13,13,13,0.92);backdrop-filter:blur(10px);border-bottom:1px solid #222;padding:12px 40px;display:flex;align-items:center;justify-content:space-between}
+.nav .brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:#f97316;font-weight:700;font-size:1.05rem;text-transform:uppercase;letter-spacing:.3px}
+.nav .brand img{height:28px}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{color:#888;font-size:.8rem;text-decoration:none;text-transform:uppercase;letter-spacing:.04em}
+.nav-links a:hover{color:#e0e0e0}
+.container{max-width:720px;margin:0 auto;padding:80px 40px}
+h1{font-size:1.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.subtitle{color:#888;font-size:.9rem;margin-bottom:48px}
+.post-list{display:flex;flex-direction:column;gap:24px}
+.post-item{border:1px solid #1a1a1a;border-radius:8px;padding:24px;background:#111;transition:border-color .2s}
+.post-item:hover{border-color:#f97316}
+.post-item a{text-decoration:none}
+.post-item h2{font-size:1rem;font-weight:700;color:#e0e0e0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
+.post-meta{font-size:.72rem;color:#666;margin-bottom:8px}
+.post-excerpt{font-size:.85rem;color:#888;line-height:1.5}
+.footer{border-top:1px solid #1a1a1a;padding:24px 40px;text-align:center;color:#555;font-size:.75rem;margin-top:80px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="brand"><img src="/static/patternFoundryLogo.png" alt="">PatternFoundry</a>
+  <div class="nav-links">
+    <a href="/blog">Blog</a>
+    <a href="/docs">Docs</a>
+    <a href="/login">Sign In</a>
+  </div>
+</nav>
+<div class="container">
+  <h1>Blog</h1>
+  <p class="subtitle">Engineering notes on market simulation, trading mechanics, and building better practice tools.</p>
+  <div class="post-list">
+    {% for post in posts %}
+    <div class="post-item">
+      <a href="/blog/{{ post.slug }}">
+        <h2>{{ post.title or post.slug }}</h2>
+        <div class="post-meta">{{ post.date or '' }}{% if post.author %} · {{ post.author }}{% endif %}</div>
+        {% if post.excerpt %}<p class="post-excerpt">{{ post.excerpt }}</p>{% endif %}
+      </a>
+    </div>
+    {% endfor %}
+    {% if not posts %}
+    <p style="color:#555;font-size:.85rem">No posts yet.</p>
+    {% endif %}
+  </div>
+</div>
+<footer class="footer">© 2026 PatternFoundry. All rights reserved.</footer>
+</body>
+</html>

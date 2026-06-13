@@ -262,6 +262,52 @@ def docs_stats():
 def docs_presets():
     return render_template('docs_presets.html')
 
+# ── Blog ──────────────────────────────────────────────────────────────────────
+import markdown as _md
+
+_BLOG_DIR = os.path.join(os.path.dirname(__file__), 'blog')
+os.makedirs(_BLOG_DIR, exist_ok=True)
+
+def _parse_post(filename):
+    path = os.path.join(_BLOG_DIR, filename)
+    with open(path) as f:
+        content = f.read()
+    meta = {}
+    if content.startswith('---'):
+        parts = content.split('---', 2)
+        if len(parts) >= 3:
+            for line in parts[1].strip().split('\n'):
+                if ':' in line:
+                    k, v = line.split(':', 1)
+                    meta[k.strip()] = v.strip()
+            content = parts[2]
+    html = _md.markdown(content, extensions=['fenced_code', 'tables'])
+    meta['slug'] = filename.replace('.md', '')
+    meta['html'] = html
+    return meta
+
+def _get_posts():
+    posts = []
+    for f in sorted(os.listdir(_BLOG_DIR), reverse=True):
+        if f.endswith('.md'):
+            try:
+                posts.append(_parse_post(f))
+            except Exception:
+                pass
+    return posts
+
+@app.route('/blog')
+def blog_index():
+    return render_template('blog_index.html', posts=_get_posts())
+
+@app.route('/blog/<slug>')
+def blog_post(slug):
+    path = os.path.join(_BLOG_DIR, slug + '.md')
+    if not os.path.isfile(path):
+        return 'Not found', 404
+    post = _parse_post(slug + '.md')
+    return render_template('blog_post.html', post=post)
+
 _BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
 os.makedirs(_BOARD_DIR, exist_ok=True)
 
