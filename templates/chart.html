@@ -618,6 +618,7 @@ window.addEventListener('beforeunload', (e) => {
 let allTicks = [], tickIdx = 0;
 let playTimer = null, isPlaying = false;
 let currentPrice = 0, tickSize = 0.25, tickValue = 1.25;
+let sessionSeed = null;
 let initialMargin = 0, maintenanceMargin = 0;
 let candleTF = 60;
 let currentCandle = null;
@@ -848,6 +849,7 @@ async function loadSession() {
 
   document.getElementById('sim-seed').value = '';
   document.getElementById('sim-seed').placeholder = data.seed || 'random';
+  sessionSeed = data.seed || null;
 
   // /api/sim-session returns { history: [...1-min candles], ticks: [...second-by-second] }
   allTicks      = data.ticks;   // second-by-second {time, price, volume}
@@ -1478,7 +1480,7 @@ function saveSessionToHistory() {
     trades: account.trades.length,
     wins: account.wins,
     pnl: Math.round(account.sessionPnl * 100) / 100,
-    seed: document.getElementById('sim-seed').value || null,
+    seed: sessionSeed || document.getElementById('sim-seed').value || null,
     hist_days: parseInt(document.getElementById('sim-hist-days').value) || 5,
     tick_size: tickSize,
     tick_value: tickValue,
@@ -1502,7 +1504,7 @@ function saveSessionToHistory() {
       body:JSON.stringify({
         pnl: entry.pnl,
         character: entry.character,
-        seed: document.getElementById('sim-seed').value || null,
+        seed: sessionSeed || document.getElementById('sim-seed').value || null,
         trades: entry.trades,
         wins: entry.wins,
         losses: entry.trades - entry.wins,
@@ -1699,7 +1701,7 @@ function saveSession() {
     name,
     instrument: document.getElementById('sim-instrument').value,
     histDays: document.getElementById('sim-hist-days').value,
-    seed: document.getElementById('sim-seed').value,
+    seed: sessionSeed || document.getElementById('sim-seed').value,
     candleTF, tickIdx,
     account: { ...account },
     position: position ? { ...position } : null,
