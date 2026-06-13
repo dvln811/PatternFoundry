@@ -39,12 +39,14 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
 .card-footer{display:flex;align-items:center;gap:5px;margin-top:6px;margin-left:6px}
 .badge{font-size:.58rem;padding:2px 6px;border-radius:8px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
 .badge-twitter{background:#1d9bf018;color:#1d9bf0;border:1px solid #1d9bf033}
-.badge-reddit{background:#ff450018;color:#ff4500;border:1px solid #ff450033}
 .badge-hn{background:#ff660018;color:#ff6600;border:1px solid #ff660033}
 .badge-seo{background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa33}
+.badge-blog{background:#10b98118;color:#10b981;border:1px solid #10b98133;font-size:.62rem;padding:2px 8px}
 .badge-content{background:#4caf8218;color:#4caf82;border:1px solid #4caf8233}
 .badge-product{background:#f9731618;color:#f97316;border:1px solid #f9731633}
 .badge-youtube{background:#ff000018;color:#ff0000;border:1px solid #ff000033}
+.card.blog-card{border-left-color:#10b981!important;background:#0f1f1a;border-color:#10b98133}
+.card.blog-card .card-title{color:#10b981;font-weight:600}
 .card-del{position:absolute;top:6px;right:6px;background:none;border:none;color:#444;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;display:none}
 .card:hover .card-del{display:block}
 .card-del:hover{color:#e05c5c;background:#2a2a2a}
@@ -105,7 +107,7 @@ body{background:#0d0d0d;color:#ddd;font-family:Inter,system-ui,sans-serif;height
       <div><label>Notes</label><textarea id="m-notes"></textarea></div>
       <div class="modal-row">
         <div><label>Priority</label><select id="m-priority"><option value="low">Low</option><option value="med">Medium</option><option value="high">High</option><option value="crit">Critical</option></select></div>
-        <div><label>Channel</label><select id="m-channel"><option value="twitter">Twitter/X</option><option value="reddit">Reddit</option><option value="hn">Hacker News</option><option value="seo">SEO</option><option value="content">Content</option><option value="youtube">YouTube</option><option value="product">Product</option></select></div>
+        <div><label>Channel</label><select id="m-channel"><option value="twitter">Twitter/X</option><option value="hn">Hacker News</option><option value="seo">SEO</option><option value="blog">Blog</option><option value="content">Content</option><option value="youtube">YouTube</option><option value="product">Product</option></select></div>
       </div>
       <div class="modal-created" id="m-created"></div>
       <div class="comments-section">
@@ -133,28 +135,27 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 
 function defaultData(){return{
   'Backlog':[
+    {id:'blog1',title:'Blog: Agent-Based Order Flow Simulation',notes:'Write a technical blog post about the tick engine. Cover the 4 agent types (institutional, retail, momentum, mean-reversion), Hawkes process clustering for realistic tick arrival, simulated limit order book, and how this creates authentic microstructure. Tone: engineering team. ~800-1000 words.',ch:'blog',priority:'high',created:'2026-06-12',comments:[]},
+    {id:'blog2',title:'Blog: Why Random Walks Dont Look Like Markets',notes:'Write a blog post explaining why naive Brownian motion fails as market simulation. Cover: no regime structure, unrealistic wick ratios, no volume correlation, no session structure. Then explain what PatternFoundry does differently. Tone: accessible but technical. ~800 words.',ch:'blog',priority:'high',created:'2026-06-12',comments:[]},
+    {id:'blog3',title:'Blog: Building a Simulated Limit Order Book',notes:'Write about how the DOM/order book simulation works. Cover: why DOM matters for futures traders, how we simulate bids/asks, liquidity pool placement, how the book responds to aggressive orders. Tone: engineering team. ~700 words.',ch:'blog',priority:'high',created:'2026-06-12',comments:[]},
+    {id:'blog4',title:'Blog: The Problem with Backtesting on Historical Data',notes:'Write about limitations of replaying historical data for practice (memorization, hindsight bias, limited scenarios, curve fitting). Present the case for generated data. Position PatternFoundry as deliberate practice tool. Tone: opinionated but fair. ~800 words.',ch:'blog',priority:'high',created:'2026-06-12',comments:[]},
     {id:uid(),title:'Write SEO page: "free futures trading simulator"',notes:'Target keyword: "free futures trading simulator". Compare to Forex Tester ($300), NinjaTrader (complex). Highlight: browser-based, instant, no download.',ch:'seo',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Reddit value post #2: r/futurestrading',notes:'Only after r/daytrading post is up and stable for a week. Same format — data-led, no link in body.',ch:'reddit',priority:'med',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'First YouTube video (defer)',notes:'5-8 min walkthrough. Only do this if HN/X/Reddit generate interest. No pressure.',ch:'youtube',priority:'low',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'First YouTube video (defer)',notes:'5-8 min walkthrough. Only do this if HN/X generate interest. No pressure.',ch:'youtube',priority:'low',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Set up Plausible analytics',notes:'$9/mo. Add script tag to landing.html.\nDo after 50+ users. Before that, /admin/users is enough.',ch:'product',priority:'low',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Submit to "free tools" directories',notes:'AlternativeTo, Product Hunt (eventually). Low-effort listing pages that compound.',ch:'seo',priority:'low',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Write SEO page: "practice trading outside market hours"',notes:'Target search intent: people looking for practice after 4pm. Highlight unlimited sessions, any time.',ch:'seo',priority:'low',created:'2026-06-04',comments:[]},
   ],
   'This Week':[
-    {id:uid(),title:'Create Reddit account (neutral username)',notes:'NOT "PatternFoundry" or anything brand-related. Something like a normal person.\nJoin: r/daytrading, r/futurestrading\nDo NOT post yet. Just join.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Reddit: Daily replies (15 min) — Day 1-7',notes:'Open r/daytrading. Sort by New. Find 2-3 posts about: practice, screen time, simulators, prop firms, strategy testing.\nLeave a helpful 2-sentence reply. NO links, NO product mentions.\nClose tab. Done for the day.\n\nSee /marketing/scripts for reply templates.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
+    {id:'blog5',title:'Blog: Simulating Realistic Market Regimes (RE-UPLOAD)',notes:'Already written. Re-upload via editor with screenshots (chop_trend.png, transition.png, reg_vol_sliders.png from tmp/). Back-date to 2026-05-12.',ch:'blog',priority:'high',created:'2026-06-12',comments:[]},
     {id:uid(),title:'Take 5-6 clean screenshots',notes:'Simulator mid-session, Chart Designer, Stats page, Iron Man mode, order book.\nClean browser, full-screen. Show wins AND losses.',ch:'content',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Record 30-sec silent screen capture',notes:'Open simulator → take a quick scalp → show P&L update. No voiceover, no editing. Just screen record + trim.',ch:'content',priority:'med',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Record 30-sec silent screen capture',notes:'Open simulator -> take a quick scalp -> show P&L update. No voiceover, no editing. Just screen record + trim.',ch:'content',priority:'med',created:'2026-06-04',comments:[]},
   ],
   'Next Week':[
-    {id:uid(),title:'Reddit: Continue daily replies — Day 8-14',notes:'Same routine. 15 min/day. 2-3 helpful replies. You should have 10-20 comment karma by now.\nPeople may start recognizing your username.\n\nSee /marketing/scripts for reply templates.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Post Show HN',notes:'Title: "Show HN: PatternFoundry — free trading simulator with realistic order book microstructure"\nSee /marketing/scripts for full script. Post Tuesday/Wednesday 8-9am ET.',ch:'hn',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Post first X thread',notes:'4-5 tweets: hook → stats screenshot → recording → link.\nSee /marketing/scripts for full script. Batch-write Sunday, post Monday.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Post Show HN',notes:'Title: "Show HN: PatternFoundry - free trading simulator with realistic order book microstructure"\nSee /marketing/scripts for full script. Post Tuesday/Wednesday 8-9am ET.',ch:'hn',priority:'high',created:'2026-06-04',comments:[]},
+    {id:uid(),title:'Post first X thread',notes:'4-5 tweets: hook -> stats screenshot -> recording -> link.\nSee /marketing/scripts for full script. Batch-write Sunday, post Monday.',ch:'twitter',priority:'high',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Set up X account (if not done)',notes:'Bio: "Building a free trading practice simulator." Pin: nothing yet (will pin first thread). Profile pic: logo or abstract.',ch:'twitter',priority:'med',created:'2026-06-04',comments:[]},
   ],
   'Ongoing':[
-    {id:uid(),title:'Reddit: Post value post in r/daytrading (Week 3-4)',notes:'ONLY after 2+ weeks of genuine comments.\nTitle: "I tracked my win rate across X sessions — here\'s what moved the needle"\nLead with DATA. Tool mention is incidental. NO link in post body.\nPost link in comment ONLY if asked.\n\nSee /marketing/scripts for full scripted post.',ch:'reddit',priority:'high',created:'2026-06-04',comments:[]},
-    {id:uid(),title:'Reddit: Maintain 15 min/day replies',notes:'After the warmup period, keep going. 2-3 helpful replies per day.\nThis keeps you visible and builds ongoing karma.\nTreat it like a work task — timer for 15 min, then close.',ch:'reddit',priority:'med',created:'2026-06-04',comments:[]},
     {id:uid(),title:'X: 1 post per week (batch-write Sunday)',notes:'Rotate:\n- A session result with screenshot\n- "What I learned from X sessions"\n- A myth-bust (win rate, drawdown)\n- A new feature shipped\nSee /marketing/scripts for 4 weeks of pre-written threads.',ch:'twitter',priority:'med',created:'2026-06-04',comments:[]},
     {id:uid(),title:'SEO: 1 targeted page per month',notes:'Target a specific search query each month. Write it, publish it, forget it.\nLet search do the work over time.',ch:'seo',priority:'med',created:'2026-06-04',comments:[]},
     {id:uid(),title:'Ship features > market features',notes:'Best marketing for a technical product: keep making it better. Every feature shipped is a new post and a new reason for word-of-mouth.',ch:'product',priority:'med',created:'2026-06-04',comments:[]},
@@ -189,7 +190,7 @@ function render(){
 
 function makeCard(card,col,idx){
   const el=document.createElement('div');
-  el.className='card';el.draggable=true;el.dataset.priority=card.priority;el.dataset.col=col;el.dataset.idx=idx;
+  el.className='card'+(card.title&&card.title.startsWith('Blog:')?' blog-card':'');el.draggable=true;el.dataset.priority=card.priority;el.dataset.col=col;el.dataset.idx=idx;
   const notesPreview=card.notes?`<div class="card-notes-preview">${esc(card.notes.split('\n')[0].slice(0,60))}</div>`:'';
   el.innerHTML=`<span class="drag-handle">⠿</span><button class="card-del" onclick="event.stopPropagation();delCard('${col}',${idx})">✕</button><div class="card-title">${esc(card.title)}</div>${notesPreview}<div class="card-footer"><span class="badge badge-${card.ch||'content'}">${card.ch||'content'}</span></div>`;
   el.addEventListener('click',e=>{if(e.target.classList.contains('card-del'))return;openModal(col,idx)});
@@ -287,7 +288,9 @@ if(_IS_FLY){
     .then(d=>{data=d;localStorage.setItem(LS_KEY,JSON.stringify(data));render();})
     .catch(()=>{render();});
 } else {
-  render();
+  fetch('/api/marketing-board/load').then(r=>{if(r.ok)return r.json();throw r;})
+    .then(d=>{data=d;localStorage.setItem(LS_KEY,JSON.stringify(data));render();})
+    .catch(()=>{render();});
 }
 </script>
 <div id="board-tooltip" style="display:none;position:fixed;z-index:9999;background:#0e1217;border:1px solid #f97316;border-radius:6px;padding:10px 12px;max-width:300px;font-size:.72rem;color:#ddd;white-space:pre-wrap;line-height:1.4;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.5)"></div>
