@@ -265,8 +265,15 @@ def docs_presets():
 # ── Blog ──────────────────────────────────────────────────────────────────────
 import markdown as _md
 
-_BLOG_DIR = os.path.join(os.path.dirname(__file__), 'blog')
+_BLOG_DIR = '/data/blog' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'blog')
 os.makedirs(_BLOG_DIR, exist_ok=True)
+# Seed from repo on first deploy
+_BLOG_SEED = os.path.join(os.path.dirname(__file__), 'blog')
+if _BLOG_DIR != _BLOG_SEED and os.path.isdir(_BLOG_SEED):
+    for f in os.listdir(_BLOG_SEED):
+        if f.endswith('.md') and not os.path.isfile(os.path.join(_BLOG_DIR, f)):
+            import shutil
+            shutil.copy2(os.path.join(_BLOG_SEED, f), os.path.join(_BLOG_DIR, f))
 
 def _parse_post(filename):
     path = os.path.join(_BLOG_DIR, filename)
@@ -299,6 +306,11 @@ def _get_posts():
 @app.route('/blog')
 def blog_index():
     return render_template('blog_index.html', posts=_get_posts())
+
+@app.route('/blog/images/<filename>')
+def blog_image(filename):
+    img_dir = '/data/blog/images' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'static', 'blog')
+    return send_from_directory(img_dir, filename)
 
 @app.route('/blog/<slug>')
 def blog_post(slug):
@@ -361,10 +373,11 @@ def api_blog_upload():
     if not f:
         return jsonify({'error': 'no file'}), 400
     filename = ''.join(c if c.isalnum() or c in '-_.' else '_' for c in f.filename)
-    img_dir = os.path.join(os.path.dirname(__file__), 'static', 'blog')
+    img_dir = '/data/blog/images' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'static', 'blog')
     os.makedirs(img_dir, exist_ok=True)
     f.save(os.path.join(img_dir, filename))
-    return jsonify({'url': '/static/blog/' + filename})
+    url = '/blog/images/' + filename if not _IS_LOCAL else '/static/blog/' + filename
+    return jsonify({'url': url})
 
 _BOARD_DIR = '/data/boards' if not _IS_LOCAL else os.path.join(os.path.dirname(__file__), 'Export', 'ProjectBoard')
 os.makedirs(_BOARD_DIR, exist_ok=True)
