@@ -180,30 +180,61 @@ rewrite everything from scratch in this repo.
 
 ---
 
-## Recent Work (2026-06-10 session 9)
+## Recent Work (2026-06-12 session 10)
 
-1. **Indicator performance v2** — `recomputeIndicators()` now uses `series.update()` (single point) instead of `setData()` (full array). Added `Indicators.lastX()` functions that compute only the final value. Massive improvement with indicators active.
-2. **Session structure randomization** — Fixed predictable noon breakout. Regime durations now use geometric distribution (randomized per switch). Removed hardcoded bar-index drift multipliers. Starting regime randomized.
-3. **Account balance fix** — `/api/account` now computes balance server-side as `starting_balance + SUM(session.pnl)`. Stats page also derives balance from sessions, not stored value. Fixes drift between displayed balance and actual P/L.
-4. **Stats account cards** — 3-card layout (Starting, P/L, Balance). Uses `fmtCompact()` formatter ($42,907 or $2.1M). Percentage in label. No truncation.
-5. **Live trade markers** — BUY/SELL arrows on entry, yellow exit circles with reason. Same style as session replay. Markers rebucket correctly on TF switch.
-6. **TF switch marker crash fix** — Markers filtered to only existing candle times on TF change. Prevents "Value is null" error.
-7. **Per-account notes** — Textarea in Account Details, auto-saves on blur. API: GET/POST `/api/account/<id>/notes`. Strategy tracking per account.
-8. **Exclude from overview toggle** — Checkbox per account row ("Ov" column). Excluded accounts filtered from all Overview aggregations (equity curve, stats, instruments, distribution, streak). Persists server-side.
-9. **Themed tooltips on stats** — Uses `[data-tip]` CSS pattern (orange border popup) instead of browser default `title` attribute.
-10. **Reddit momentum** — ~20 karma/day from genuine replies on r/daytrading. Account approaching 50 karma threshold for value post.
+1. **TF switch crash fix (root cause)** — `rebucketHistory()` was returning array by reference when tf<=60. `buildAllCandles()` then mutated `_historyBars` by pushing played candles. Next TF switch = duplicate timestamps = "Value is null" crash. Fixed with `.slice()`.
+2. **Per-account delete** — DELETE `/api/account/<id>` endpoint. Cascades to sessions + trades. Small × button on each account row in Stats Account Details.
+3. **Limit order fix** — Trigger logic was using stop-order logic for limits (backwards). Now: buy limit triggers when price drops to entry, sell limit when price rises. Also fixed `isMarket` check to be directionally correct.
+4. **CSV export (trades)** — GET `/api/account/<id>/export`. One row per trade: date, instrument, direction, qty, entry/exit price, pnl, exit_reason, tick_size, tick_value.
+5. **CSV export (1m candles)** — GET `/api/account/<id>/export-candles`. One row per candle per session for regime analysis.
+6. **Duplicate seed bug found & fixed** — Seed field was auto-populating after load, causing re-send of same seed on next session = identical price data. Fixed: seed now shows as placeholder only, not field value. Also added `sessionSeed` variable so seed still saves correctly for replay.
+7. **Session balance bug fixed** — `loadSession()` now fetches fresh balance from server before creating account object. Was using stale page-load value.
+8. **Start/End Balance columns** — Added to session history table in Account Details. Running cumulative from account starting_balance.
+9. **6 mini analytics charts** — Replaced DD chart with 2x3 grid: Rolling Win Rate (10-trade), Rolling Expectancy, R-Multiple per trade, DD Duration, P/L Distribution histogram, Cumulative R.
+10. **Landing page audit** — Fixed: removed crypto/forex references, updated to 14 instruments, removed fake "thousands of traders" claim, fixed comparison table, reworked promo card ("Limited Offer" framing).
+11. **Blog engine** — Markdown files rendered at `/blog`. Admin editor at `/admin/blog` with toolbar (H2/H3/Bold/Italic/Code/Link/Img/Quote/List), image upload, live preview, post CRUD. Storage on Fly persistent volume (`/data/blog`). Blog images served from `/blog/images/`.
+12. **Public routes** — `/blog` and `/docs` no longer require login.
+13. **Blog editor features** — Excerpt field, auto-generate slug button.
+
+---
+
+## Current State (as of 2026-06-13)
+
+### Blog Engine
+- **Editor:** `/admin/blog` — full WYSIWYG-ish markdown editor with toolbar, image upload, live preview
+- **Storage:** `/data/blog/` on Fly persistent volume (local: `blog/` dir)
+- **Images:** Upload via editor, stored in `/data/blog/images/` (local: `static/blog/`), served at `/blog/images/<filename>`
+- **Posts:** YAML front matter (title, date, author, excerpt) + markdown body
+- **Pending posts on marketing board (Backlog):**
+  - Agent-Based Order Flow Simulation
+  - Why Random Walks Don't Look Like Markets
+  - Building a Simulated Limit Order Book
+  - The Problem with Backtesting on Historical Data
+- **This Week:** Re-upload "Simulating Realistic Market Regimes" via editor with screenshots (chop_trend.png, transition.png, reg_vol_sliders.png in `tmp/`). Back-date to 2026-05-12.
+
+### Marketing Status
+- **Reddit:** ~42 karma. Strategy deprioritized (mod friction, not the right channel for Devlyn's style). May still post value post at 50 karma but not primary focus.
+- **Primary channels going forward:** X (Twitter), AlternativeTo (7-day account age needed), Product Hunt, SEO blog posts, Google Ads ($50/mo budget identified).
+- **AlternativeTo:** Account created, nearing 7-day age requirement for submission.
+- **Blog for SEO:** Engine built, first post screenshots ready, 4 more posts outlined.
+
+### Data/Research
+- **Account 17 (1:1 ORB):** Clean, 25 sessions, no duplicates. 58.8% WR, +$3,722 net. Good for analysis.
+- **Account 18 (2:1 ORB):** Had duplicate seed issues (8 duplicate pairs). Needs re-run with fresh sessions.
+- **Export files in `tmp/`:** orb_retest_trades.csv, orb_retest_candles.csv, account_17_trades.csv, account_17_candles.csv, account_18_candles.csv, chop_trend.png, transition.png, reg_vol_sliders.png, ORB_1-1.png, ORB_2-1.png
 
 ---
 
 ## Next Steps
 
-- **VALUE POST (READY TO DRAFT)** — ORB comparison data complete: 2:1 target = -16% (28% WR), 1:1 target = +7.4% (59% WR). Screenshots in `tmp/ORB_2-1.png` and `tmp/ORB_1-1.png`. Should re-run 2:1 data with updated (randomized) instrument characters for apples-to-apples comparison.
-- **Reddit strategy** — Continue daily 2-3 replies. r/futurestrading should be unlocked now (3-day age reached). Build to 50+ karma before value post.
-- **AlternativeTo submission** — Account created, submit on weekday. Listing copy ready in chat history.
-- **HN Show HN** — Target week 3. Post script exists in `/marketing/scripts`.
-- **Remaining features:** Chart Designer tick_value/margin fields for custom chars, partial position exits (peel off), export data button.
-- **Tooltip audit** — Replace ALL remaining `title=""` attributes across all templates with `data-tip`. Never use browser default tooltips.
-- **See board + /feature-ideas** for full roadmap
+- **Blog posts** — Upload regime post via editor (This Week on marketing board). Then write remaining 4 posts from backlog prompts.
+- **X (Twitter)** — Start posting: screenshots, data findings, hot takes on practice/sim trading. No gatekeeping, no mods.
+- **AlternativeTo** — Submit once 7-day age hits.
+- **Google Ads** — Set up targeting for long-tail keywords ("futures trading simulator free", "practice day trading"). $50/mo budget.
+- **Re-run account 18** — 25 fresh sessions with 2:1 ORB for clean comparison data.
+- **Remaining features:** Chart Designer tick_value/margin fields for custom chars, partial position exits (peel off).
+- **Tooltip audit** — Replace ALL remaining `title=""` attributes with `data-tip`.
+- **See marketing board + /feature-ideas** for full roadmap
 
 ---
 
