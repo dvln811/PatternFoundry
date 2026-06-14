@@ -43,7 +43,7 @@ def _board_cors(response):
 @app.before_request
 def check_auth():
     # Public paths
-    public = ['/login', '/register', '/static', '/api/', '/robots.txt', '/sitemap.xml', '/blog', '/docs']
+    public = ['/login', '/register', '/static', '/api/', '/robots.txt', '/sitemap.xml', '/blog', '/docs', '/free-trading-simulator']
     path = request.path
     if any(path.startswith(p) for p in public):
         return
