@@ -215,7 +215,28 @@ def robots():
 
 @app.route('/sitemap.xml')
 def sitemap():
-    return send_from_directory('static', 'sitemap.xml')
+    from flask import Response
+    urls = [
+        ('/', '1.0'),
+        ('/free-trading-simulator', '0.9'),
+        ('/blog', '0.8'),
+        ('/docs', '0.7'),
+        ('/docs/getting-started', '0.6'),
+        ('/docs/simulator', '0.6'),
+        ('/docs/designer', '0.6'),
+        ('/docs/indicators', '0.6'),
+        ('/docs/orderbook', '0.6'),
+        ('/docs/pricing', '0.5'),
+    ]
+    for f in sorted(os.listdir(_BLOG_DIR)):
+        if f.endswith('.md'):
+            urls.append(('/blog/' + f.replace('.md', ''), '0.7'))
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for loc, pri in urls:
+        xml += f'  <url><loc>https://patternfoundry.net{loc}</loc><priority>{pri}</priority></url>\n'
+    xml += '</urlset>'
+    return Response(xml, mimetype='application/xml')
+
 
 
 @app.route('/docs')
